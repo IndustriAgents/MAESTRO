@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Render artifacts
+figures/png/*.tmp
+figures/src/.*
+
+# Build / dist
+dist/
+build/
+*.log

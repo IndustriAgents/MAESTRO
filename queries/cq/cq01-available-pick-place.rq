@@ -1,0 +1,23 @@
+PREFIX core:    <http://example.org/maestro/core#>
+PREFIX cap:     <http://example.org/maestro/capability#>
+PREFIX runtime: <http://example.org/maestro/runtime#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?resource ?label
+WHERE {
+    {
+        ?resource core:canPerform cap:PickPlaceCapability .
+    }
+    UNION
+    {
+        cap:PickPlaceCapability ?realizedBy ?skill .
+        ?realizedBy rdfs:subPropertyOf* core:realizedBySkill .
+        ?component ?implements ?skill ;
+                   ?controls ?resource .
+        ?implements rdfs:subPropertyOf* core:implements .
+        ?controls rdfs:subPropertyOf* core:controls .
+    }
+    ?resource core:hasState runtime:Available .
+    OPTIONAL { ?resource rdfs:label ?label }
+}
+ORDER BY ?resource

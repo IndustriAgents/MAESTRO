@@ -1,0 +1,27 @@
+@startuml 04-reasoning-chain
+title MAESTRO Core Reasoning Chain
+
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam rectangle {
+    BackgroundColor #FFFFFF
+    BorderColor #455A64
+    FontStyle bold
+}
+
+rectangle "Product\n(prod:Product)" as Product #E3F2FD
+rectangle "Process\n(proc:ManufacturingProcess)" as Process #E1F5FE
+rectangle "Capability\n(cap:Capability)" as Capability #FFF9C4
+rectangle "Skill\n(skill:AtomicSkill / CompositeSkill)" as Skill #FFE0B2
+rectangle "ControlComponent\n(ROS · PLC FB · IEC 61499 FB · OPC UA method)" as Ctrl #F8BBD0
+rectangle "Resource\n(res:Machine / Robot / Sensor)" as Resource #C5E1A5
+rectangle "Motion\n(motion:LinearMotion / JointMotion / …)" as Motion #B3E5FC
+
+Product   --> Process     : requires
+Process   --> Capability  : requires
+Capability --> Skill      : realizedBy
+Skill     --> Ctrl        : implementedBy
+Ctrl      --> Resource    : controls
+Resource  --> Motion      : performs
+
+@enduml

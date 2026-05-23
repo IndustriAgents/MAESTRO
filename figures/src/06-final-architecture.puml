@@ -1,0 +1,42 @@
+@startuml 06-final-architecture
+title MAESTRO — Final Future-Proof Architecture
+
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam rectangle {
+    BackgroundColor #FFFFFF
+    BorderColor #2E3B4E
+    FontStyle bold
+}
+
+rectangle "Product Layer"     as Product   #E3F2FD
+rectangle "Process Layer"     as Process   #E1F5FE
+rectangle "Capability Layer"  as Cap       #FFF9C4
+rectangle "Skill Layer"       as Skill     #FFE0B2
+
+rectangle "ROS"        as ROS       #F8BBD0
+rectangle "IEC 61131"  as PLC       #F8BBD0
+rectangle "IEC 61499"  as FBN       #F8BBD0
+
+rectangle "OPC UA Layer"      as OPCUA    #D1C4E9
+rectangle "Resource Layer"    as Resource #C5E1A5
+rectangle "Motion Layer"      as Motion   #B3E5FC
+rectangle "Physical Factory"  as Factory  #BDBDBD
+
+Product   -down-> Process
+Process   -down-> Cap
+Cap       -down-> Skill
+
+Skill -down-> ROS
+Skill -down-> PLC
+Skill -down-> FBN
+
+ROS  -down-> OPCUA
+PLC  -down-> OPCUA
+FBN  -down-> OPCUA
+
+OPCUA    -down-> Resource
+Resource -down-> Motion
+Motion   -down-> Factory
+
+@enduml

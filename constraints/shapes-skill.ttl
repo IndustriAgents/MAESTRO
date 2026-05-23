@@ -1,0 +1,29 @@
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix core:  <http://example.org/maestro/core#> .
+@prefix skill: <http://example.org/maestro/skill#> .
+@prefix shape: <http://example.org/maestro/shapes#> .
+
+#################################################################
+# SHACL SHAPES — SKILL LAYER
+#################################################################
+
+shape:CompositeSkillShape a sh:NodeShape ;
+    sh:targetClass skill:CompositeSkill ;
+    rdfs:label "Composite skills must require at least one component skill."@en ;
+    sh:property [
+        sh:path skill:composedOfSkill ;
+        sh:minCount 1 ;
+        sh:message "A CompositeSkill must use skill:composedOfSkill for at least one constituent Skill." ;
+    ] .
+
+shape:SkillImplementationShape a sh:NodeShape ;
+    sh:targetClass core:Skill ;
+    rdfs:label "A Skill should be implemented by at least one ControlComponent (warning)."@en ;
+    sh:property [
+        sh:path [ sh:inversePath core:implements ] ;
+        sh:minCount 1 ;
+        sh:message "Skill has no implementing ControlComponent — it cannot be executed." ;
+        sh:severity sh:Warning ;
+    ] .

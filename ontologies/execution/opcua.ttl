@@ -1,0 +1,86 @@
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:  <http://example.org/maestro/core#> .
+@prefix skill: <http://example.org/maestro/skill#> .
+@prefix opcua: <http://example.org/maestro/opcua#> .
+
+#################################################################
+# ONTOLOGY DECLARATION
+#################################################################
+
+<http://example.org/maestro/opcua> a owl:Ontology ;
+    rdfs:label "MAESTRO OPC UA Ontology"@en ;
+    owl:imports <http://example.org/maestro/core> ,
+                <http://example.org/maestro/skill> ;
+    owl:versionInfo "0.1.0" ;
+    rdfs:comment "OPC UA semantic interoperability layer. Skills are exposed to clients through OPC UA SkillInterfaces (inspired by CaSkMan)."@en .
+
+#################################################################
+# CLASSES
+#################################################################
+
+opcua:OpcUaServer a owl:Class ;
+    rdfs:label "OpcUaServer"@en ;
+    rdfs:subClassOf core:ControlComponent .
+
+opcua:OpcUaNode a owl:Class ;
+    rdfs:label "OpcUaNode"@en ;
+    rdfs:subClassOf core:LogicalEntity .
+
+opcua:OpcUaObject a owl:Class ;
+    rdfs:label "OpcUaObject"@en ;
+    rdfs:subClassOf opcua:OpcUaNode .
+
+opcua:OpcUaVariable a owl:Class ;
+    rdfs:label "OpcUaVariable"@en ;
+    rdfs:subClassOf opcua:OpcUaNode .
+
+opcua:OpcUaMethod a owl:Class ;
+    rdfs:label "OpcUaMethod"@en ;
+    rdfs:subClassOf opcua:OpcUaNode .
+
+opcua:OpcUaSkillInterface a owl:Class ;
+    rdfs:label "OpcUaSkillInterface"@en ;
+    rdfs:subClassOf opcua:OpcUaObject ;
+    rdfs:comment "An OPC UA object that exposes a MAESTRO Skill to network clients. Mirrors the CaSkMan SkillInterface pattern."@en .
+
+#################################################################
+# PROPERTIES
+#################################################################
+
+opcua:nodeId a owl:DatatypeProperty ;
+    rdfs:label "nodeId"@en ;
+    rdfs:domain opcua:OpcUaNode ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "OPC UA NodeId (e.g. 'ns=2;s=Skill.Transfer.Start')."@en .
+
+opcua:browseName a owl:DatatypeProperty ;
+    rdfs:label "browseName"@en ;
+    rdfs:domain opcua:OpcUaNode ;
+    rdfs:range  xsd:string .
+
+opcua:exposes a owl:ObjectProperty ;
+    rdfs:label "exposes"@en ;
+    rdfs:domain opcua:OpcUaSkillInterface ;
+    rdfs:range  core:Skill ;
+    rdfs:comment "An OPC UA SkillInterface exposes a Skill."@en .
+
+opcua:accessibleThrough a owl:ObjectProperty ;
+    rdfs:label "accessibleThrough"@en ;
+    rdfs:domain core:Skill ;
+    rdfs:range  opcua:OpcUaSkillInterface ;
+    rdfs:comment "A Skill is accessible through an OPC UA SkillInterface (inverse of opcua:exposes)."@en ;
+    owl:inverseOf opcua:exposes .
+
+opcua:implementsSkill a owl:ObjectProperty ;
+    rdfs:label "implementsSkill"@en ;
+    rdfs:domain opcua:OpcUaMethod ;
+    rdfs:range  core:Skill ;
+    rdfs:subPropertyOf core:implements .
+
+opcua:hostsInterface a owl:ObjectProperty ;
+    rdfs:label "hostsInterface"@en ;
+    rdfs:domain opcua:OpcUaServer ;
+    rdfs:range  opcua:OpcUaSkillInterface .

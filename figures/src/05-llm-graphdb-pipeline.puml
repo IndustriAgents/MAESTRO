@@ -1,0 +1,27 @@
+@startuml 05-llm-graphdb-pipeline
+title MAESTRO LLM + GraphDB Pipeline
+
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam rectangle {
+    BackgroundColor #FFFFFF
+    BorderColor #1A237E
+    FontStyle bold
+}
+
+actor User
+rectangle "LLM Intent Extraction"               as Intent      #E8EAF6
+rectangle "SPARQL Generation"                   as SPARQLGen   #C5CAE9
+rectangle "GraphDB Reasoning\n(OWL · SHACL · SWRL)" as Reason   #9FA8DA
+rectangle "Capability Inference"                as Inference   #7986CB
+rectangle "LLM Explanation"                     as Explain     #C5CAE9
+rectangle "Execution Layer\n(ROS · PLC · IEC 61499 · OPC UA)" as Exec #B2DFDB
+
+User       --> Intent     : "Move part X to station 3"
+Intent     --> SPARQLGen
+SPARQLGen  --> Reason
+Reason     --> Inference
+Inference  --> Explain    : results
+Inference  --> Exec       : dispatch
+
+@enduml

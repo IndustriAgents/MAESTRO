@@ -1,0 +1,73 @@
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:   <http://example.org/maestro/core#> .
+@prefix sosa:   <http://www.w3.org/ns/sosa/> .
+@prefix ssn:    <http://www.w3.org/ns/ssn/> .
+@prefix sensor: <http://example.org/maestro/sensor#> .
+
+#################################################################
+# ONTOLOGY DECLARATION
+#################################################################
+
+<http://example.org/maestro/sensor> a owl:Ontology ;
+    rdfs:label "MAESTRO Sensor Ontology"@en ;
+    owl:imports <http://example.org/maestro/core> ;
+    owl:versionInfo "0.2.0" ;
+    rdfs:comment "Sensor classes aligned with W3C SSN/SOSA."@en .
+
+#################################################################
+# CLASSES (SSN/SOSA alignment)
+#################################################################
+
+sensor:Sensor a owl:Class ;
+    rdfs:label "Sensor"@en ;
+    rdfs:subClassOf core:Resource ,
+                    sosa:Sensor .
+
+sensor:Observation a owl:Class ;
+    rdfs:label "Observation"@en ;
+    rdfs:subClassOf sosa:Observation .
+
+sensor:ObservableProperty a owl:Class ;
+    rdfs:label "ObservableProperty"@en ;
+    rdfs:subClassOf core:LogicalEntity ,
+                    sosa:ObservableProperty .
+
+sensor:FeatureOfInterest a owl:Class ;
+    rdfs:label "FeatureOfInterest"@en ;
+    rdfs:subClassOf core:LogicalEntity ,
+                    sosa:FeatureOfInterest .
+
+#################################################################
+# COMMON INDUSTRIAL SENSOR TYPES
+#################################################################
+
+sensor:TemperatureSensor   rdfs:subClassOf sensor:Sensor ; rdfs:label "TemperatureSensor"@en .
+sensor:PressureSensor      rdfs:subClassOf sensor:Sensor ; rdfs:label "PressureSensor"@en .
+sensor:VibrationSensor     rdfs:subClassOf sensor:Sensor ; rdfs:label "VibrationSensor"@en .
+sensor:ForceSensor         rdfs:subClassOf sensor:Sensor ; rdfs:label "ForceSensor"@en .
+sensor:TorqueSensor        rdfs:subClassOf sensor:Sensor ; rdfs:label "TorqueSensor"@en .
+sensor:ProximitySensor     rdfs:subClassOf sensor:Sensor ; rdfs:label "ProximitySensor"@en .
+sensor:VisionSensor        rdfs:subClassOf sensor:Sensor ; rdfs:label "VisionSensor"@en .
+
+#################################################################
+# PROPERTIES
+#################################################################
+
+sensor:observes a owl:ObjectProperty ;
+    rdfs:domain sensor:Sensor ;
+    rdfs:range  sensor:ObservableProperty .
+
+sensor:hasObservation a owl:ObjectProperty ;
+    rdfs:domain sensor:Sensor ;
+    rdfs:range  sensor:Observation .
+
+sensor:resultValue a owl:DatatypeProperty ;
+    rdfs:domain sensor:Observation ;
+    rdfs:range  xsd:double .
+
+sensor:resultTime a owl:DatatypeProperty ;
+    rdfs:domain sensor:Observation ;
+    rdfs:range  xsd:dateTime .

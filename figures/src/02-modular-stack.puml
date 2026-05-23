@@ -1,0 +1,77 @@
+@startuml 02-modular-stack
+title MAESTRO Modular Ontology Stack
+
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam packageStyle rectangle
+
+package "core" #E3F2FD {
+    [manufacturing-core.ttl]
+}
+
+package "physical" #FFF3E0 {
+    [resource.ttl]
+    [motion.ttl]
+}
+
+package "logical" #FFEBEE {
+    [skill.ttl]
+    [capability.ttl]
+    [process.ttl]
+    [product.ttl]
+}
+
+package "execution adapters" #F3E5F5 {
+    [iec61131.ttl]
+    [iec61499.ttl]
+    [ros.ttl]
+    [opcua.ttl]
+    [aas.ttl]
+}
+
+package "runtime" #E8F5E9 {
+    [runtime.ttl]
+    [state.ttl]
+}
+
+package "cross-cutting" #F1F8E9 {
+    [sensor.ttl]
+    [unit.ttl]
+    [communication.ttl]
+    [safety.ttl]
+    [quality.ttl]
+    [maintenance.ttl]
+    [energy.ttl]
+}
+
+package "reasoning" #FFF8E1 {
+    [reasoning.ttl]
+    [planning.ttl]
+}
+
+[maestro.ttl] as umbrella #FFCC80
+umbrella ..> [manufacturing-core.ttl]
+umbrella ..> [resource.ttl]
+umbrella ..> [motion.ttl]
+umbrella ..> [skill.ttl]
+umbrella ..> [capability.ttl]
+umbrella ..> [process.ttl]
+umbrella ..> [product.ttl]
+umbrella ..> [iec61131.ttl]
+umbrella ..> [iec61499.ttl]
+umbrella ..> [ros.ttl]
+umbrella ..> [opcua.ttl]
+umbrella ..> [aas.ttl]
+umbrella ..> [runtime.ttl]
+umbrella ..> [state.ttl]
+umbrella ..> [sensor.ttl]
+umbrella ..> [unit.ttl]
+umbrella ..> [communication.ttl]
+umbrella ..> [safety.ttl]
+umbrella ..> [quality.ttl]
+umbrella ..> [maintenance.ttl]
+umbrella ..> [energy.ttl]
+umbrella ..> [reasoning.ttl]
+umbrella ..> [planning.ttl]
+
+@enduml

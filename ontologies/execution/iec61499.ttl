@@ -1,0 +1,94 @@
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:      <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:     <http://example.org/maestro/core#> .
+@prefix skill:    <http://example.org/maestro/skill#> .
+@prefix iec61499: <http://example.org/maestro/iec61499#> .
+
+#################################################################
+# ONTOLOGY DECLARATION
+#################################################################
+
+<http://example.org/maestro/iec61499> a owl:Ontology ;
+    rdfs:label "MAESTRO IEC 61499 Ontology"@en ;
+    owl:imports <http://example.org/maestro/core> ,
+                <http://example.org/maestro/skill> ;
+    owl:versionInfo "0.2.0" ;
+    rdfs:comment "Event-driven distributed automation per IEC 61499. Function blocks are first-class control components."@en .
+
+#################################################################
+# CLASSES
+#################################################################
+
+iec61499:FunctionBlock a owl:Class ;
+    rdfs:label "FunctionBlock"@en ;
+    rdfs:subClassOf core:ControlComponent .
+
+iec61499:BasicFB a owl:Class ;
+    rdfs:label "BasicFB"@en ;
+    rdfs:subClassOf iec61499:FunctionBlock ;
+    rdfs:comment "A basic function block defined by an ECC (Execution Control Chart)."@en .
+
+iec61499:CompositeFB a owl:Class ;
+    rdfs:label "CompositeFB"@en ;
+    rdfs:subClassOf iec61499:FunctionBlock ;
+    rdfs:comment "A composite function block built from interconnected FBs."@en .
+
+iec61499:ServiceInterfaceFB a owl:Class ;
+    rdfs:label "ServiceInterfaceFB"@en ;
+    rdfs:subClassOf iec61499:FunctionBlock .
+
+iec61499:Application a owl:Class ;
+    rdfs:label "Application"@en ;
+    rdfs:subClassOf core:LogicalEntity .
+
+iec61499:Resource a owl:Class ;
+    rdfs:label "Resource"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "An IEC 61499 runtime resource (not to be confused with core:Resource which is physical)."@en .
+
+iec61499:Device a owl:Class ;
+    rdfs:label "Device"@en ;
+    rdfs:subClassOf core:PhysicalEntity ;
+    rdfs:comment "A physical computing device that hosts IEC 61499 resources."@en .
+
+iec61499:Event a owl:Class ;
+    rdfs:label "Event"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "An IEC 61499 execution event. This is not a MAESTRO runtime event occurrence."@en .
+
+iec61499:Connection a owl:Class ;
+    rdfs:label "Connection"@en ;
+    rdfs:subClassOf core:LogicalEntity .
+
+#################################################################
+# PROPERTIES
+#################################################################
+
+iec61499:implementsSkill a owl:ObjectProperty ;
+    rdfs:label "implementsSkill"@en ;
+    rdfs:domain iec61499:FunctionBlock ;
+    rdfs:range  core:Skill ;
+    rdfs:subPropertyOf core:implements .
+
+iec61499:controlsResource a owl:ObjectProperty ;
+    rdfs:label "controlsResource"@en ;
+    rdfs:domain iec61499:FunctionBlock ;
+    rdfs:range  core:Resource ;
+    rdfs:subPropertyOf core:controls .
+
+iec61499:hostsResource a owl:ObjectProperty ;
+    rdfs:label "hostsResource"@en ;
+    rdfs:domain iec61499:Device ;
+    rdfs:range  iec61499:Resource .
+
+iec61499:emitsEvent a owl:ObjectProperty ;
+    rdfs:label "emitsEvent"@en ;
+    rdfs:domain iec61499:FunctionBlock ;
+    rdfs:range  iec61499:Event .
+
+iec61499:consumesEvent a owl:ObjectProperty ;
+    rdfs:label "consumesEvent"@en ;
+    rdfs:domain iec61499:FunctionBlock ;
+    rdfs:range  iec61499:Event .

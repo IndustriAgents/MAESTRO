@@ -1,0 +1,123 @@
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:      <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:     <http://example.org/maestro/core#> .
+@prefix res:      <http://example.org/maestro/resource#> .
+@prefix unit:     <http://example.org/maestro/unit#> .
+@prefix skill:    <http://example.org/maestro/skill#> .
+@prefix cap:      <http://example.org/maestro/capability#> .
+@prefix proc:     <http://example.org/maestro/process#> .
+@prefix prod:     <http://example.org/maestro/product#> .
+@prefix ros:      <http://example.org/maestro/ros#> .
+@prefix iec61499: <http://example.org/maestro/iec61499#> .
+@prefix runtime:  <http://example.org/maestro/runtime#> .
+@prefix ex:       <http://example.org/maestro/examples/multi-robot-assembly#> .
+
+#################################################################
+# EXAMPLE — MULTI-ROBOT ASSEMBLY CELL
+#
+# Plant configuration:
+#   - Cobot A (pick + place)
+#   - Cobot B (assembly)
+#   - Conveyor (transport)
+#   - Assembly station
+#
+# Demonstrates how the SAME skill/capability vocabulary scales to a
+# multi-resource workcell.
+#################################################################
+
+<http://example.org/maestro/examples/multi-robot-assembly> a owl:Ontology ;
+    rdfs:label "MAESTRO Example: Multi-Robot Assembly Cell"@en ;
+    owl:imports <http://example.org/maestro> ;
+    owl:versionInfo "0.2.0" .
+
+#################################################################
+# PLANT
+#################################################################
+
+ex:Plant2 a core:Plant ;
+    rdfs:label "Plant 2 — Multi-Robot Assembly Cell" ;
+    core:identifier "plant-assembly-002" ;
+    core:hasPart ex:CobotA, ex:CobotB, ex:Conveyor1, ex:AssemblyStation1 .
+
+#################################################################
+# RESOURCES
+#################################################################
+
+ex:CobotA a res:Cobot ;
+    rdfs:label "Cobot A (handler)" ;
+    core:identifier "resource-cobot-a" ;
+    res:payloadKg 7.0 ;
+    res:payload [
+        a unit:Quantity ;
+        unit:numericValue 7.0 ;
+        unit:hasUnit unit:Kilogram
+    ] ;
+    res:reachMm   850.0 ;
+    res:reach [
+        a unit:Quantity ;
+        unit:numericValue 850.0 ;
+        unit:hasUnit unit:Millimetre
+    ] ;
+    core:hasState runtime:Available ;
+    core:provides skill:MoveLinear , skill:VacuumPick , skill:Transfer .
+
+ex:CobotB a res:Cobot ;
+    rdfs:label "Cobot B (assembler)" ;
+    core:identifier "resource-cobot-b" ;
+    res:payloadKg 12.0 ;
+    res:payload [
+        a unit:Quantity ;
+        unit:numericValue 12.0 ;
+        unit:hasUnit unit:Kilogram
+    ] ;
+    res:reachMm   1300.0 ;
+    res:reach [
+        a unit:Quantity ;
+        unit:numericValue 1300.0 ;
+        unit:hasUnit unit:Millimetre
+    ] ;
+    core:hasState runtime:Available ;
+    core:provides skill:MoveLinear .
+
+ex:Conveyor1 a res:Conveyor ;
+    rdfs:label "Conveyor #1" ;
+    core:identifier "resource-conveyor-001" ;
+    core:hasState runtime:Available .
+
+ex:AssemblyStation1 a res:AssemblyStation ;
+    rdfs:label "Assembly Station #1" ;
+    core:identifier "resource-assembly-station-001" ;
+    core:hasState runtime:Available .
+
+#################################################################
+# CONTROL COMPONENTS
+#################################################################
+
+ex:CobotANode a ros:ROSNode ;
+    rdfs:label "ROS node for Cobot A" ;
+    core:identifier "control-cobot-a-node" ;
+    ros:rosVersion "iron" ;
+    ros:implementsSkill skill:Transfer ;
+    ros:controlsResource ex:CobotA .
+
+ex:CobotBNode a ros:ROSNode ;
+    rdfs:label "ROS node for Cobot B" ;
+    core:identifier "control-cobot-b-node" ;
+    ros:rosVersion "iron" ;
+    ros:implementsSkill skill:MoveLinear ;
+    ros:controlsResource ex:CobotB .
+
+ex:CellCoordinatorFB a iec61499:CompositeFB ;
+    rdfs:label "Cell-level IEC 61499 coordinator" ;
+    core:identifier "control-cell-coordinator-fb" ;
+    iec61499:controlsResource ex:Conveyor1 .
+
+#################################################################
+# CAPABILITIES (declared at plant level)
+#################################################################
+
+ex:Plant2 core:hasPlantCapability cap:PickPlaceCapability ,
+                              cap:AssemblyCapability ,
+                              cap:TransportCapability .

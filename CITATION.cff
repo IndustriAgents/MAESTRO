@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use MAESTRO in your research, please cite it as below."
+title: "MAESTRO: Modular Ontology Stack for Future-Proof Manufacturing"
+abstract: >
+  MAESTRO is a modular, standards-aligned OWL/Turtle ontology stack for
+  Industry 4.0 / Industry 5.0 manufacturing. It separates capability,
+  skill, and execution semantics so that ROS, IEC 61131, IEC 61499 and
+  OPC UA implementations can interoperate through a shared logical
+  vocabulary.
+authors:
+  - family-names: "Xavier"
+    given-names: "Midhun"
+    email: "midhunxavier1993@gmail.com"
+version: "0.2.0"
+date-released: "2026-05-23"
+license: MIT
+keywords:
+  - manufacturing
+  - ontology
+  - skill-based manufacturing
+  - capability
+  - OPC UA
+  - IEC 61499
+  - IEC 61131
+  - ROS
+  - Industry 4.0
+  - Industry 5.0
+  - digital twin
+  - asset administration shell
+references:
+  - type: software
+    title: "CaSkMan - Capability and Skill Ontology for Manufacturing"
+    authors:
+      - name: "CaSkade-Automation"
+    url: "https://github.com/CaSkade-Automation/CaSkMan"

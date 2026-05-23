@@ -1,0 +1,31 @@
+@startuml 01-semantic-stack
+title MAESTRO Semantic Stack
+
+skinparam rectangle {
+    BackgroundColor #F5F8FA
+    BorderColor #34495E
+    FontStyle bold
+}
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+
+rectangle "Product Layer\n(prod:Product, prod:Part, prod:Assembly)"     as L1
+rectangle "Process Layer\n(proc:ManufacturingProcess, DIN 8580)"        as L2
+rectangle "Capability Layer\n(cap:Capability — what a plant CAN do)"    as L3
+rectangle "Skill Layer\n(skill:AtomicSkill, skill:CompositeSkill)"      as L4 #FFE9B0
+rectangle "Orchestration Layer\n(SPARQL · SHACL · SWRL · LLM)"          as L5
+rectangle "Execution Layer\n(ROS · IEC 61131 · IEC 61499 · OPC UA · AAS)" as L6
+rectangle "Resource Layer\n(res:Machine, res:Robot, res:Sensor)"        as L7
+rectangle "Motion Layer\n(motion:LinearMotion, motion:JointMotion …)"   as L8
+rectangle "Physical Factory"                                            as L9 #C0D8E8
+
+L1 -down-> L2
+L2 -down-> L3
+L3 -down-> L4
+L4 -down-> L5
+L5 -down-> L6
+L6 -down-> L7
+L7 -down-> L8
+L8 -down-> L9
+
+@enduml

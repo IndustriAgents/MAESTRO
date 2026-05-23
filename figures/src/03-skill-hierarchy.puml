@@ -1,0 +1,39 @@
+@startuml 03-skill-hierarchy
+title MAESTRO Skill Class Hierarchy
+
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam classBackgroundColor #FFFDE7
+skinparam classBorderColor #F9A825
+
+class "core:Skill" as Skill
+
+class "skill:AtomicSkill"    as Atomic
+class "skill:CompositeSkill" as Composite
+
+class "skill:MotionSkill"        as Motion
+class "skill:ManipulationSkill"  as Manip
+class "skill:HandlingSkill"      as Handle
+class "skill:InspectionSkill"    as Inspect
+
+class "skill:AssemblySkill"      as Assembly
+class "skill:WeldingSkill"       as Welding
+class "skill:CoordinationSkill"  as Coord
+class "skill:ProcessSkill"       as Process
+class "skill:TransferSkill"      as Transfer
+
+Skill <|-- Atomic
+Skill <|-- Composite
+
+Atomic <|-- Motion
+Atomic <|-- Manip
+Atomic <|-- Handle
+Atomic <|-- Inspect
+
+Composite <|-- Assembly
+Composite <|-- Welding
+Composite <|-- Coord
+Composite <|-- Process
+Composite <|-- Transfer
+
+@enduml

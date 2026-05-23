@@ -1,0 +1,75 @@
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:  <http://example.org/maestro/core#> .
+@prefix proc:  <http://example.org/maestro/process#> .
+@prefix prod:  <http://example.org/maestro/product#> .
+
+#################################################################
+# ONTOLOGY DECLARATION
+#################################################################
+
+<http://example.org/maestro/product> a owl:Ontology ;
+    rdfs:label "MAESTRO Product Ontology"@en ;
+    owl:imports <http://example.org/maestro/core> ,
+                <http://example.org/maestro/process> ;
+    owl:versionInfo "0.2.0" ;
+    rdfs:comment "Products, parts, assemblies, features, and tolerances. A Product declares the Processes required to manufacture it."@en .
+
+#################################################################
+# CLASSES
+#################################################################
+
+prod:Part a owl:Class ;
+    rdfs:label "Part"@en ;
+    rdfs:subClassOf core:Product ;
+    rdfs:comment "An atomic manufactured item — not further decomposed in this model."@en .
+
+prod:Assembly a owl:Class ;
+    rdfs:label "Assembly"@en ;
+    rdfs:subClassOf core:Product ;
+    rdfs:comment "A Product composed of multiple Parts and/or sub-Assemblies."@en .
+
+prod:Feature a owl:Class ;
+    rdfs:label "Feature"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "A geometric or functional feature of a Product (hole, slot, surface)."@en .
+
+prod:Tolerance a owl:Class ;
+    rdfs:label "Tolerance"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "A dimensional, geometric, or surface tolerance specification."@en .
+
+prod:Material a owl:Class ;
+    rdfs:label "Material"@en ;
+    rdfs:subClassOf core:LogicalEntity .
+
+#################################################################
+# PROPERTIES
+#################################################################
+
+prod:hasFeature a owl:ObjectProperty ;
+    rdfs:label "hasFeature"@en ;
+    rdfs:domain core:Product ;
+    rdfs:range  prod:Feature .
+
+prod:hasTolerance a owl:ObjectProperty ;
+    rdfs:label "hasTolerance"@en ;
+    rdfs:domain prod:Feature ;
+    rdfs:range  prod:Tolerance .
+
+prod:madeOf a owl:ObjectProperty ;
+    rdfs:label "madeOf"@en ;
+    rdfs:domain core:Product ;
+    rdfs:range  prod:Material .
+
+prod:requiresProcess a owl:ObjectProperty ;
+    rdfs:label "requiresProcess"@en ;
+    rdfs:domain core:Product ;
+    rdfs:range  proc:ManufacturingProcess ;
+    rdfs:subPropertyOf core:requires .
+
+prod:massKg a owl:DatatypeProperty ;
+    rdfs:label "massKg"@en ;
+    rdfs:range xsd:float .

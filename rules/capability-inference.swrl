@@ -1,0 +1,22 @@
+# MAESTRO SWRL Rule — Capability Inference
+#
+# If a ControlComponent controls a Resource and implements a Skill, and
+# a Capability is realized by that Skill, then the Resource can perform the
+# Capability.
+#
+# This is the core inference that turns a static plant description into a
+# capability-annotated knowledge graph.
+#
+# Prefixes:
+#   core: http://example.org/maestro/core#
+#
+# SWRL rule (Manchester-style):
+
+Resource(?r) ^
+ControlComponent(?c) ^
+controls(?c, ?r) ^
+implements(?c, ?s) ^
+Skill(?s) ^
+Capability(?cap) ^
+realizedBySkill(?cap, ?s)
+-> canPerform(?r, ?cap)

@@ -1,0 +1,94 @@
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:    <http://example.org/maestro/core#> .
+@prefix res:     <http://example.org/maestro/resource#> .
+@prefix runtime: <http://example.org/maestro/runtime#> .
+@prefix unit:    <http://example.org/maestro/unit#> .
+@prefix shape:   <http://example.org/maestro/shapes#> .
+
+#################################################################
+# SHACL SHAPES — RESOURCE LAYER
+#################################################################
+
+shape:ResourceShape a sh:NodeShape ;
+    sh:targetClass core:Resource ;
+    rdfs:label "Every Resource must declare an operational State."@en ;
+    sh:property [
+        sh:path core:hasState ;
+        sh:minCount 1 ;
+        sh:message "Every Resource must have at least one core:hasState." ;
+    ] ;
+    sh:property [
+        sh:path core:identifier ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Every Resource must have a stable core:identifier." ;
+    ] .
+
+shape:PlantShape a sh:NodeShape ;
+    sh:targetClass core:Plant ;
+    rdfs:label "Every Plant must declare a stable identifier."@en ;
+    sh:property [
+        sh:path core:identifier ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Every Plant must have a stable core:identifier." ;
+    ] .
+
+shape:ControlComponentShape a sh:NodeShape ;
+    sh:targetClass core:ControlComponent ;
+    rdfs:label "Every ControlComponent should declare a stable identifier."@en ;
+    sh:property [
+        sh:path core:identifier ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:severity sh:Warning ;
+        sh:message "ControlComponent should have a stable core:identifier for deployment and traceability." ;
+    ] .
+
+shape:VacuumUnitShape a sh:NodeShape ;
+    sh:targetClass res:VacuumUnit ;
+    rdfs:label "Vacuum units must have a state."@en ;
+    sh:property [
+        sh:path core:hasState ;
+        sh:minCount 1 ;
+        sh:message "VacuumUnit must report a runtime state." ;
+    ] .
+
+shape:RobotShape a sh:NodeShape ;
+    sh:targetClass res:Robot ;
+    rdfs:label "Robots must declare payload."@en ;
+    sh:property [
+        sh:path res:payload ;
+        sh:minCount 1 ;
+        sh:class unit:Quantity ;
+        sh:message "Robot must declare res:payload as a unit:Quantity." ;
+    ] ;
+    sh:property [
+        sh:path res:payloadKg ;
+        sh:datatype xsd:float ;
+        sh:minInclusive 0.0 ;
+        sh:severity sh:Warning ;
+        sh:message "res:payloadKg is deprecated; use res:payload with unit:Quantity." ;
+    ] .
+
+shape:ResourceProvidesSkillShape a sh:NodeShape ;
+    sh:targetClass core:Resource ;
+    rdfs:label "A Resource should provide at least one Skill to be useful."@en ;
+    sh:property [
+        sh:path core:provides ;
+        sh:minCount 1 ;
+        sh:message "Resource does not provide any Skill — it cannot participate in capabilities." ;
+        sh:severity sh:Warning ;
+    ] .
+
+shape:PlantMustNotCanPerformShape a sh:NodeShape ;
+    sh:targetClass core:Plant ;
+    rdfs:label "Plants must not use the resource-scoped core:canPerform relation."@en ;
+    sh:property [
+        sh:path core:canPerform ;
+        sh:maxCount 0 ;
+        sh:message "Use core:hasPlantCapability or core:canManufacture for Plant individuals; core:canPerform is Resource-scoped." ;
+    ] .

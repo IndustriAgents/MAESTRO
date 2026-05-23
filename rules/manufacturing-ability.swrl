@@ -1,0 +1,26 @@
+# MAESTRO SWRL Rule — Manufacturing Ability
+#
+# If a Plant has a Resource that canPerform a Capability required by a
+# Product's Process, then the Plant canManufacture that Product.
+#
+# Combine with `capability-inference.swrl` to chain reasoning from
+# (resource + control component + skill) all the way up to
+# (plant manufactures product).
+#
+# Prefixes:
+#   core: http://example.org/maestro/core#
+#   cap:  http://example.org/maestro/capability#
+#   prod: http://example.org/maestro/product#
+#
+# SWRL rule:
+
+Plant(?plant) ^
+Product(?product) ^
+Process(?process) ^
+Capability(?capability) ^
+Resource(?resource) ^
+hasPart(?plant, ?resource) ^
+requiresProcess(?product, ?process) ^
+requiresCapability(?process, ?capability) ^
+canPerform(?resource, ?capability)
+-> canManufacture(?plant, ?product)

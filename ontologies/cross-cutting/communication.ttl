@@ -1,0 +1,62 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix core: <http://example.org/maestro/core#> .
+@prefix com:  <http://example.org/maestro/communication#> .
+
+#################################################################
+# ONTOLOGY DECLARATION
+#################################################################
+
+<http://example.org/maestro/communication> a owl:Ontology ;
+    rdfs:label "MAESTRO Communication Ontology"@en ;
+    owl:imports <http://example.org/maestro/core> ;
+    owl:versionInfo "0.1.0" ;
+    rdfs:comment "Industrial communication protocols and endpoints (OPC UA, DDS, MQTT, Profinet, EtherCAT, …)."@en .
+
+#################################################################
+# CLASSES
+#################################################################
+
+com:Protocol a owl:Class ;
+    rdfs:label "Protocol"@en ;
+    rdfs:subClassOf core:LogicalEntity .
+
+com:OpcUaProtocol      a com:Protocol ; rdfs:label "OPC UA"@en .
+com:DdsProtocol        a com:Protocol ; rdfs:label "DDS"@en .
+com:MqttProtocol       a com:Protocol ; rdfs:label "MQTT"@en .
+com:ProfinetProtocol   a com:Protocol ; rdfs:label "Profinet"@en .
+com:EthercatProtocol   a com:Protocol ; rdfs:label "EtherCAT"@en .
+com:ModbusProtocol     a com:Protocol ; rdfs:label "Modbus"@en .
+com:HttpProtocol       a com:Protocol ; rdfs:label "HTTP/REST"@en .
+
+com:Channel a owl:Class ;
+    rdfs:label "Channel"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "A bidirectional communication channel using a Protocol."@en .
+
+com:Endpoint a owl:Class ;
+    rdfs:label "Endpoint"@en ;
+    rdfs:subClassOf core:LogicalEntity .
+
+#################################################################
+# PROPERTIES
+#################################################################
+
+com:usesProtocol a owl:ObjectProperty ;
+    rdfs:domain com:Channel ;
+    rdfs:range  com:Protocol .
+
+com:hasEndpoint a owl:ObjectProperty ;
+    rdfs:domain com:Channel ;
+    rdfs:range  com:Endpoint .
+
+com:address a owl:DatatypeProperty ;
+    rdfs:domain com:Endpoint ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "URI/URL of the endpoint (e.g. 'opc.tcp://plc1:4840')."@en .
+
+com:port a owl:DatatypeProperty ;
+    rdfs:domain com:Endpoint ;
+    rdfs:range  xsd:integer .

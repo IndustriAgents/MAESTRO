@@ -1,0 +1,21 @@
+# Materialize plant manufacturing ability from product requirements and
+# resource-level capability.
+
+PREFIX core: <http://example.org/maestro/core#>
+PREFIX proc: <http://example.org/maestro/process#>
+PREFIX prod: <http://example.org/maestro/product#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+CONSTRUCT {
+    ?plant core:canManufacture ?product .
+}
+WHERE {
+    ?plant a core:Plant ;
+           core:hasPart ?resource .
+    ?resource a/rdfs:subClassOf* core:Resource ;
+              core:canPerform ?capability .
+    ?product a/rdfs:subClassOf* core:Product ;
+             prod:requiresProcess ?process .
+    ?process a/rdfs:subClassOf* proc:ManufacturingProcess ;
+             proc:requiresCapability ?capability .
+}

@@ -1,0 +1,28 @@
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix core:  <http://example.org/maestro/core#> .
+@prefix proc:  <http://example.org/maestro/process#> .
+@prefix shape: <http://example.org/maestro/shapes#> .
+
+#################################################################
+# SHACL SHAPES — PROCESS LAYER
+#################################################################
+
+shape:ProcessRequiresCapabilityShape a sh:NodeShape ;
+    sh:targetClass proc:ManufacturingProcess ;
+    rdfs:label "Every ManufacturingProcess must require at least one Capability."@en ;
+    sh:property [
+        sh:path proc:requiresCapability ;
+        sh:minCount 1 ;
+        sh:message "ManufacturingProcess does not declare any required Capability — it cannot be planned." ;
+    ] .
+
+shape:ProcessPrecedenceShape a sh:NodeShape ;
+    sh:targetClass proc:ManufacturingProcess ;
+    rdfs:label "Process precedence should not form trivial self-loops."@en ;
+    sh:property [
+        sh:path proc:precedes ;
+        sh:disjoint proc:follows ;
+        sh:message "A process cannot both precede AND follow the same other process." ;
+    ] .

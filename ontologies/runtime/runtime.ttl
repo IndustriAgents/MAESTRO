@@ -1,0 +1,107 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:    <http://example.org/maestro/core#> .
+@prefix runtime: <http://example.org/maestro/runtime#> .
+
+#################################################################
+# ONTOLOGY DECLARATION
+#################################################################
+
+<http://example.org/maestro/runtime> a owl:Ontology ;
+    rdfs:label "MAESTRO Runtime Ontology"@en ;
+    owl:imports <http://example.org/maestro/core> ;
+    owl:versionInfo "0.2.0" ;
+    rdfs:comment "Live operational state. PackML-aligned state values are modeled as canonical individuals of core:State."@en .
+
+#################################################################
+# OPERATIONAL STATE VALUES
+#################################################################
+
+runtime:StateScheme a skos:ConceptScheme ;
+    rdfs:label "MAESTRO Runtime State Scheme"@en .
+
+runtime:Available a core:State , skos:Concept ;
+    rdfs:label "Available"@en ;
+    skos:inScheme runtime:StateScheme ;
+    skos:prefLabel "Available"@en ;
+    rdfs:comment "Resource is ready to accept work."@en .
+
+runtime:Busy a core:State , skos:Concept ;
+    rdfs:label "Busy"@en ;
+    skos:inScheme runtime:StateScheme ;
+    skos:prefLabel "Busy"@en ;
+    rdfs:comment "Resource is currently executing a skill."@en .
+
+runtime:Idle a core:State , skos:Concept ;
+    rdfs:label "Idle"@en ;
+    skos:inScheme runtime:StateScheme ;
+    skos:prefLabel "Idle"@en .
+
+runtime:Executing a core:State , skos:Concept ;
+    rdfs:label "Executing"@en ;
+    skos:inScheme runtime:StateScheme ;
+    skos:broader runtime:Busy ;
+    skos:prefLabel "Executing"@en ;
+    rdfs:comment "PackML 'Execute' substate."@en .
+
+runtime:Held a core:State , skos:Concept ;
+    rdfs:label "Held"@en ;
+    skos:inScheme runtime:StateScheme ;
+    skos:prefLabel "Held"@en ;
+    rdfs:comment "PackML 'Held' state: execution paused."@en .
+
+runtime:Aborted a core:State , skos:Concept ;
+    rdfs:label "Aborted"@en ;
+    skos:inScheme runtime:StateScheme ;
+    skos:prefLabel "Aborted"@en .
+
+runtime:Fault a core:State , skos:Concept ;
+    rdfs:label "Fault"@en ;
+    skos:inScheme runtime:StateScheme ;
+    skos:prefLabel "Fault"@en ;
+    rdfs:comment "Resource is in a faulted or error state."@en .
+
+runtime:Alarm a core:State , skos:Concept ;
+    rdfs:label "Alarm"@en ;
+    skos:inScheme runtime:StateScheme ;
+    skos:prefLabel "Alarm"@en .
+
+runtime:HealthState a core:State , skos:Concept ;
+    rdfs:label "HealthState"@en ;
+    skos:inScheme runtime:StateScheme ;
+    skos:prefLabel "Health state"@en ;
+    rdfs:comment "Diagnostic health indicator such as healthy, degraded, or failed."@en .
+
+#################################################################
+# RUNTIME EVENTS
+#################################################################
+
+runtime:RuntimeEvent a owl:Class ;
+    rdfs:label "RuntimeEvent"@en ;
+    rdfs:subClassOf core:Event .
+
+runtime:StateTransition a owl:Class ;
+    rdfs:label "StateTransition"@en ;
+    rdfs:subClassOf runtime:RuntimeEvent .
+
+#################################################################
+# PROPERTIES
+#################################################################
+
+runtime:timestamp a owl:DatatypeProperty ;
+    rdfs:label "timestamp"@en ;
+    rdfs:domain runtime:RuntimeEvent ;
+    rdfs:range  xsd:dateTime .
+
+runtime:enteredState a owl:ObjectProperty ;
+    rdfs:label "enteredState"@en ;
+    rdfs:domain runtime:StateTransition ;
+    rdfs:range  core:State .
+
+runtime:fromState a owl:ObjectProperty ;
+    rdfs:label "fromState"@en ;
+    rdfs:domain runtime:StateTransition ;
+    rdfs:range  core:State .

@@ -1,0 +1,21 @@
+# Materialize Resource capability from implementation bindings.
+#
+# A Resource can perform a Capability when a ControlComponent controls the
+# Resource, implements the Skill, and the Capability is realized by that Skill.
+
+PREFIX core: <http://example.org/maestro/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+CONSTRUCT {
+    ?resource core:canPerform ?capability .
+}
+WHERE {
+    ?capability ?realizedBy ?skill .
+    ?realizedBy rdfs:subPropertyOf* core:realizedBySkill .
+    ?component ?implements ?skill ;
+               ?controls ?resource .
+    ?implements rdfs:subPropertyOf* core:implements .
+    ?controls rdfs:subPropertyOf* core:controls .
+    ?resource a/rdfs:subClassOf* core:Resource .
+    ?capability a core:Capability .
+}

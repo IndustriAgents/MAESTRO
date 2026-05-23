@@ -1,0 +1,36 @@
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:    <http://example.org/maestro/core#> .
+@prefix runtime: <http://example.org/maestro/runtime#> .
+@prefix shape:   <http://example.org/maestro/shapes#> .
+
+#################################################################
+# SHACL SHAPES — RUNTIME LAYER
+#################################################################
+
+shape:StateTransitionShape a sh:NodeShape ;
+    sh:targetClass runtime:StateTransition ;
+    rdfs:label "Every state transition needs a timestamp and target state."@en ;
+    sh:property [
+        sh:path runtime:timestamp ;
+        sh:datatype xsd:dateTime ;
+        sh:minCount 1 ;
+        sh:message "StateTransition must have a runtime:timestamp." ;
+    ] ;
+    sh:property [
+        sh:path runtime:enteredState ;
+        sh:minCount 1 ;
+        sh:message "StateTransition must declare runtime:enteredState." ;
+    ] .
+
+shape:ExclusiveStateShape a sh:NodeShape ;
+    sh:targetClass core:Resource ;
+    rdfs:label "A Resource should normally hold at most one runtime state simultaneously."@en ;
+    sh:property [
+        sh:path core:hasState ;
+        sh:maxCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Resource has multiple concurrent states — check whether this is intentional (composite state) or an integration bug." ;
+    ] .

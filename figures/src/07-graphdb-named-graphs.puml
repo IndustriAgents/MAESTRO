@@ -1,0 +1,43 @@
+@startuml 07-graphdb-named-graphs
+title MAESTRO GraphDB — Named Graphs
+
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam packageStyle node
+skinparam node {
+    BackgroundColor #FFFDE7
+    BorderColor #F57F17
+}
+
+node "graph/core"        as Core
+node "graph/resource"    as Resource
+node "graph/motion"      as Motion
+node "graph/skill"       as Skill
+node "graph/capability"  as Capability
+node "graph/process"     as Process
+node "graph/product"     as Product
+node "graph/ros"         as ROS
+node "graph/iec61131"    as PLC
+node "graph/iec61499"    as IEC61499
+node "graph/opcua"       as OPCUA
+node "graph/aas"         as AAS
+node "graph/runtime"     as Runtime
+node "graph/reasoning"   as Reasoning
+node "graph/planning"    as Planning
+
+Core --> Resource
+Core --> Motion
+Core --> Skill
+Skill --> Capability
+Capability --> Process
+Process --> Product
+Skill --> ROS
+Skill --> PLC
+Skill --> IEC61499
+Skill --> OPCUA
+Resource --> AAS
+Resource --> Runtime
+Runtime --> Reasoning
+Process --> Planning
+
+@enduml

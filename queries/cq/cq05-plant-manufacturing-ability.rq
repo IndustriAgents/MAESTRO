@@ -1,0 +1,10 @@
+PREFIX core: <http://example.org/maestro/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?plant ?plantLabel ?product ?productLabel
+WHERE {
+    ?plant core:canManufacture ?product .
+    OPTIONAL { ?plant rdfs:label ?plantLabel }
+    OPTIONAL { ?product rdfs:label ?productLabel }
+}
+ORDER BY ?plant ?product

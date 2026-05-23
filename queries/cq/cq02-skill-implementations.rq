@@ -1,0 +1,11 @@
+PREFIX core: <http://example.org/maestro/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?skill ?component ?componentType
+WHERE {
+    ?skill a/rdfs:subClassOf* core:Skill .
+    ?component ?implements ?skill ;
+               a ?componentType .
+    ?implements rdfs:subPropertyOf* core:implements .
+}
+ORDER BY ?skill ?component

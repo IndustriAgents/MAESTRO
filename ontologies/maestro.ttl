@@ -1,0 +1,57 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix maestro: <http://example.org/maestro#> .
+
+#################################################################
+# MAESTRO — TOP-LEVEL UMBRELLA ONTOLOGY
+#
+# Load this single file to get the entire stack.
+# Every module is imported via owl:imports.
+#################################################################
+
+<http://example.org/maestro> a owl:Ontology ;
+    rdfs:label    "MAESTRO — Modular Ontology Stack for Future-Proof Manufacturing"@en ;
+    dct:title     "MAESTRO" ;
+    dct:creator   "Midhun Xavier" ;
+    dct:license   <https://opensource.org/licenses/MIT> ;
+    owl:versionInfo "0.2.0" ;
+    rdfs:comment  "Top-level umbrella ontology. Importing this file pulls in every MAESTRO module: core, physical, logical, execution adapters, runtime, cross-cutting concerns, and reasoning."@en ;
+
+    # Core
+    owl:imports <http://example.org/maestro/core> ;
+
+    # Physical
+    owl:imports <http://example.org/maestro/resource> ;
+    owl:imports <http://example.org/maestro/motion> ;
+
+    # Logical
+    owl:imports <http://example.org/maestro/skill> ;
+    owl:imports <http://example.org/maestro/capability> ;
+    owl:imports <http://example.org/maestro/process> ;
+    owl:imports <http://example.org/maestro/product> ;
+
+    # Execution adapters
+    owl:imports <http://example.org/maestro/iec61131> ;
+    owl:imports <http://example.org/maestro/iec61499> ;
+    owl:imports <http://example.org/maestro/ros> ;
+    owl:imports <http://example.org/maestro/opcua> ;
+    owl:imports <http://example.org/maestro/aas> ;
+
+    # Runtime
+    owl:imports <http://example.org/maestro/runtime> ;
+    owl:imports <http://example.org/maestro/state> ;
+
+    # Cross-cutting
+    owl:imports <http://example.org/maestro/sensor> ;
+    owl:imports <http://example.org/maestro/unit> ;
+    owl:imports <http://example.org/maestro/communication> ;
+    owl:imports <http://example.org/maestro/safety> ;
+    owl:imports <http://example.org/maestro/quality> ;
+    owl:imports <http://example.org/maestro/maintenance> ;
+    owl:imports <http://example.org/maestro/energy> ;
+
+    # Reasoning
+    owl:imports <http://example.org/maestro/reasoning> ;
+    owl:imports <http://example.org/maestro/planning> .

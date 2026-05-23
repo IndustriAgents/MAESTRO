@@ -1,0 +1,20 @@
+# MAESTRO SPARQL Query 03 — Product-process-capability chain
+#
+# For a given Product, traverse the chain:
+#   Product → requires → Process → requiresCapability → Capability
+# Useful to validate that every step in the manufacturing chain is declared.
+
+PREFIX core: <http://example.org/maestro/core#>
+PREFIX proc: <http://example.org/maestro/process#>
+PREFIX prod: <http://example.org/maestro/product#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?product ?process ?capability
+WHERE {
+    ?product a/rdfs:subClassOf* core:Product ;
+             prod:requiresProcess ?process .
+    ?process a/rdfs:subClassOf* proc:ManufacturingProcess ;
+             proc:requiresCapability ?capability .
+    ?capability a core:Capability .
+}
+ORDER BY ?product ?process

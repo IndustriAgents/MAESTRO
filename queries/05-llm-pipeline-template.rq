@@ -1,0 +1,36 @@
+# MAESTRO SPARQL Query 05 — LLM Pipeline Template
+#
+# This is the canonical template used by the LLM + GraphDB pipeline
+# (README section 22). The placeholders {{capability}} / {{available_state}}
+# are filled in by the LLM after intent extraction.
+#
+# Example user input: "Which machines can pick and place a part right now?"
+# Resulting capability:        cap:PickPlaceCapability
+# Resulting state filter:      runtime:Available
+#
+# The template returns the ordered list of candidate Resources for
+# downstream orchestration.
+
+PREFIX core:    <http://example.org/maestro/core#>
+PREFIX cap:     <http://example.org/maestro/capability#>
+PREFIX runtime: <http://example.org/maestro/runtime#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?resource ?label
+WHERE {
+    {
+        ?resource core:canPerform cap:PickPlaceCapability .
+    }
+    UNION
+    {
+        cap:PickPlaceCapability ?realizedBy ?skill .
+        ?realizedBy rdfs:subPropertyOf* core:realizedBySkill .
+        ?component ?implements ?skill ;
+                   ?controls ?resource .
+        ?implements rdfs:subPropertyOf* core:implements .
+        ?controls rdfs:subPropertyOf* core:controls .
+    }
+    ?resource core:hasState runtime:Available .
+    OPTIONAL { ?resource rdfs:label ?label }
+}
+ORDER BY ?resource

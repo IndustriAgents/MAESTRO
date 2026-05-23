@@ -1,0 +1,145 @@
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:   <http://example.org/maestro/core#> .
+@prefix motion: <http://example.org/maestro/motion#> .
+@prefix skill:  <http://example.org/maestro/skill#> .
+
+#################################################################
+# ONTOLOGY DECLARATION
+#################################################################
+
+<http://example.org/maestro/skill> a owl:Ontology ;
+    rdfs:label "MAESTRO Skill Ontology"@en ;
+    owl:imports <http://example.org/maestro/core> ,
+                <http://example.org/maestro/motion> ;
+    owl:versionInfo "0.2.0" ;
+    rdfs:comment "Keystone of skill-based manufacturing. Skills are logical — they are NOT ROS nodes, PLC FBs, or IEC 61499 FBs. Execution technologies IMPLEMENT skills."@en .
+
+#################################################################
+# TOP-LEVEL SKILL CLASSES
+#################################################################
+
+skill:AtomicSkill a owl:Class ;
+    rdfs:label "AtomicSkill"@en ;
+    rdfs:subClassOf core:Skill ;
+    rdfs:comment "An indivisible skill primitive."@en .
+
+skill:CompositeSkill a owl:Class ;
+    rdfs:label "CompositeSkill"@en ;
+    rdfs:subClassOf core:Skill ;
+    rdfs:comment "A skill built by composing other skills via skill:composedOfSkill."@en .
+
+#################################################################
+# ATOMIC SKILL CATEGORIES (VDI 2860 aligned)
+#################################################################
+
+skill:MotionSkill a owl:Class ;
+    rdfs:label "MotionSkill"@en ;
+    rdfs:subClassOf skill:AtomicSkill ;
+    rdfs:comment "Skills that produce kinematic motion (move linear, move joint, …)."@en .
+
+skill:ManipulationSkill a owl:Class ;
+    rdfs:label "ManipulationSkill"@en ;
+    rdfs:subClassOf skill:AtomicSkill ;
+    rdfs:comment "Skills that change the spatial relation between a resource and a workpiece (grasp, pick, place, release)."@en .
+
+skill:HandlingSkill a owl:Class ;
+    rdfs:label "HandlingSkill"@en ;
+    rdfs:subClassOf skill:AtomicSkill ;
+    rdfs:comment "VDI 2860 handling skills (orient, position, deposit, secure)."@en .
+
+skill:InspectionSkill a owl:Class ;
+    rdfs:label "InspectionSkill"@en ;
+    rdfs:subClassOf skill:AtomicSkill .
+
+#################################################################
+# COMPOSITE SKILL CATEGORIES
+#################################################################
+
+skill:AssemblySkill a owl:Class ;
+    rdfs:label "AssemblySkill"@en ;
+    rdfs:subClassOf skill:CompositeSkill .
+
+skill:WeldingSkill a owl:Class ;
+    rdfs:label "WeldingSkill"@en ;
+    rdfs:subClassOf skill:CompositeSkill .
+
+skill:CoordinationSkill a owl:Class ;
+    rdfs:label "CoordinationSkill"@en ;
+    rdfs:subClassOf skill:CompositeSkill .
+
+skill:ProcessSkill a owl:Class ;
+    rdfs:label "ProcessSkill"@en ;
+    rdfs:subClassOf skill:CompositeSkill .
+
+skill:TransferSkill a owl:Class ;
+    rdfs:label "TransferSkill"@en ;
+    rdfs:subClassOf skill:CompositeSkill ;
+    rdfs:comment "A composite skill: pick at A, move to B, place at B."@en .
+
+#################################################################
+# SKILL PROPERTIES
+#################################################################
+
+skill:hasPrecondition a owl:ObjectProperty ;
+    rdfs:label "hasPrecondition"@en ;
+    rdfs:domain core:Skill ;
+    rdfs:range core:State .
+
+skill:hasPostcondition a owl:ObjectProperty ;
+    rdfs:label "hasPostcondition"@en ;
+    rdfs:domain core:Skill ;
+    rdfs:range core:State .
+
+skill:hasParameter a owl:ObjectProperty ;
+    rdfs:label "hasParameter"@en ;
+    rdfs:domain core:Skill .
+
+skill:composedOfSkill a owl:ObjectProperty ;
+    rdfs:label "composedOfSkill"@en ;
+    rdfs:domain core:Skill ;
+    rdfs:range  core:Skill ;
+    rdfs:subPropertyOf core:composedOfSkill ;
+    rdfs:comment "A composite Skill has another Skill as a constituent step."@en .
+
+skill:requiresMotion a owl:ObjectProperty ;
+    rdfs:label "requiresMotion"@en ;
+    rdfs:domain core:Skill ;
+    rdfs:range  motion:Motion ;
+    rdfs:subPropertyOf core:requiresMotion ;
+    rdfs:comment "A Skill requires a reusable technology-neutral Motion specification."@en .
+
+skill:expectedDurationSeconds a owl:DatatypeProperty ;
+    rdfs:label "expectedDurationSeconds"@en ;
+    rdfs:domain core:Skill ;
+    rdfs:range xsd:float .
+
+#################################################################
+# EXAMPLE SKILL INDIVIDUALS
+# (Models from the spec — illustrative, can be reused as starting points.)
+#################################################################
+
+skill:MoveLinear a skill:MotionSkill ;
+    rdfs:label "MoveLinear"@en ;
+    skill:requiresMotion motion:LinearMotionSpec ;
+    rdfs:comment "Move the controlled point along a straight line at constant velocity."@en .
+
+skill:MoveJoint a skill:MotionSkill ;
+    rdfs:label "MoveJoint"@en ;
+    skill:requiresMotion motion:JointMotionSpec .
+
+skill:VacuumPick a skill:ManipulationSkill ;
+    rdfs:label "VacuumPick"@en ;
+    rdfs:comment "Activate vacuum, lower onto part, lift."@en .
+
+skill:Release a skill:ManipulationSkill ;
+    rdfs:label "Release"@en .
+
+skill:Transfer a skill:TransferSkill ;
+    rdfs:label "Transfer"@en ;
+    skill:composedOfSkill skill:MoveLinear ;
+    skill:composedOfSkill skill:VacuumPick ;
+    skill:composedOfSkill skill:Release ;
+    rdfs:comment "Composite pick-and-place skill — moves a part from A to B."@en .

@@ -1,0 +1,28 @@
+# MAESTRO SPARQL Query 01 — Resources with a given Capability
+#
+# List every Resource that has been inferred to perform a specific Capability.
+# Useful for "which machines can do pick-and-place?".
+
+PREFIX core: <http://example.org/maestro/core#>
+PREFIX cap:  <http://example.org/maestro/capability#>
+PREFIX res:  <http://example.org/maestro/resource#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?resource ?label
+WHERE {
+    {
+        ?resource core:canPerform cap:PickPlaceCapability .
+    }
+    UNION
+    {
+        cap:PickPlaceCapability ?realizedBy ?skill .
+        ?realizedBy rdfs:subPropertyOf* core:realizedBySkill .
+        ?component ?implements ?skill ;
+                   ?controls ?resource .
+        ?implements rdfs:subPropertyOf* core:implements .
+        ?controls rdfs:subPropertyOf* core:controls .
+    }
+    ?resource a/rdfs:subClassOf* core:Resource .
+    OPTIONAL { ?resource rdfs:label ?label }
+}
+ORDER BY ?resource
