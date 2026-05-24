@@ -8,7 +8,7 @@
 # capability-annotated knowledge graph.
 #
 # Prefixes:
-#   core: http://example.org/maestro/core#
+#   core: https://w3id.org/maestro/core#
 #
 # SWRL rule (Manchester-style):
 

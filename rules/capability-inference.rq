@@ -3,7 +3,7 @@
 # A Resource can perform a Capability when a ControlComponent controls the
 # Resource, implements the Skill, and the Capability is realized by that Skill.
 
-PREFIX core: <http://example.org/maestro/core#>
+PREFIX core: <https://w3id.org/maestro/core#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 CONSTRUCT {

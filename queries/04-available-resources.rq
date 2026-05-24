@@ -3,8 +3,8 @@
 # Return all Resources currently in the runtime:Available state.
 # This is the canonical query for an orchestrator picking idle machines.
 
-PREFIX core:    <http://example.org/maestro/core#>
-PREFIX runtime: <http://example.org/maestro/runtime#>
+PREFIX core:    <https://w3id.org/maestro/core#>
+PREFIX runtime: <https://w3id.org/maestro/runtime#>
 PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?resource ?label

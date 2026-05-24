@@ -2,20 +2,21 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
-@prefix core: <http://example.org/maestro/core#> .
-@prefix cap:  <http://example.org/maestro/capability#> .
-@prefix proc: <http://example.org/maestro/process#> .
-@prefix prod: <http://example.org/maestro/product#> .
-@prefix ex:   <http://example.org/maestro/examples/transfer-arm#> .
+@prefix core: <https://w3id.org/maestro/core#> .
+@prefix cap:  <https://w3id.org/maestro/capability#> .
+@prefix proc: <https://w3id.org/maestro/process#> .
+@prefix prod: <https://w3id.org/maestro/product#> .
+@prefix ex:   <https://w3id.org/maestro/examples/transfer-arm#> .
 
 #################################################################
 # EXAMPLE — PRODUCT REQUIREMENTS
 #################################################################
 
-<http://example.org/maestro/examples/transfer-arm/product> a owl:Ontology ;
+<https://w3id.org/maestro/examples/transfer-arm/product> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/transfer-arm/product/0.3.0> ;
     rdfs:label "MAESTRO Example: Transfer Arm — Product"@en ;
-    owl:imports <http://example.org/maestro/examples/transfer-arm> ;
-    owl:versionInfo "0.2.0" .
+    owl:imports <https://w3id.org/maestro/examples/transfer-arm> ;
+    owl:versionInfo "0.3.0" .
 
 #################################################################
 # PROCESSES

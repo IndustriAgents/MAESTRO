@@ -1,0 +1,83 @@
+# MAESTRO 0.2.x -> 0.3.0 migration
+#
+# Run this SPARQL UPDATE against any graph that uses 0.2.x IRIs to bring it
+# up to the 0.3.0 IRI scheme and vocabulary.
+#
+# Apply with rdflib:
+#
+#   from pathlib import Path
+#   import rdflib
+#   g = rdflib.Graph()
+#   g.parse("your-graph.ttl", format="turtle")
+#   g.update(Path("rules/migrate-0.2-to-0.3.rq").read_text())
+#   g.serialize("your-graph.0.3.ttl", format="turtle")
+#
+# What this does:
+#   1. Rewrites every IRI from http://example.org/maestro/* to
+#      https://w3id.org/maestro/* (subjects, predicates, objects).
+#   2. Renames iec61499:Resource -> iec61499:RuntimeResource.
+#   3. Renames iec61499:Event    -> iec61499:ExecutionEvent.
+#   4. Moves skill: individuals  -> skill-lib: individuals.
+#   5. Moves motion: individuals -> motion-lib: individuals.
+#   6. Drops res:Sensor  / res:Camera (rdf:type) — re-type as sensor:Sensor / sensor:VisionSensor if needed manually.
+
+PREFIX rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:       <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX old-core:   <http://example.org/maestro/core#>
+PREFIX old-skill:  <http://example.org/maestro/skill#>
+PREFIX old-motion: <http://example.org/maestro/motion#>
+PREFIX old-iec:    <http://example.org/maestro/iec61499#>
+PREFIX old-res:    <http://example.org/maestro/resource#>
+
+PREFIX core:       <https://w3id.org/maestro/core#>
+PREFIX skill:      <https://w3id.org/maestro/skill#>
+PREFIX skill-lib:  <https://w3id.org/maestro/skill-lib#>
+PREFIX motion:     <https://w3id.org/maestro/motion#>
+PREFIX motion-lib: <https://w3id.org/maestro/motion-lib#>
+PREFIX iec61499:   <https://w3id.org/maestro/iec61499#>
+PREFIX sensor:     <https://w3id.org/maestro/sensor#>
+
+# ---- 1. Move skill: individuals to skill-lib: ---------------------------------
+DELETE { ?s old-skill:Transfer    ?o . } INSERT { ?s skill-lib:Transfer    ?o . } WHERE { ?s old-skill:Transfer    ?o . } ;
+DELETE { ?s old-skill:MoveLinear  ?o . } INSERT { ?s skill-lib:MoveLinear  ?o . } WHERE { ?s old-skill:MoveLinear  ?o . } ;
+DELETE { ?s old-skill:MoveJoint   ?o . } INSERT { ?s skill-lib:MoveJoint   ?o . } WHERE { ?s old-skill:MoveJoint   ?o . } ;
+DELETE { ?s old-skill:VacuumPick  ?o . } INSERT { ?s skill-lib:VacuumPick  ?o . } WHERE { ?s old-skill:VacuumPick  ?o . } ;
+DELETE { ?s old-skill:Release     ?o . } INSERT { ?s skill-lib:Release     ?o . } WHERE { ?s old-skill:Release     ?o . } ;
+
+DELETE { old-skill:Transfer    ?p ?o . } INSERT { skill-lib:Transfer    ?p ?o . } WHERE { old-skill:Transfer    ?p ?o . } ;
+DELETE { old-skill:MoveLinear  ?p ?o . } INSERT { skill-lib:MoveLinear  ?p ?o . } WHERE { old-skill:MoveLinear  ?p ?o . } ;
+DELETE { old-skill:MoveJoint   ?p ?o . } INSERT { skill-lib:MoveJoint   ?p ?o . } WHERE { old-skill:MoveJoint   ?p ?o . } ;
+DELETE { old-skill:VacuumPick  ?p ?o . } INSERT { skill-lib:VacuumPick  ?p ?o . } WHERE { old-skill:VacuumPick  ?p ?o . } ;
+DELETE { old-skill:Release     ?p ?o . } INSERT { skill-lib:Release     ?p ?o . } WHERE { old-skill:Release     ?p ?o . } ;
+
+# ---- 2. Move motion: individuals to motion-lib: ------------------------------
+DELETE { ?s old-motion:LinearMotionSpec    ?o . } INSERT { ?s motion-lib:LinearMotionSpec    ?o . } WHERE { ?s old-motion:LinearMotionSpec    ?o . } ;
+DELETE { ?s old-motion:JointMotionSpec     ?o . } INSERT { ?s motion-lib:JointMotionSpec     ?o . } WHERE { ?s old-motion:JointMotionSpec     ?o . } ;
+DELETE { ?s old-motion:CartesianMotionSpec ?o . } INSERT { ?s motion-lib:CartesianMotionSpec ?o . } WHERE { ?s old-motion:CartesianMotionSpec ?o . } ;
+
+# ---- 3. Rename iec61499 classes ---------------------------------------------
+DELETE { ?s rdf:type old-iec:Resource . } INSERT { ?s rdf:type iec61499:RuntimeResource . } WHERE { ?s rdf:type old-iec:Resource . } ;
+DELETE { ?s rdf:type old-iec:Event    . } INSERT { ?s rdf:type iec61499:ExecutionEvent  . } WHERE { ?s rdf:type old-iec:Event . } ;
+
+# ---- 4. Drop the dropped res classes (manual re-typing recommended) ---------
+DELETE { ?s rdf:type old-res:Sensor . } WHERE { ?s rdf:type old-res:Sensor . } ;
+DELETE { ?s rdf:type old-res:Camera . } WHERE { ?s rdf:type old-res:Camera . } ;
+
+# ---- 5. Remove the deprecated core:requires predicate -----------------------
+DELETE { ?s old-core:requires ?o . } WHERE { ?s old-core:requires ?o . } ;
+
+# NOTE on the http://example.org -> https://w3id.org rewrite:
+# Because SPARQL has no general "rewrite all IRIs with prefix X" primitive,
+# every prefix has to be migrated individually. The migration above covers
+# the breaking renames (skill, motion, iec61499, res) and the deprecated
+# core:requires. For the remaining example.org -> w3id.org rewrite, run a
+# textual replace on the serialized graph (recommended approach for the
+# bulk IRI migration):
+#
+#   sed -i 's#http://example\.org/maestro#https://w3id.org/maestro#g' your-graph.ttl
+#
+# or in Python:
+#
+#   text = Path("your-graph.ttl").read_text()
+#   text = text.replace("http://example.org/maestro", "https://w3id.org/maestro")
+#   Path("your-graph.ttl").write_text(text)

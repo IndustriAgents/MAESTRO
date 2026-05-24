@@ -1,32 +1,37 @@
-@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix owl:      <http://www.w3.org/2002/07/owl#> .
-@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:     <http://example.org/maestro/core#> .
-@prefix res:      <http://example.org/maestro/resource#> .
-@prefix unit:     <http://example.org/maestro/unit#> .
-@prefix skill:    <http://example.org/maestro/skill#> .
-@prefix ros:      <http://example.org/maestro/ros#> .
-@prefix plc:      <http://example.org/maestro/iec61131#> .
-@prefix iec61499: <http://example.org/maestro/iec61499#> .
-@prefix opcua:    <http://example.org/maestro/opcua#> .
-@prefix runtime:  <http://example.org/maestro/runtime#> .
-@prefix ex:       <http://example.org/maestro/examples/transfer-arm#> .
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:       <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:      <https://w3id.org/maestro/core#> .
+@prefix res:       <https://w3id.org/maestro/resource#> .
+@prefix unit:      <https://w3id.org/maestro/unit#> .
+@prefix skill:     <https://w3id.org/maestro/skill#> .
+@prefix skill-lib: <https://w3id.org/maestro/skill-lib#> .
+@prefix ros:       <https://w3id.org/maestro/ros#> .
+@prefix plc:       <https://w3id.org/maestro/iec61131#> .
+@prefix iec61499:  <https://w3id.org/maestro/iec61499#> .
+@prefix opcua:     <https://w3id.org/maestro/opcua#> .
+@prefix ex:        <https://w3id.org/maestro/examples/transfer-arm#> .
 
 #################################################################
-# EXAMPLE — TRANSFER ARM PLANT
+# EXAMPLE — TRANSFER ARM PLANT (DESIGN-TIME)
 #
 # Single TransferArm + VacuumUnit, controlled by:
 #  - a ROS MoveIt node (linear motion)
 #  - an IEC 61131 PLC function block (vacuum)
 #  - an IEC 61499 composite FB coordinating the two
 #  - an OPC UA SkillInterface exposing the composite Transfer skill
+#
+# Runtime state (core:hasState) lives in the sibling runtime.ttl,
+# loaded into a separate named graph. See
+# decisions/0002-runtime-graph-separation.md.
 #################################################################
 
-<http://example.org/maestro/examples/transfer-arm> a owl:Ontology ;
+<https://w3id.org/maestro/examples/transfer-arm> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/transfer-arm/0.3.0> ;
     rdfs:label "MAESTRO Example: Transfer Arm Plant"@en ;
-    owl:imports <http://example.org/maestro> ;
-    owl:versionInfo "0.2.0" .
+    owl:imports <https://w3id.org/maestro> ;
+    owl:versionInfo "0.3.0" .
 
 #################################################################
 # PLANT
@@ -35,8 +40,7 @@
 ex:Plant1 a core:Plant ;
     rdfs:label "Plant 1 — Transfer Cell" ;
     core:identifier "plant-transfer-001" ;
-    core:hasPart ex:TransferArm1 ;
-    core:hasPart ex:VacuumUnit1 .
+    core:hasPart ex:TransferArm1 , ex:VacuumUnit1 .
 
 #################################################################
 # PHYSICAL RESOURCES
@@ -47,30 +51,25 @@ ex:TransferArm1 a res:TransferArm ;
     core:identifier "resource-transfer-arm-001" ;
     res:manufacturer "ExampleRobotics" ;
     res:model        "TR-6A" ;
-    res:payloadKg    5.0 ;
     res:payload [
         a unit:Quantity ;
         unit:numericValue 5.0 ;
         unit:hasUnit unit:Kilogram
     ] ;
-    res:reachMm      900.0 ;
     res:reach [
         a unit:Quantity ;
         unit:numericValue 900.0 ;
         unit:hasUnit unit:Millimetre
     ] ;
     core:hasPart  ex:VacuumUnit1 ;
-    core:hasState runtime:Available ;
-    core:provides skill:MoveLinear ;
-    core:provides skill:Transfer .
+    core:provides skill-lib:MoveLinear , skill-lib:Transfer .
 
 ex:VacuumUnit1 a res:VacuumUnit ;
     rdfs:label "VacuumUnit1" ;
     core:identifier "resource-vacuum-unit-001" ;
     res:manufacturer "ExampleVacuum" ;
     res:model        "VU-200" ;
-    core:hasState runtime:Available ;
-    core:provides skill:VacuumPick .
+    core:provides skill-lib:VacuumPick .
 
 #################################################################
 # CONTROL COMPONENTS (the "execution" half of the stack)
@@ -80,20 +79,20 @@ ex:MoveItNode a ros:MoveItController ;
     rdfs:label "MoveIt node for TransferArm1" ;
     core:identifier "control-moveit-transfer-arm-001" ;
     ros:rosVersion "humble" ;
-    ros:implementsSkill skill:MoveLinear ;
+    ros:implementsSkill skill-lib:MoveLinear ;
     ros:controlsResource ex:TransferArm1 .
 
 ex:VacuumControlFB a plc:FunctionBlock ;
     rdfs:label "PLC FB controlling the vacuum unit" ;
     core:identifier "control-vacuum-fb-001" ;
     plc:writtenIn plc:StructuredText ;
-    plc:implementsSkill skill:VacuumPick ;
+    plc:implementsSkill skill-lib:VacuumPick ;
     plc:controlsResource ex:VacuumUnit1 .
 
 ex:FB_TransferCoordinator a iec61499:CompositeFB ;
     rdfs:label "IEC 61499 composite FB coordinating Transfer skill" ;
     core:identifier "control-transfer-coordinator-001" ;
-    iec61499:implementsSkill skill:Transfer ;
+    iec61499:implementsSkill skill-lib:Transfer ;
     iec61499:controlsResource ex:TransferArm1 .
 
 #################################################################
@@ -105,4 +104,4 @@ ex:OpcUaTransferInterface a opcua:OpcUaSkillInterface ;
     core:identifier "interface-opcua-transfer-001" ;
     opcua:nodeId    "ns=2;s=Skill.Transfer" ;
     opcua:browseName "TransferSkill" ;
-    opcua:exposes   skill:Transfer .
+    opcua:exposes   skill-lib:Transfer .

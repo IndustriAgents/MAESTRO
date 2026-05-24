@@ -4,30 +4,30 @@
 
 | Prefix | IRI | Module |
 |---|---|---|
-| `core:` | `http://example.org/maestro/core#` | [`manufacturing-core.ttl`](../ontologies/core/manufacturing-core.ttl) |
-| `res:` | `http://example.org/maestro/resource#` | [`resource.ttl`](../ontologies/physical/resource.ttl) |
-| `motion:` | `http://example.org/maestro/motion#` | [`motion.ttl`](../ontologies/physical/motion.ttl) |
-| `skill:` | `http://example.org/maestro/skill#` | [`skill.ttl`](../ontologies/logical/skill.ttl) |
-| `cap:` | `http://example.org/maestro/capability#` | [`capability.ttl`](../ontologies/logical/capability.ttl) |
-| `proc:` | `http://example.org/maestro/process#` | [`process.ttl`](../ontologies/logical/process.ttl) |
-| `prod:` | `http://example.org/maestro/product#` | [`product.ttl`](../ontologies/logical/product.ttl) |
-| `plc:` | `http://example.org/maestro/iec61131#` | [`iec61131.ttl`](../ontologies/execution/iec61131.ttl) |
-| `iec61499:` | `http://example.org/maestro/iec61499#` | [`iec61499.ttl`](../ontologies/execution/iec61499.ttl) |
-| `ros:` | `http://example.org/maestro/ros#` | [`ros.ttl`](../ontologies/execution/ros.ttl) |
-| `opcua:` | `http://example.org/maestro/opcua#` | [`opcua.ttl`](../ontologies/execution/opcua.ttl) |
-| `aas:` | `http://example.org/maestro/aas#` | [`aas.ttl`](../ontologies/execution/aas.ttl) |
-| `runtime:` | `http://example.org/maestro/runtime#` | [`runtime.ttl`](../ontologies/runtime/runtime.ttl) |
-| `state:` | `http://example.org/maestro/state#` | [`state.ttl`](../ontologies/runtime/state.ttl) |
-| `sensor:` | `http://example.org/maestro/sensor#` | [`sensor.ttl`](../ontologies/cross-cutting/sensor.ttl) |
-| `unit:` | `http://example.org/maestro/unit#` | [`unit.ttl`](../ontologies/cross-cutting/unit.ttl) |
-| `com:` | `http://example.org/maestro/communication#` | [`communication.ttl`](../ontologies/cross-cutting/communication.ttl) |
-| `safety:` | `http://example.org/maestro/safety#` | [`safety.ttl`](../ontologies/cross-cutting/safety.ttl) |
-| `qa:` | `http://example.org/maestro/quality#` | [`quality.ttl`](../ontologies/cross-cutting/quality.ttl) |
-| `maint:` | `http://example.org/maestro/maintenance#` | [`maintenance.ttl`](../ontologies/cross-cutting/maintenance.ttl) |
-| `energy:` | `http://example.org/maestro/energy#` | [`energy.ttl`](../ontologies/cross-cutting/energy.ttl) |
-| `reas:` | `http://example.org/maestro/reasoning#` | [`reasoning.ttl`](../ontologies/reasoning/reasoning.ttl) |
-| `plan:` | `http://example.org/maestro/planning#` | [`planning.ttl`](../ontologies/reasoning/planning.ttl) |
-| `shape:` | `http://example.org/maestro/shapes#` | [`constraints/`](../constraints/) |
+| `core:` | `https://w3id.org/maestro/core#` | [`manufacturing-core.ttl`](../ontologies/core/manufacturing-core.ttl) |
+| `res:` | `https://w3id.org/maestro/resource#` | [`resource.ttl`](../ontologies/physical/resource.ttl) |
+| `motion:` | `https://w3id.org/maestro/motion#` | [`motion.ttl`](../ontologies/physical/motion.ttl) |
+| `skill:` | `https://w3id.org/maestro/skill#` | [`skill.ttl`](../ontologies/logical/skill.ttl) |
+| `cap:` | `https://w3id.org/maestro/capability#` | [`capability.ttl`](../ontologies/logical/capability.ttl) |
+| `proc:` | `https://w3id.org/maestro/process#` | [`process.ttl`](../ontologies/logical/process.ttl) |
+| `prod:` | `https://w3id.org/maestro/product#` | [`product.ttl`](../ontologies/logical/product.ttl) |
+| `plc:` | `https://w3id.org/maestro/iec61131#` | [`iec61131.ttl`](../ontologies/execution/iec61131.ttl) |
+| `iec61499:` | `https://w3id.org/maestro/iec61499#` | [`iec61499.ttl`](../ontologies/execution/iec61499.ttl) |
+| `ros:` | `https://w3id.org/maestro/ros#` | [`ros.ttl`](../ontologies/execution/ros.ttl) |
+| `opcua:` | `https://w3id.org/maestro/opcua#` | [`opcua.ttl`](../ontologies/execution/opcua.ttl) |
+| `aas:` | `https://w3id.org/maestro/aas#` | [`aas.ttl`](../ontologies/execution/aas.ttl) |
+| `runtime:` | `https://w3id.org/maestro/runtime#` | [`runtime.ttl`](../ontologies/runtime/runtime.ttl) |
+| `state:` | `https://w3id.org/maestro/state#` | [`state.ttl`](../ontologies/runtime/state.ttl) |
+| `sensor:` | `https://w3id.org/maestro/sensor#` | [`sensor.ttl`](../ontologies/cross-cutting/sensor.ttl) |
+| `unit:` | `https://w3id.org/maestro/unit#` | [`unit.ttl`](../ontologies/cross-cutting/unit.ttl) |
+| `com:` | `https://w3id.org/maestro/communication#` | [`communication.ttl`](../ontologies/cross-cutting/communication.ttl) |
+| `safety:` | `https://w3id.org/maestro/safety#` | [`safety.ttl`](../ontologies/cross-cutting/safety.ttl) |
+| `qa:` | `https://w3id.org/maestro/quality#` | [`quality.ttl`](../ontologies/cross-cutting/quality.ttl) |
+| `maint:` | `https://w3id.org/maestro/maintenance#` | [`maintenance.ttl`](../ontologies/cross-cutting/maintenance.ttl) |
+| `energy:` | `https://w3id.org/maestro/energy#` | [`energy.ttl`](../ontologies/cross-cutting/energy.ttl) |
+| `reas:` | `https://w3id.org/maestro/reasoning#` | [`reasoning.ttl`](../ontologies/reasoning/reasoning.ttl) |
+| `plan:` | `https://w3id.org/maestro/planning#` | [`planning.ttl`](../ontologies/reasoning/planning.ttl) |
+| `shape:` | `https://w3id.org/maestro/shapes#` | [`constraints/`](../constraints/) |
 
 ## External prefixes referenced
 

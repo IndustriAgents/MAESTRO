@@ -2,19 +2,20 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:  <http://example.org/maestro/core#> .
-@prefix cap:   <http://example.org/maestro/capability#> .
-@prefix proc:  <http://example.org/maestro/process#> .
+@prefix core:  <https://w3id.org/maestro/core#> .
+@prefix cap:   <https://w3id.org/maestro/capability#> .
+@prefix proc:  <https://w3id.org/maestro/process#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/process> a owl:Ontology ;
+<https://w3id.org/maestro/process> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/process/0.3.0> ;
     rdfs:label "MAESTRO Process Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ,
-                <http://example.org/maestro/capability> ;
-    owl:versionInfo "0.2.0" ;
+    owl:imports <https://w3id.org/maestro/core> ,
+                <https://w3id.org/maestro/capability> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Manufacturing processes aligned with DIN 8580 (process taxonomy) and VDI 3682 (process description)."@en .
 
 #################################################################

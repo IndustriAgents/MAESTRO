@@ -4,7 +4,7 @@
 *Industry 4.0 / Industry 5.0 — semantic, skill-based, vendor-independent*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](CHANGELOG.md)
 [![Ontology: OWL2-RL](https://img.shields.io/badge/ontology-OWL2--RL-green.svg)](https://www.w3.org/TR/owl2-overview/)
 
 MAESTRO is a unified, standards-aligned semantic framework for modelling
@@ -126,10 +126,12 @@ arrows to the external standards each module aligns with:
 | File | Purpose |
 |---|---|
 | [`ontologies/core/manufacturing-core.ttl`](ontologies/core/manufacturing-core.ttl) | Root abstractions (Entity, Resource, Skill, Capability, …) |
-| [`ontologies/physical/resource.ttl`](ontologies/physical/resource.ttl) | Machines, robots, PLCs, sensors |
-| [`ontologies/physical/motion.ttl`](ontologies/physical/motion.ttl) | Motion semantics |
-| [`ontologies/logical/skill.ttl`](ontologies/logical/skill.ttl) | Atomic + composite skill hierarchy |
+| [`ontologies/physical/resource.ttl`](ontologies/physical/resource.ttl) | Machines, robots, PLCs, tooling |
+| [`ontologies/physical/motion.ttl`](ontologies/physical/motion.ttl) | Motion semantics (classes + properties only — see motion-lib for specs) |
+| [`ontologies/logical/skill.ttl`](ontologies/logical/skill.ttl) | Atomic + composite skill **classes** (vocabulary) |
 | [`ontologies/logical/capability.ttl`](ontologies/logical/capability.ttl) | Manufacturing capabilities |
+| [`ontologies/lib/skill-lib.ttl`](ontologies/lib/skill-lib.ttl) | Reusable skill **individuals** (Transfer, MoveLinear, VacuumPick, …) |
+| [`ontologies/lib/motion-lib.ttl`](ontologies/lib/motion-lib.ttl) | Reusable motion **specifications** (LinearMotionSpec, …) |
 | [`ontologies/logical/process.ttl`](ontologies/logical/process.ttl) | DIN 8580 / VDI 3682 processes |
 | [`ontologies/logical/product.ttl`](ontologies/logical/product.ttl) | Products, parts, tolerances |
 | [`ontologies/execution/iec61131.ttl`](ontologies/execution/iec61131.ttl) | PLC semantics |
@@ -614,11 +616,20 @@ MAESTRO/
 ├── LICENSE
 ├── CHANGELOG.md
 ├── CITATION.cff
-├── ontologies/        # 24 modular .ttl ontology files
-├── constraints/       # SHACL shapes
-├── rules/             # SPARQL CONSTRUCT rules + SWRL sketches
-├── queries/           # Example SPARQL queries
-├── examples/          # Worked plant instances
+├── ontologies/        # Modular .ttl ontology files (vocabulary)
+│   ├── core/          # Root abstractions
+│   ├── physical/      # Resource, motion
+│   ├── logical/       # Skill, capability, process, product
+│   ├── lib/           # Reusable individuals: skill-lib, motion-lib (new in 0.3.0)
+│   ├── execution/     # IEC 61131 / IEC 61499 / ROS / OPC UA / AAS adapters
+│   ├── runtime/       # Runtime + state vocabularies
+│   ├── cross-cutting/ # Sensor (SOSA), unit (QUDT), safety, quality, …
+│   └── reasoning/     # Reasoning + ISA-95 planning
+├── constraints/       # SHACL shapes (design-time + runtime)
+├── rules/             # SPARQL CONSTRUCT rules + 0.2→0.3 migration script
+├── queries/           # Example SPARQL queries + competency questions
+├── examples/          # Worked plants — plant.ttl (design-time) + runtime.ttl
+├── decisions/         # Architecture Decision Records (new in 0.3.0)
 ├── figures/           # PlantUML diagrams (.puml + .png)
 ├── docs/              # Section-by-section documentation
 └── references/        # External baselines (CaSkMan, …)
@@ -635,8 +646,19 @@ import rdflib
 from pathlib import Path
 
 g = rdflib.Graph()
+
+# 1. Vocabulary + library individuals
 for path in Path("ontologies").glob("**/*.ttl"):
     g.parse(path, format="turtle")
+
+# 2. Design-time plant data (no runtime state)
+for path in Path("examples").rglob("plant.ttl"):
+    g.parse(path, format="turtle")
+
+# 3. (Optional) Runtime snapshot, into a separate named graph in your store
+for path in Path("examples").rglob("runtime.ttl"):
+    g.parse(path, format="turtle")
+
 print(f"Triples loaded: {len(g)}")
 ```
 
@@ -681,7 +703,7 @@ If you use MAESTRO in your research, please cite using the
   author  = {Xavier, Midhun},
   title   = {MAESTRO: Modular Ontology Stack for Future-Proof Manufacturing},
   year    = {2026},
-  version = {0.2.0},
+  version = {0.3.0},
   license = {MIT},
   url     = {https://github.com/midhunxavier/MAESTRO}
 }

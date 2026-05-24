@@ -2,7 +2,7 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix dct:     <http://purl.org/dc/terms/> .
-@prefix maestro: <http://example.org/maestro#> .
+@prefix maestro: <https://w3id.org/maestro#> .
 
 #################################################################
 # MAESTRO — TOP-LEVEL UMBRELLA ONTOLOGY
@@ -11,47 +11,52 @@
 # Every module is imported via owl:imports.
 #################################################################
 
-<http://example.org/maestro> a owl:Ontology ;
+<https://w3id.org/maestro> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/0.3.0> ;
     rdfs:label    "MAESTRO — Modular Ontology Stack for Future-Proof Manufacturing"@en ;
     dct:title     "MAESTRO" ;
     dct:creator   "Midhun Xavier" ;
     dct:license   <https://opensource.org/licenses/MIT> ;
-    owl:versionInfo "0.2.0" ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment  "Top-level umbrella ontology. Importing this file pulls in every MAESTRO module: core, physical, logical, execution adapters, runtime, cross-cutting concerns, and reasoning."@en ;
 
     # Core
-    owl:imports <http://example.org/maestro/core> ;
+    owl:imports <https://w3id.org/maestro/core> ;
 
     # Physical
-    owl:imports <http://example.org/maestro/resource> ;
-    owl:imports <http://example.org/maestro/motion> ;
+    owl:imports <https://w3id.org/maestro/resource> ;
+    owl:imports <https://w3id.org/maestro/motion> ;
 
     # Logical
-    owl:imports <http://example.org/maestro/skill> ;
-    owl:imports <http://example.org/maestro/capability> ;
-    owl:imports <http://example.org/maestro/process> ;
-    owl:imports <http://example.org/maestro/product> ;
+    owl:imports <https://w3id.org/maestro/skill> ;
+    owl:imports <https://w3id.org/maestro/capability> ;
+    owl:imports <https://w3id.org/maestro/process> ;
+    owl:imports <https://w3id.org/maestro/product> ;
+
+    # Library individuals (reusable skill / motion specifications)
+    owl:imports <https://w3id.org/maestro/skill-lib> ;
+    owl:imports <https://w3id.org/maestro/motion-lib> ;
 
     # Execution adapters
-    owl:imports <http://example.org/maestro/iec61131> ;
-    owl:imports <http://example.org/maestro/iec61499> ;
-    owl:imports <http://example.org/maestro/ros> ;
-    owl:imports <http://example.org/maestro/opcua> ;
-    owl:imports <http://example.org/maestro/aas> ;
+    owl:imports <https://w3id.org/maestro/iec61131> ;
+    owl:imports <https://w3id.org/maestro/iec61499> ;
+    owl:imports <https://w3id.org/maestro/ros> ;
+    owl:imports <https://w3id.org/maestro/opcua> ;
+    owl:imports <https://w3id.org/maestro/aas> ;
 
     # Runtime
-    owl:imports <http://example.org/maestro/runtime> ;
-    owl:imports <http://example.org/maestro/state> ;
+    owl:imports <https://w3id.org/maestro/runtime> ;
+    owl:imports <https://w3id.org/maestro/state> ;
 
     # Cross-cutting
-    owl:imports <http://example.org/maestro/sensor> ;
-    owl:imports <http://example.org/maestro/unit> ;
-    owl:imports <http://example.org/maestro/communication> ;
-    owl:imports <http://example.org/maestro/safety> ;
-    owl:imports <http://example.org/maestro/quality> ;
-    owl:imports <http://example.org/maestro/maintenance> ;
-    owl:imports <http://example.org/maestro/energy> ;
+    owl:imports <https://w3id.org/maestro/sensor> ;
+    owl:imports <https://w3id.org/maestro/unit> ;
+    owl:imports <https://w3id.org/maestro/communication> ;
+    owl:imports <https://w3id.org/maestro/safety> ;
+    owl:imports <https://w3id.org/maestro/quality> ;
+    owl:imports <https://w3id.org/maestro/maintenance> ;
+    owl:imports <https://w3id.org/maestro/energy> ;
 
     # Reasoning
-    owl:imports <http://example.org/maestro/reasoning> ;
-    owl:imports <http://example.org/maestro/planning> .
+    owl:imports <https://w3id.org/maestro/reasoning> ;
+    owl:imports <https://w3id.org/maestro/planning> .

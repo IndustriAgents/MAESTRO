@@ -2,19 +2,20 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:  <http://example.org/maestro/core#> .
-@prefix unit:  <http://example.org/maestro/unit#> .
-@prefix res:   <http://example.org/maestro/resource#> .
+@prefix core:  <https://w3id.org/maestro/core#> .
+@prefix unit:  <https://w3id.org/maestro/unit#> .
+@prefix res:   <https://w3id.org/maestro/resource#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/resource> a owl:Ontology ;
+<https://w3id.org/maestro/resource> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/resource/0.3.0> ;
     rdfs:label "MAESTRO Resource Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ,
-                <http://example.org/maestro/unit> ;
-    owl:versionInfo "0.2.0" ;
+    owl:imports <https://w3id.org/maestro/core> ,
+                <https://w3id.org/maestro/unit> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Physical manufacturing assets. Resources DO NOT contain manufacturing semantics — they only provide skills, support motion, and expose interfaces."@en .
 
 #################################################################
@@ -95,17 +96,14 @@ res:Actuator a owl:Class ;
     rdfs:label "Actuator"@en ;
     rdfs:subClassOf core:Resource .
 
-res:Sensor a owl:Class ;
-    rdfs:label "Sensor"@en ;
-    rdfs:subClassOf core:Resource .
-
-res:Camera a owl:Class ;
-    rdfs:label "Camera"@en ;
-    rdfs:subClassOf res:Sensor .
-
 res:ServoMotor a owl:Class ;
     rdfs:label "ServoMotor"@en ;
     rdfs:subClassOf res:Actuator .
+
+# NOTE (0.3.0): res:Sensor and res:Camera were removed to eliminate the
+# duplicate definitions that lived in resource.ttl and sensor.ttl. Use
+# sensor:Sensor / sensor:VisionSensor (SOSA-aligned, also subclasses of
+# core:Resource) instead. See decisions/0004-collision-rename.md.
 
 #################################################################
 # CONTROL HARDWARE

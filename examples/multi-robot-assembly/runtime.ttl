@@ -1,0 +1,23 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:    <https://w3id.org/maestro/core#> .
+@prefix runtime: <https://w3id.org/maestro/runtime#> .
+@prefix ex:      <https://w3id.org/maestro/examples/multi-robot-assembly#> .
+
+#################################################################
+# EXAMPLE — MULTI-ROBOT ASSEMBLY CELL (RUNTIME SNAPSHOT)
+#################################################################
+
+<https://w3id.org/maestro/examples/multi-robot-assembly/runtime> a owl:Ontology , runtime:Snapshot ;
+    owl:versionIRI <https://w3id.org/maestro/examples/multi-robot-assembly/runtime/0.3.0> ;
+    rdfs:label "MAESTRO Example: Multi-Robot Assembly — Runtime Snapshot"@en ;
+    owl:imports <https://w3id.org/maestro/examples/multi-robot-assembly> ;
+    owl:versionInfo "0.3.0" ;
+    runtime:snapshotTaken "2026-05-23T10:00:00Z"^^xsd:dateTime .
+
+ex:CobotA           core:hasState runtime:Available .
+ex:CobotB           core:hasState runtime:Available .
+ex:Conveyor1        core:hasState runtime:Available .
+ex:AssemblyStation1 core:hasState runtime:Available .

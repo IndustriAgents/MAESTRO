@@ -2,17 +2,18 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:  <http://example.org/maestro/core#> .
-@prefix state: <http://example.org/maestro/state#> .
+@prefix core:  <https://w3id.org/maestro/core#> .
+@prefix state: <https://w3id.org/maestro/state#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/state> a owl:Ontology ;
+<https://w3id.org/maestro/state> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/state/0.3.0> ;
     rdfs:label "MAESTRO State Vocabulary"@en ;
-    owl:imports <http://example.org/maestro/core> ;
-    owl:versionInfo "0.1.0" ;
+    owl:imports <https://w3id.org/maestro/core> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Generic state-machine vocabulary used by Skills, Capabilities, and ControlComponents to declare pre-/post-conditions."@en .
 
 #################################################################

@@ -11,9 +11,9 @@
 # The template returns the ordered list of candidate Resources for
 # downstream orchestration.
 
-PREFIX core:    <http://example.org/maestro/core#>
-PREFIX cap:     <http://example.org/maestro/capability#>
-PREFIX runtime: <http://example.org/maestro/runtime#>
+PREFIX core:    <https://w3id.org/maestro/core#>
+PREFIX cap:     <https://w3id.org/maestro/capability#>
+PREFIX runtime: <https://w3id.org/maestro/runtime#>
 PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?resource ?label

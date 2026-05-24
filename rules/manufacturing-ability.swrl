@@ -8,9 +8,9 @@
 # (plant manufactures product).
 #
 # Prefixes:
-#   core: http://example.org/maestro/core#
-#   cap:  http://example.org/maestro/capability#
-#   prod: http://example.org/maestro/product#
+#   core: https://w3id.org/maestro/core#
+#   cap:  https://w3id.org/maestro/capability#
+#   prod: https://w3id.org/maestro/product#
 #
 # SWRL rule:
 

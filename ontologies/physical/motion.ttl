@@ -2,17 +2,18 @@
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:    <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:   <http://example.org/maestro/core#> .
-@prefix motion: <http://example.org/maestro/motion#> .
+@prefix core:   <https://w3id.org/maestro/core#> .
+@prefix motion: <https://w3id.org/maestro/motion#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/motion> a owl:Ontology ;
+<https://w3id.org/maestro/motion> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/motion/0.3.0> ;
     rdfs:label "MAESTRO Motion Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ;
-    owl:versionInfo "0.2.0" ;
+    owl:imports <https://w3id.org/maestro/core> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Machine-independent motion semantics. Must remain independent of ROS, PLCs, and IEC 61499."@en .
 
 #################################################################
@@ -65,21 +66,10 @@ motion:Axis a owl:Class ;
     rdfs:label "Axis"@en ;
     rdfs:subClassOf core:LogicalEntity .
 
-#################################################################
-# CANONICAL MOTION SPECIFICATIONS
-#################################################################
-
-motion:LinearMotionSpec a motion:LinearMotion ;
-    rdfs:label "LinearMotionSpec"@en ;
-    rdfs:comment "Canonical reusable specification for linear motion requirements."@en .
-
-motion:JointMotionSpec a motion:JointMotion ;
-    rdfs:label "JointMotionSpec"@en ;
-    rdfs:comment "Canonical reusable specification for joint-space motion requirements."@en .
-
-motion:CartesianMotionSpec a motion:CartesianMotion ;
-    rdfs:label "CartesianMotionSpec"@en ;
-    rdfs:comment "Canonical reusable specification for Cartesian motion requirements."@en .
+# NOTE (0.3.0): Canonical motion specification individuals
+# (LinearMotionSpec, JointMotionSpec, CartesianMotionSpec) moved to
+# ontologies/lib/motion-lib.ttl. The motion: namespace now contains only
+# vocabulary (classes + properties).
 
 #################################################################
 # PROPERTIES

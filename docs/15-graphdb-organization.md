@@ -39,7 +39,7 @@ curl -X PUT 'http://localhost:7200/rest/repositories/maestro' \
 # 2. load each module into its named graph
 for f in ontologies/**/*.ttl; do
   graph=$(basename "$f" .ttl)
-  curl -X POST "http://localhost:7200/repositories/maestro/statements?context=<http://example.org/maestro/$graph>" \
+  curl -X POST "http://localhost:7200/repositories/maestro/statements?context=<https://w3id.org/maestro/$graph>" \
        -H 'Content-Type: text/turtle' \
        --data-binary @"$f"
 done

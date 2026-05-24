@@ -2,19 +2,20 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:  <http://example.org/maestro/core#> .
-@prefix skill: <http://example.org/maestro/skill#> .
-@prefix ros:   <http://example.org/maestro/ros#> .
+@prefix core:  <https://w3id.org/maestro/core#> .
+@prefix skill: <https://w3id.org/maestro/skill#> .
+@prefix ros:   <https://w3id.org/maestro/ros#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/ros> a owl:Ontology ;
+<https://w3id.org/maestro/ros> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/ros/0.3.0> ;
     rdfs:label "MAESTRO ROS Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ,
-                <http://example.org/maestro/skill> ;
-    owl:versionInfo "0.1.0" ;
+    owl:imports <https://w3id.org/maestro/core> ,
+                <https://w3id.org/maestro/skill> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "ROS / ROS 2 execution semantics. ROS nodes implement skills and control resources."@en .
 
 #################################################################

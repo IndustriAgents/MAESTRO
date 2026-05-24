@@ -2,17 +2,18 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:  <http://example.org/maestro/core#> .
-@prefix reas:  <http://example.org/maestro/reasoning#> .
+@prefix core:  <https://w3id.org/maestro/core#> .
+@prefix reas:  <https://w3id.org/maestro/reasoning#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/reasoning> a owl:Ontology ;
+<https://w3id.org/maestro/reasoning> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/reasoning/0.3.0> ;
     rdfs:label "MAESTRO Reasoning Documentation Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ;
-    owl:versionInfo "0.2.0" ;
+    owl:imports <https://w3id.org/maestro/core> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Documents the multi-layer reasoning model used by MAESTRO. Holds named individuals describing reasoning layers and the canonical reasoning chain."@en .
 
 #################################################################
@@ -57,7 +58,7 @@ reas:Explanation a reas:ReasoningLayer ;
 
 reas:CoreReasoningChain a reas:ReasoningModel ;
     rdfs:label "MAESTRO Core Reasoning Chain"@en ;
-    rdfs:comment "Product → requires → Process → requires → Capability → realizedBy → Skill → implementedBy → ControlComponent → controls → Resource → performs → Motion."@en .
+    rdfs:comment "Product →’ requires →’ Process →’ requires →’ Capability →’ realizedBy →’ Skill →’ implementedBy →’ ControlComponent →’ controls →’ Resource →’ performs →’ Motion."@en .
 
 #################################################################
 # PROPERTIES

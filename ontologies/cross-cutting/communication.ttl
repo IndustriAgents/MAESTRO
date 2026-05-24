@@ -2,17 +2,18 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
-@prefix core: <http://example.org/maestro/core#> .
-@prefix com:  <http://example.org/maestro/communication#> .
+@prefix core: <https://w3id.org/maestro/core#> .
+@prefix com:  <https://w3id.org/maestro/communication#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/communication> a owl:Ontology ;
+<https://w3id.org/maestro/communication> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/communication/0.3.0> ;
     rdfs:label "MAESTRO Communication Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ;
-    owl:versionInfo "0.1.0" ;
+    owl:imports <https://w3id.org/maestro/core> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Industrial communication protocols and endpoints (OPC UA, DDS, MQTT, Profinet, EtherCAT, …)."@en .
 
 #################################################################

@@ -2,20 +2,21 @@
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:    <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:   <http://example.org/maestro/core#> .
+@prefix core:   <https://w3id.org/maestro/core#> .
 @prefix sosa:   <http://www.w3.org/ns/sosa/> .
 @prefix ssn:    <http://www.w3.org/ns/ssn/> .
-@prefix sensor: <http://example.org/maestro/sensor#> .
+@prefix sensor: <https://w3id.org/maestro/sensor#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/sensor> a owl:Ontology ;
+<https://w3id.org/maestro/sensor> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/sensor/0.3.0> ;
     rdfs:label "MAESTRO Sensor Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ;
-    owl:versionInfo "0.2.0" ;
-    rdfs:comment "Sensor classes aligned with W3C SSN/SOSA."@en .
+    owl:imports <https://w3id.org/maestro/core> ;
+    owl:versionInfo "0.3.0" ;
+    rdfs:comment "Sensor classes aligned with W3C SSN/SOSA. In 0.3.0 the shadow properties sensor:observes / sensor:hasObservation / sensor:resultValue / sensor:resultTime were removed; use sosa:observes / sosa:madeObservation / sosa:hasSimpleResult / sosa:resultTime directly."@en .
 
 #################################################################
 # CLASSES (SSN/SOSA alignment)
@@ -23,22 +24,21 @@
 
 sensor:Sensor a owl:Class ;
     rdfs:label "Sensor"@en ;
-    rdfs:subClassOf core:Resource ,
-                    sosa:Sensor .
+    rdfs:subClassOf core:Resource , sosa:Sensor ;
+    rdfs:comment "Physical sensor. Subclass of both core:Resource and sosa:Sensor so SOSA-native graphs federate cleanly."@en .
 
 sensor:Observation a owl:Class ;
     rdfs:label "Observation"@en ;
-    rdfs:subClassOf sosa:Observation .
+    rdfs:subClassOf core:Event , sosa:Observation ;
+    rdfs:comment "A sensor observation. Subclass of core:Event so it joins the MAESTRO eventing model."@en .
 
 sensor:ObservableProperty a owl:Class ;
     rdfs:label "ObservableProperty"@en ;
-    rdfs:subClassOf core:LogicalEntity ,
-                    sosa:ObservableProperty .
+    rdfs:subClassOf core:LogicalEntity , sosa:ObservableProperty .
 
 sensor:FeatureOfInterest a owl:Class ;
     rdfs:label "FeatureOfInterest"@en ;
-    rdfs:subClassOf core:LogicalEntity ,
-                    sosa:FeatureOfInterest .
+    rdfs:subClassOf core:LogicalEntity , sosa:FeatureOfInterest .
 
 #################################################################
 # COMMON INDUSTRIAL SENSOR TYPES
@@ -50,24 +50,14 @@ sensor:VibrationSensor     rdfs:subClassOf sensor:Sensor ; rdfs:label "Vibration
 sensor:ForceSensor         rdfs:subClassOf sensor:Sensor ; rdfs:label "ForceSensor"@en .
 sensor:TorqueSensor        rdfs:subClassOf sensor:Sensor ; rdfs:label "TorqueSensor"@en .
 sensor:ProximitySensor     rdfs:subClassOf sensor:Sensor ; rdfs:label "ProximitySensor"@en .
-sensor:VisionSensor        rdfs:subClassOf sensor:Sensor ; rdfs:label "VisionSensor"@en .
+sensor:VisionSensor        rdfs:subClassOf sensor:Sensor ; rdfs:label "VisionSensor"@en ;
+                           rdfs:comment "Includes industrial cameras and machine-vision systems (replaces res:Camera)."@en .
 
-#################################################################
-# PROPERTIES
-#################################################################
-
-sensor:observes a owl:ObjectProperty ;
-    rdfs:domain sensor:Sensor ;
-    rdfs:range  sensor:ObservableProperty .
-
-sensor:hasObservation a owl:ObjectProperty ;
-    rdfs:domain sensor:Sensor ;
-    rdfs:range  sensor:Observation .
-
-sensor:resultValue a owl:DatatypeProperty ;
-    rdfs:domain sensor:Observation ;
-    rdfs:range  xsd:double .
-
-sensor:resultTime a owl:DatatypeProperty ;
-    rdfs:domain sensor:Observation ;
-    rdfs:range  xsd:dateTime .
+# Properties:
+#   - Use sosa:observes        (Sensor -> ObservableProperty) for sensing intent.
+#   - Use sosa:madeObservation (Sensor -> Observation) for the link to a measurement.
+#   - Use sosa:hasSimpleResult or sosa:hasResult for measured values.
+#   - Use sosa:resultTime      (xsd:dateTime) for measurement timestamps.
+#   - Use sosa:hasFeatureOfInterest (Observation -> FeatureOfInterest).
+# These come transitively via the SOSA/SSN imports and do not need MAESTRO
+# shadow duplicates.

@@ -1,9 +1,9 @@
 # Materialize plant manufacturing ability from product requirements and
 # resource-level capability.
 
-PREFIX core: <http://example.org/maestro/core#>
-PREFIX proc: <http://example.org/maestro/process#>
-PREFIX prod: <http://example.org/maestro/product#>
+PREFIX core: <https://w3id.org/maestro/core#>
+PREFIX proc: <https://w3id.org/maestro/process#>
+PREFIX prod: <https://w3id.org/maestro/product#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 CONSTRUCT {

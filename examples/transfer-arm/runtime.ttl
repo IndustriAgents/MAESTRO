@@ -1,0 +1,26 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:    <https://w3id.org/maestro/core#> .
+@prefix runtime: <https://w3id.org/maestro/runtime#> .
+@prefix ex:      <https://w3id.org/maestro/examples/transfer-arm#> .
+
+#################################################################
+# EXAMPLE — TRANSFER ARM PLANT (RUNTIME SNAPSHOT)
+#
+# Load into a NAMED GRAPH separate from the design-time plant.ttl.
+# Runtime triples carry runtime:Snapshot metadata so SHACL can
+# target this graph specifically. See
+# decisions/0002-runtime-graph-separation.md.
+#################################################################
+
+<https://w3id.org/maestro/examples/transfer-arm/runtime> a owl:Ontology , runtime:Snapshot ;
+    owl:versionIRI <https://w3id.org/maestro/examples/transfer-arm/runtime/0.3.0> ;
+    rdfs:label "MAESTRO Example: Transfer Arm — Runtime Snapshot"@en ;
+    owl:imports <https://w3id.org/maestro/examples/transfer-arm> ;
+    owl:versionInfo "0.3.0" ;
+    runtime:snapshotTaken "2026-05-23T10:00:00Z"^^xsd:dateTime .
+
+ex:TransferArm1 core:hasState runtime:Available .
+ex:VacuumUnit1  core:hasState runtime:Available .

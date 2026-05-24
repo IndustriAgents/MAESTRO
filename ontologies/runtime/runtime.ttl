@@ -3,17 +3,18 @@
 @prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:    <http://example.org/maestro/core#> .
-@prefix runtime: <http://example.org/maestro/runtime#> .
+@prefix core:    <https://w3id.org/maestro/core#> .
+@prefix runtime: <https://w3id.org/maestro/runtime#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/runtime> a owl:Ontology ;
+<https://w3id.org/maestro/runtime> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/runtime/0.3.0> ;
     rdfs:label "MAESTRO Runtime Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ;
-    owl:versionInfo "0.2.0" ;
+    owl:imports <https://w3id.org/maestro/core> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Live operational state. PackML-aligned state values are modeled as canonical individuals of core:State."@en .
 
 #################################################################
@@ -86,6 +87,27 @@ runtime:RuntimeEvent a owl:Class ;
 runtime:StateTransition a owl:Class ;
     rdfs:label "StateTransition"@en ;
     rdfs:subClassOf runtime:RuntimeEvent .
+
+#################################################################
+# RUNTIME SNAPSHOT
+#
+# Marker class for an ontology / named graph that carries runtime
+# triples (typically core:hasState assertions). SHACL shapes that
+# enforce "every Resource MUST have a state" target Resources
+# referenced from a runtime:Snapshot rather than every Resource in
+# the graph union, so design-time loads do not falsely fail.
+#################################################################
+
+runtime:Snapshot a owl:Class ;
+    rdfs:label "Snapshot"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "Marker class for a runtime snapshot ontology / named graph. New in 0.3.0."@en .
+
+runtime:snapshotTaken a owl:DatatypeProperty ;
+    rdfs:label "snapshotTaken"@en ;
+    rdfs:domain runtime:Snapshot ;
+    rdfs:range  xsd:dateTime ;
+    rdfs:comment "Wall-clock timestamp at which the snapshot was captured."@en .
 
 #################################################################
 # PROPERTIES

@@ -2,19 +2,22 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:  <http://example.org/maestro/core#> .
-@prefix proc:  <http://example.org/maestro/process#> .
-@prefix prod:  <http://example.org/maestro/product#> .
+@prefix core:  <https://w3id.org/maestro/core#> .
+@prefix proc:  <https://w3id.org/maestro/process#> .
+@prefix prod:  <https://w3id.org/maestro/product#> .
+@prefix unit:  <https://w3id.org/maestro/unit#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/product> a owl:Ontology ;
+<https://w3id.org/maestro/product> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/product/0.3.0> ;
     rdfs:label "MAESTRO Product Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ,
-                <http://example.org/maestro/process> ;
-    owl:versionInfo "0.2.0" ;
+    owl:imports <https://w3id.org/maestro/core> ,
+                <https://w3id.org/maestro/process> ,
+                <https://w3id.org/maestro/unit> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Products, parts, assemblies, features, and tolerances. A Product declares the Processes required to manufacture it."@en .
 
 #################################################################
@@ -68,8 +71,17 @@ prod:requiresProcess a owl:ObjectProperty ;
     rdfs:label "requiresProcess"@en ;
     rdfs:domain core:Product ;
     rdfs:range  proc:ManufacturingProcess ;
-    rdfs:subPropertyOf core:requires .
+    rdfs:comment "A Product requires a Manufacturing Process to be produced."@en .
+
+prod:mass a owl:ObjectProperty ;
+    rdfs:label "mass"@en ;
+    rdfs:domain core:Product ;
+    rdfs:range  unit:Quantity ;
+    rdfs:comment "Product mass as a unit-bearing quantity."@en .
 
 prod:massKg a owl:DatatypeProperty ;
     rdfs:label "massKg"@en ;
-    rdfs:range xsd:float .
+    rdfs:domain core:Product ;
+    rdfs:range  xsd:float ;
+    owl:deprecated true ;
+    rdfs:comment "Deprecated unit-suffixed datatype property. Use prod:mass with unit:Quantity instead."@en .

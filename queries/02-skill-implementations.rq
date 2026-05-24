@@ -3,8 +3,8 @@
 # For each Skill, list every ControlComponent that implements it
 # (across all execution adapters: ROS, IEC 61131, IEC 61499, OPC UA, AAS).
 
-PREFIX core:  <http://example.org/maestro/core#>
-PREFIX skill: <http://example.org/maestro/skill#>
+PREFIX core:  <https://w3id.org/maestro/core#>
+PREFIX skill: <https://w3id.org/maestro/skill#>
 PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?skill ?skillLabel ?component ?componentType

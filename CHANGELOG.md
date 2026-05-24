@@ -5,6 +5,90 @@ All notable changes to MAESTRO will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-23
+
+### BREAKING
+
+- **Namespace migration.** Every IRI moved from `http://example.org/maestro/*`
+  (W3C-reserved example domain) to `https://w3id.org/maestro/*`. Run
+  `rules/migrate-0.2-to-0.3.rq` plus a textual `example.org → w3id.org`
+  rewrite on any existing graph. See `decisions/0001-namespace.md`.
+- **Class renames** to remove cross-module local-name collisions
+  (`decisions/0004-collision-rename.md`):
+  - `iec61499:Resource` → `iec61499:RuntimeResource`
+  - `iec61499:Event` → `iec61499:ExecutionEvent` (now `rdfs:subClassOf core:Event`)
+  - `iec61499:Device` is now `rdfs:subClassOf core:Resource`
+  - `res:Sensor` and `res:Camera` removed; use `sensor:Sensor` / `sensor:VisionSensor`
+  - `iec61499:hostsResource` → `iec61499:hostsRuntimeResource`
+- **Vocabulary / instance split** (`decisions/0003-vocabulary-vs-instances.md`):
+  - `skill:Transfer`, `skill:MoveLinear`, `skill:MoveJoint`, `skill:VacuumPick`,
+    `skill:Release` moved to new `skill-lib:` namespace under
+    `ontologies/lib/skill-lib.ttl`.
+  - `motion:LinearMotionSpec`, `motion:JointMotionSpec`,
+    `motion:CartesianMotionSpec` moved to new `motion-lib:` namespace under
+    `ontologies/lib/motion-lib.ttl`.
+- **Runtime separation** (`decisions/0002-runtime-graph-separation.md`):
+  Examples split into `plant.ttl` (design-time) + `runtime.ttl` (snapshot).
+  `shape:ResourceShape` no longer requires `core:hasState`; runtime
+  constraints moved to `shapes-runtime.ttl` and target `sh:targetSubjectsOf
+  core:hasState` instead of every `core:Resource`.
+- **Deprecated `core:requires` removed.** Subproperties
+  (`core:requiresCapability`, `core:realizedBySkill`, `core:composedOfSkill`,
+  `core:requiresMotion`) no longer have a `rdfs:subPropertyOf core:requires`.
+  `prod:requiresProcess` also dropped the subProperty assertion.
+
+### Added
+
+- `core:hosts`, `core:emits`, `core:consumes` — promoted from IEC 61499 so
+  every adapter can share the same shape.
+- `core:providedBy`, `core:implementedBy` — explicit inverses with typed
+  domain/range.
+- `core:hasPart owl:TransitiveProperty`; `core:partOf owl:TransitiveProperty`.
+- `core:connectedTo owl:SymmetricProperty`.
+- `core:identifier` is now `owl:FunctionalProperty` and
+  `owl:InverseFunctionalProperty`.
+- Every universal `core:*` object property carries explicit `rdfs:domain`
+  and `rdfs:range`.
+- `skill:AtomicSkill owl:disjointWith skill:CompositeSkill`.
+- `iec61499:FunctionBlock owl:disjointWith plc:FunctionBlock`.
+- `runtime:Snapshot` class and `runtime:snapshotTaken` datatype property.
+- `prod:mass` (unit-bearing) replaces the deprecated `prod:massKg`.
+- `ontologies/lib/skill-lib.ttl` and `ontologies/lib/motion-lib.ttl`.
+- `examples/transfer-arm/runtime.ttl` and
+  `examples/multi-robot-assembly/runtime.ttl`.
+- `decisions/` ADR folder (0001–0004) documenting breaking decisions.
+- `rules/migrate-0.2-to-0.3.rq` — SPARQL UPDATE migration script.
+- `unit:*` individuals now carry `owl:sameAs` links to QUDT units
+  (`qudt-unit:M`, `qudt-unit:KiloGM`, …).
+- `sensor:Observation rdfs:subClassOf core:Event` (was orphaned before).
+- Every module declares `owl:versionIRI <…/0.3.0>` so consumers can pin a
+  release without losing the base IRI.
+
+### Changed
+
+- `shapes-resource.ttl` rewritten: `sh:maxCount 1` on `core:identifier`,
+  `sh:class unit:Quantity` enforced on `res:payload`, `sh:maxCount 0` on
+  deprecated `res:payloadKg`. No more `core:hasState` requirement.
+- `shapes-runtime.ttl` rewritten with `sh:targetSubjectsOf core:hasState`,
+  adds `shape:SnapshotShape`.
+- `tests/validate_repo.py` now runs `pyshacl` over both design-time and
+  runtime shape sets, validates every `.ttl` parses, every `.rq` parses as
+  SPARQL, asserts the spine invariants, runs the SPARQL CONSTRUCT rules
+  and verifies the canonical inferences.
+- Example plants no longer carry the deprecated `res:payloadKg` /
+  `res:reachMm`; only the unit-bearing `res:payload` / `res:reach`.
+- `sensor.ttl` removed its shadow SOSA properties
+  (`sensor:observes`, `sensor:hasObservation`, `sensor:resultValue`,
+  `sensor:resultTime`). Use `sosa:observes`, `sosa:madeObservation`,
+  `sosa:hasSimpleResult`, `sosa:resultTime` directly.
+
+### Removed
+
+- `core:requires` (deprecated in 0.2.0).
+- `res:Sensor`, `res:Camera`.
+- `sensor:observes`, `sensor:hasObservation`, `sensor:resultValue`,
+  `sensor:resultTime` (use SOSA).
+
 ## [0.2.0] - 2026-05-23
 
 ### Changed

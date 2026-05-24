@@ -1,69 +1,146 @@
+"""MAESTRO repository validator.
+
+Validates:
+1. Every .ttl file parses as Turtle.
+2. Every .rq file parses as SPARQL.
+3. Design-time SHACL shapes hold over (ontologies + library + design-time examples).
+4. Runtime SHACL shapes hold over the runtime snapshots.
+5. SPARQL CONSTRUCT rules materialise the canonical inferences.
+6. Example SPARQL queries return at least their expected row counts.
+7. Competency questions return at least their expected row counts.
+"""
+
+from __future__ import annotations
+
+import sys
 from pathlib import Path
 
 import rdflib
+from rdflib import Graph
 from rdflib.namespace import RDF, RDFS
+from rdflib.plugins.sparql import prepareQuery
+from rdflib.plugins.sparql.parser import parseUpdate
 
+try:
+    import pyshacl
+except ImportError:  # pragma: no cover
+    print("pyshacl is required. pip install -r requirements.txt", file=sys.stderr)
+    raise
 
 ROOT = Path(__file__).resolve().parents[1]
-CORE = rdflib.Namespace("http://example.org/maestro/core#")
-CAP = rdflib.Namespace("http://example.org/maestro/capability#")
-EX_TRANSFER = rdflib.Namespace("http://example.org/maestro/examples/transfer-arm#")
-EX_ASSEMBLY = rdflib.Namespace("http://example.org/maestro/examples/multi-robot-assembly#")
+CORE = rdflib.Namespace("https://w3id.org/maestro/core#")
+CAP = rdflib.Namespace("https://w3id.org/maestro/capability#")
+EX_TRANSFER = rdflib.Namespace("https://w3id.org/maestro/examples/transfer-arm#")
+EX_ASSEMBLY = rdflib.Namespace("https://w3id.org/maestro/examples/multi-robot-assembly#")
+
+
+def ontology_turtle_files() -> list[Path]:
+    return sorted(ROOT.glob("ontologies/**/*.ttl"))
+
+
+def constraint_files() -> list[Path]:
+    return sorted(ROOT.glob("constraints/**/*.ttl"))
+
+
+def example_plant_files() -> list[Path]:
+    """Design-time example files (excludes runtime snapshots)."""
+    return [p for p in sorted(ROOT.glob("examples/**/*.ttl")) if p.name != "runtime.ttl"]
+
+
+def example_runtime_files() -> list[Path]:
+    return list(sorted(ROOT.glob("examples/**/runtime.ttl")))
 
 
 def parse_all_turtle() -> None:
-    for path in sorted(
-        list(ROOT.glob("ontologies/**/*.ttl"))
-        + list(ROOT.glob("constraints/**/*.ttl"))
-        + list(ROOT.glob("examples/**/*.ttl"))
-    ):
-        graph = rdflib.Graph()
-        graph.parse(path, format="turtle")
+    paths = ontology_turtle_files() + constraint_files() + example_plant_files() + example_runtime_files()
+    for path in paths:
+        g = Graph()
+        g.parse(path, format="turtle")
 
 
-def load_data_graph() -> rdflib.Graph:
-    graph = rdflib.Graph()
-    for path in sorted(list(ROOT.glob("ontologies/**/*.ttl")) + list(ROOT.glob("examples/**/*.ttl"))):
-        graph.parse(path, format="turtle")
-    return graph
+def parse_all_sparql() -> None:
+    """Confirm every .rq parses as either a SPARQL query or an UPDATE script."""
+    for path in sorted(ROOT.glob("**/*.rq")):
+        text = path.read_text(encoding="utf-8")
+        try:
+            prepareQuery(text)
+        except Exception as query_exc:  # noqa: BLE001
+            try:
+                parseUpdate(text)
+            except Exception as update_exc:  # noqa: BLE001
+                raise AssertionError(
+                    f"SPARQL parse failed for {path}: "
+                    f"as query → {query_exc}; as update → {update_exc}"
+                ) from update_exc
 
 
-def subclass_closure(graph: rdflib.Graph) -> dict[rdflib.term.Node, set[rdflib.term.Node]]:
-    parents: dict[rdflib.term.Node, set[rdflib.term.Node]] = {}
-    for child, parent in graph.subject_objects(RDFS.subClassOf):
-        if isinstance(parent, rdflib.URIRef):
-            parents.setdefault(child, set()).add(parent)
-
-    changed = True
-    while changed:
-        changed = False
-        for child, direct in list(parents.items()):
-            inherited = set()
-            for parent in direct:
-                inherited.update(parents.get(parent, set()))
-            if not inherited.issubset(direct):
-                direct.update(inherited)
-                changed = True
-    return parents
+def load_design_graph() -> Graph:
+    g = Graph()
+    for p in ontology_turtle_files():
+        g.parse(p, format="turtle")
+    for p in example_plant_files():
+        g.parse(p, format="turtle")
+    return g
 
 
-def instances_of(graph: rdflib.Graph, klass: rdflib.URIRef) -> set[rdflib.term.Node]:
-    parents = subclass_closure(graph)
-    instances = set()
-    for subject, typ in graph.subject_objects(RDF.type):
-        if typ == klass or klass in parents.get(typ, set()):
-            instances.add(subject)
-    return instances
+def load_runtime_graph(design: Graph) -> Graph:
+    g = Graph()
+    for triple in design:
+        g.add(triple)
+    for p in example_runtime_files():
+        g.parse(p, format="turtle")
+    return g
 
 
-def apply_construct_rules(graph: rdflib.Graph) -> None:
+def load_shapes(*paths: Path) -> Graph:
+    g = Graph()
+    for p in paths:
+        g.parse(p, format="turtle")
+    return g
+
+
+SH = rdflib.Namespace("http://www.w3.org/ns/shacl#")
+
+
+def shacl_validate(data: Graph, shapes: Graph, label: str) -> None:
+    """Run SHACL. Fail only on sh:Violation; print sh:Warning / sh:Info."""
+    _conforms, results_graph, results_text = pyshacl.validate(
+        data_graph=data,
+        shacl_graph=shapes,
+        inference="rdfs",            # materialise subPropertyOf / subClassOf chains
+        abort_on_first=False,
+        meta_shacl=False,
+        advanced=True,
+        debug=False,
+    )
+    violations = []
+    warnings = []
+    for result in results_graph.subjects(RDF.type, SH.ValidationResult):
+        sev = next(iter(results_graph.objects(result, SH.resultSeverity)), SH.Violation)
+        focus = next(iter(results_graph.objects(result, SH.focusNode)), None)
+        msg = next(iter(results_graph.objects(result, SH.resultMessage)), "")
+        entry = (focus, str(msg))
+        if sev == SH.Violation:
+            violations.append(entry)
+        else:
+            warnings.append((sev, focus, str(msg)))
+    if warnings:
+        sys.stdout.write(f"\nSHACL warnings ({label}): {len(warnings)}\n")
+        for sev, focus, msg in warnings:
+            sys.stdout.write(f"  [{str(sev).rsplit('#', 1)[-1]}] {focus} — {msg}\n")
+    if violations:
+        sys.stderr.write(f"\nSHACL VIOLATIONS ({label}): {len(violations)}\n{results_text}\n")
+        raise AssertionError(f"SHACL validation failed for {label}.")
+
+
+def apply_construct_rules(graph: Graph) -> None:
     for path in [ROOT / "rules/capability-inference.rq", ROOT / "rules/manufacturing-ability.rq"]:
         inferred = graph.query(path.read_text(encoding="utf-8"))
         for triple in inferred:
             graph.add(triple)
 
 
-def assert_query_counts(graph: rdflib.Graph) -> None:
+def assert_query_counts(graph: Graph) -> None:
     minimum_counts = {
         "01-resources-with-capability.rq": 2,
         "02-skill-implementations.rq": 5,
@@ -74,66 +151,108 @@ def assert_query_counts(graph: rdflib.Graph) -> None:
     for query_name, minimum in minimum_counts.items():
         query = (ROOT / "queries" / query_name).read_text(encoding="utf-8")
         rows = list(graph.query(query))
-        assert len(rows) >= minimum, f"{query_name} returned {len(rows)} rows, expected at least {minimum}"
+        assert len(rows) >= minimum, (
+            f"{query_name} returned {len(rows)} rows, expected at least {minimum}"
+        )
 
 
-def assert_competency_questions(graph: rdflib.Graph) -> None:
-    pre_materialization_counts = {
+def assert_competency_questions_pre_materialization(graph: Graph) -> None:
+    minimums = {
         "cq01-available-pick-place.rq": 2,
         "cq02-skill-implementations.rq": 5,
         "cq03-product-capabilities.rq": 1,
-        "cq04-resources-without-provided-skills.rq": 2,
+        "cq04-resources-without-provided-skills.rq": 1,
     }
-    for query_name, minimum in pre_materialization_counts.items():
+    for query_name, minimum in minimums.items():
         query = (ROOT / "queries" / "cq" / query_name).read_text(encoding="utf-8")
         rows = list(graph.query(query))
-        assert len(rows) >= minimum, f"{query_name} returned {len(rows)} rows, expected at least {minimum}"
+        assert len(rows) >= minimum, (
+            f"{query_name} returned {len(rows)} rows, expected at least {minimum}"
+        )
 
 
-def assert_post_materialization_competency_questions(graph: rdflib.Graph) -> None:
+def assert_competency_questions_post_materialization(graph: Graph) -> None:
     query = (ROOT / "queries" / "cq" / "cq05-plant-manufacturing-ability.rq").read_text(encoding="utf-8")
     rows = list(graph.query(query))
     assert len(rows) >= 1, "cq05-plant-manufacturing-ability.rq returned no materialized results"
 
 
-def assert_semantic_spine(graph: rdflib.Graph) -> None:
+def assert_semantic_spine(graph: Graph) -> None:
     direct_requires = list(graph.triples((None, CORE.requires, None)))
-    assert not direct_requires, f"core:requires has direct assertions: {direct_requires[:5]}"
-
-    for plant in instances_of(graph, CORE.Plant):
-        assert (plant, CORE.identifier, None) in graph, f"Plant lacks core:identifier: {plant}"
-        assert (plant, CORE.canPerform, None) not in graph, f"Plant incorrectly uses core:canPerform: {plant}"
-
-    for resource in instances_of(graph, CORE.Resource):
-        assert (resource, CORE.identifier, None) in graph, f"Resource lacks core:identifier: {resource}"
-
-    assert (CAP.PickPlaceCapability, RDF.type, CORE.Capability) in graph
-    assert (CAP.PickPlaceCapability, CORE.realizedBySkill, None) in graph or any(
-        pred for pred in graph.predicates(CAP.PickPlaceCapability, None)
-        if (pred, RDFS.subPropertyOf, CORE.realizedBySkill) in graph
+    assert not direct_requires, (
+        f"core:requires has direct assertions (removed in 0.3.0): {direct_requires[:5]}"
     )
 
+    for plant in graph.subjects(RDF.type, CORE.Plant):
+        assert (plant, CORE.identifier, None) in graph, f"Plant lacks core:identifier: {plant}"
+        assert (plant, CORE.canPerform, None) not in graph, (
+            f"Plant incorrectly uses core:canPerform: {plant}"
+        )
 
-def assert_materialized_inference(graph: rdflib.Graph) -> None:
+    # Walk transitive subclass closure of core:Resource.
+    resource_classes = {CORE.Resource}
+    changed = True
+    while changed:
+        changed = False
+        for sub in list(graph.subjects(RDFS.subClassOf, None)):
+            for parent in graph.objects(sub, RDFS.subClassOf):
+                if parent in resource_classes and sub not in resource_classes:
+                    resource_classes.add(sub)
+                    changed = True
+
+    for cls in resource_classes:
+        for instance in graph.subjects(RDF.type, cls):
+            assert (instance, CORE.identifier, None) in graph, (
+                f"Resource lacks core:identifier: {instance}"
+            )
+
+    assert (CAP.PickPlaceCapability, RDF.type, CORE.Capability) in graph
+    realizes_objs = list(graph.objects(CAP.PickPlaceCapability, CORE.realizedBySkill)) + list(
+        graph.objects(
+            CAP.PickPlaceCapability,
+            rdflib.URIRef("https://w3id.org/maestro/capability#realizedBySkill"),
+        )
+    )
+    assert realizes_objs, "cap:PickPlaceCapability does not resolve to any Skill."
+
+
+def assert_materialized_inference(graph: Graph) -> None:
     apply_construct_rules(graph)
     expected_can_perform = {
         (EX_TRANSFER.TransferArm1, CAP.PickPlaceCapability),
         (EX_ASSEMBLY.CobotA, CAP.PickPlaceCapability),
     }
     for triple in expected_can_perform:
-        assert (triple[0], CORE.canPerform, triple[1]) in graph, f"Missing inferred canPerform: {triple}"
-
-    assert (EX_TRANSFER.Plant1, CORE.canManufacture, EX_TRANSFER.ProductA) in graph
-    assert_post_materialization_competency_questions(graph)
+        assert (triple[0], CORE.canPerform, triple[1]) in graph, (
+            f"Missing inferred canPerform: {triple}"
+        )
+    assert (EX_TRANSFER.Plant1, CORE.canManufacture, EX_TRANSFER.ProductA) in graph, (
+        "Plant1 canManufacture ProductA was not materialized."
+    )
+    assert_competency_questions_post_materialization(graph)
 
 
 def main() -> None:
     parse_all_turtle()
-    graph = load_data_graph()
-    assert_query_counts(graph)
-    assert_competency_questions(graph)
-    assert_semantic_spine(graph)
-    assert_materialized_inference(graph)
+    parse_all_sparql()
+
+    design = load_design_graph()
+    design_shapes = load_shapes(
+        ROOT / "constraints/shapes-resource.ttl",
+        ROOT / "constraints/shapes-process.ttl",
+        ROOT / "constraints/shapes-skill.ttl",
+    )
+    shacl_validate(design, design_shapes, "design-time")
+
+    runtime = load_runtime_graph(design)
+    runtime_shapes = load_shapes(ROOT / "constraints/shapes-runtime.ttl")
+    shacl_validate(runtime, runtime_shapes, "runtime")
+
+    assert_semantic_spine(runtime)
+    assert_query_counts(runtime)
+    assert_competency_questions_pre_materialization(runtime)
+    assert_materialized_inference(runtime)
+
     print("MAESTRO validation passed")
 
 

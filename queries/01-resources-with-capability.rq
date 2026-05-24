@@ -3,9 +3,9 @@
 # List every Resource that has been inferred to perform a specific Capability.
 # Useful for "which machines can do pick-and-place?".
 
-PREFIX core: <http://example.org/maestro/core#>
-PREFIX cap:  <http://example.org/maestro/capability#>
-PREFIX res:  <http://example.org/maestro/resource#>
+PREFIX core: <https://w3id.org/maestro/core#>
+PREFIX cap:  <https://w3id.org/maestro/capability#>
+PREFIX res:  <https://w3id.org/maestro/resource#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?resource ?label

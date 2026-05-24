@@ -2,19 +2,20 @@
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:    <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
-@prefix core:   <http://example.org/maestro/core#> .
-@prefix motion: <http://example.org/maestro/motion#> .
-@prefix skill:  <http://example.org/maestro/skill#> .
+@prefix core:   <https://w3id.org/maestro/core#> .
+@prefix motion: <https://w3id.org/maestro/motion#> .
+@prefix skill:  <https://w3id.org/maestro/skill#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/skill> a owl:Ontology ;
+<https://w3id.org/maestro/skill> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/skill/0.3.0> ;
     rdfs:label "MAESTRO Skill Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ,
-                <http://example.org/maestro/motion> ;
-    owl:versionInfo "0.2.0" ;
+    owl:imports <https://w3id.org/maestro/core> ,
+                <https://w3id.org/maestro/motion> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Keystone of skill-based manufacturing. Skills are logical — they are NOT ROS nodes, PLC FBs, or IEC 61499 FBs. Execution technologies IMPLEMENT skills."@en .
 
 #################################################################
@@ -117,29 +118,13 @@ skill:expectedDurationSeconds a owl:DatatypeProperty ;
     rdfs:range xsd:float .
 
 #################################################################
-# EXAMPLE SKILL INDIVIDUALS
-# (Models from the spec — illustrative, can be reused as starting points.)
+# DISJOINTNESS
 #################################################################
 
-skill:MoveLinear a skill:MotionSkill ;
-    rdfs:label "MoveLinear"@en ;
-    skill:requiresMotion motion:LinearMotionSpec ;
-    rdfs:comment "Move the controlled point along a straight line at constant velocity."@en .
+skill:AtomicSkill owl:disjointWith skill:CompositeSkill .
 
-skill:MoveJoint a skill:MotionSkill ;
-    rdfs:label "MoveJoint"@en ;
-    skill:requiresMotion motion:JointMotionSpec .
-
-skill:VacuumPick a skill:ManipulationSkill ;
-    rdfs:label "VacuumPick"@en ;
-    rdfs:comment "Activate vacuum, lower onto part, lift."@en .
-
-skill:Release a skill:ManipulationSkill ;
-    rdfs:label "Release"@en .
-
-skill:Transfer a skill:TransferSkill ;
-    rdfs:label "Transfer"@en ;
-    skill:composedOfSkill skill:MoveLinear ;
-    skill:composedOfSkill skill:VacuumPick ;
-    skill:composedOfSkill skill:Release ;
-    rdfs:comment "Composite pick-and-place skill — moves a part from A to B."@en .
+# NOTE (0.3.0): Reusable skill individuals (MoveLinear, MoveJoint, VacuumPick,
+# Release, Transfer) were moved out of this file into
+# ontologies/lib/skill-lib.ttl so that the skill: namespace contains only
+# vocabulary (classes + properties) and the skill-lib: namespace contains
+# instance data. See decisions/0003-vocabulary-vs-instances.md.

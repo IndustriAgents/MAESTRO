@@ -2,19 +2,22 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
-@prefix core:  <http://example.org/maestro/core#> .
-@prefix skill: <http://example.org/maestro/skill#> .
-@prefix cap:   <http://example.org/maestro/capability#> .
+@prefix core:  <https://w3id.org/maestro/core#> .
+@prefix skill:     <https://w3id.org/maestro/skill#> .
+@prefix skill-lib: <https://w3id.org/maestro/skill-lib#> .
+@prefix cap:       <https://w3id.org/maestro/capability#> .
 
 #################################################################
 # ONTOLOGY DECLARATION
 #################################################################
 
-<http://example.org/maestro/capability> a owl:Ontology ;
+<https://w3id.org/maestro/capability> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/capability/0.3.0> ;
     rdfs:label "MAESTRO Capability Ontology"@en ;
-    owl:imports <http://example.org/maestro/core> ,
-                <http://example.org/maestro/skill> ;
-    owl:versionInfo "0.2.0" ;
+    owl:imports <https://w3id.org/maestro/core> ,
+                <https://w3id.org/maestro/skill> ,
+                <https://w3id.org/maestro/skill-lib> ;
+    owl:versionInfo "0.3.0" ;
     rdfs:comment "Reusable manufacturing capability specifications. Capabilities are modeled as individuals of core:Capability so applications, rules, and SPARQL queries can traverse them directly."@en .
 
 #################################################################
@@ -51,15 +54,15 @@ cap:PickPlaceCapability a core:Capability , skos:Concept ;
     rdfs:label "PickPlaceCapability"@en ;
     skos:inScheme cap:CapabilityScheme ;
     skos:broader cap:HandlingCapability ;
-    cap:realizedBySkill skill:Transfer ;
+    cap:realizedBySkill skill-lib:Transfer ;
     skos:prefLabel "Pick-and-place capability"@en ;
     rdfs:comment "Pick a part at location A and place it at location B."@en .
 
 cap:TransportCapability a core:Capability , skos:Concept ;
     rdfs:label "TransportCapability"@en ;
     skos:inScheme cap:CapabilityScheme ;
-    cap:realizedBySkill skill:MoveLinear ,
-                        skill:MoveJoint ;
+    cap:realizedBySkill skill-lib:MoveLinear ,
+                        skill-lib:MoveJoint ;
     skos:prefLabel "Transport capability"@en ;
     rdfs:comment "Ability to transport material between locations."@en .
 
