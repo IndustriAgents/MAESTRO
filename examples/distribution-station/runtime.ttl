@@ -1,0 +1,28 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:    <https://w3id.org/maestro/core#> .
+@prefix runtime: <https://w3id.org/maestro/runtime#> .
+@prefix ex:      <https://w3id.org/maestro/examples/distribution-station#> .
+
+#################################################################
+# EXAMPLE — FESTO DISTRIBUTING STATION (RUNTIME SNAPSHOT)
+#
+# Load into a NAMED GRAPH separate from the design-time plant.ttl.
+# See decisions/0002-runtime-graph-separation.md.
+#################################################################
+
+<https://w3id.org/maestro/examples/distribution-station/runtime> a owl:Ontology , runtime:Snapshot ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station/runtime/0.4.0> ;
+    rdfs:label "MAESTRO Example: Festo Distributing Station — Runtime Snapshot"@en ;
+    owl:imports <https://w3id.org/maestro/examples/distribution-station> ;
+    owl:versionInfo "0.4.0" ;
+    runtime:snapshotTaken "2026-05-25T08:00:00Z"^^xsd:dateTime .
+
+ex:DistributingStation1 core:hasState runtime:Available .
+ex:FeederUnit1          core:hasState runtime:Available .
+ex:TransferUnit1        core:hasState runtime:Available .
+ex:TransferArm1         core:hasState runtime:Available .
+ex:VacuumUnit1          core:hasState runtime:Available .
+ex:Magazine1            core:hasState runtime:Available .

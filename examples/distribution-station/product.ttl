@@ -1,0 +1,38 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix core: <https://w3id.org/maestro/core#> .
+@prefix cap:  <https://w3id.org/maestro/capability#> .
+@prefix proc: <https://w3id.org/maestro/process#> .
+@prefix prod: <https://w3id.org/maestro/product#> .
+@prefix ex:   <https://w3id.org/maestro/examples/distribution-station#> .
+
+#################################################################
+# EXAMPLE — DISTRIBUTING STATION: PRODUCT & PROCESS
+#################################################################
+
+<https://w3id.org/maestro/examples/distribution-station/product> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station/product/0.3.0> ;
+    rdfs:label "MAESTRO Example: Festo Distributing Station — Product"@en ;
+    owl:imports <https://w3id.org/maestro/examples/distribution-station> ;
+    owl:versionInfo "0.3.0" .
+
+#################################################################
+# PROCESSES (DIN 8580 — Handling / Transport)
+#################################################################
+
+ex:DistributeWorkpieceProcess a proc:TransportProcess ;
+    rdfs:label "Distribute workpiece (magazine → next station)" ;
+    proc:requiresCapability cap:HandlingCapability ,
+                            cap:PickPlaceCapability ,
+                            cap:TransportCapability .
+
+#################################################################
+# PRODUCT
+#################################################################
+
+ex:WorkpieceWP3 a prod:Part ;
+    rdfs:label "Workpiece WP3 (Festo cylindrical blank)" ;
+    prod:massKg 0.030 ;
+    prod:requiresProcess ex:DistributeWorkpieceProcess .
