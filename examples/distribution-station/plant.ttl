@@ -45,10 +45,10 @@
 #################################################################
 
 <https://w3id.org/maestro/examples/distribution-station> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station/0.4.0> ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station/0.5.0> ;
     rdfs:label "MAESTRO Example: Festo Distributing Station — Plant"@en ;
     owl:imports <https://w3id.org/maestro> ;
-    owl:versionInfo "0.4.0" ;
+    owl:versionInfo "0.5.0" ;
     rdfs:comment "Festo MPS Distributing Station mapped to the Schneider EAE 'FESTO_DS_skills_reg' / 'Comp_Skill_Adp' application. A magazine feeds workpieces onto a nest; a rotary transfer arm with a vacuum end-effector picks them from the nest and places them on the next station."@en .
 
 #################################################################
@@ -362,10 +362,38 @@ ex:ArmRotationalMotionSlow a motion:RotationalMotion ;
     ] ;
     rdfs:comment "Half-speed rotational motion used by the skTransferSlow_adp composite (skGoToRight2x)."@en .
 
+ex:PusherLinearMotion a motion:LinearMotion ;
+    rdfs:label "Feeder-pusher linear motion (constant speed, ~1.2 s extend)"@en ;
+    motion:hasVelocity "0.05"^^xsd:float ;       # m·s⁻¹  (~50 mm in 1.2 s)
+    ex:hasStrokeMeters "0.06"^^xsd:float ;
+    ex:hasDuration [
+        a unit:Quantity ;
+        unit:numericValue 1.2 ;
+        unit:hasUnit unit:Second
+    ] ;
+    rdfs:comment "Linear extension of the feeder pneumatic cylinder ejecting a workpiece from the magazine onto the nest."@en .
+
+ex:PusherLinearMotionSlow a motion:LinearMotion ;
+    rdfs:label "Feeder-pusher linear motion (half-speed, ~2.4 s extend)"@en ;
+    motion:hasVelocity "0.025"^^xsd:float ;      # m·s⁻¹  (~50 mm in 2.4 s)
+    ex:hasStrokeMeters "0.06"^^xsd:float ;
+    ex:hasDuration [
+        a unit:Quantity ;
+        unit:numericValue 2.4 ;
+        unit:hasUnit unit:Second
+    ] ;
+    rdfs:comment "Half-speed pusher extension used by the skPushSlow_adp composite."@en .
+
 ex:hasDuration a owl:ObjectProperty ;
     rdfs:label "hasDuration"@en ;
     rdfs:domain motion:Motion ;
     rdfs:range  unit:Quantity .
+
+ex:hasStrokeMeters a owl:DatatypeProperty ;
+    rdfs:label "hasStrokeMeters"@en ;
+    rdfs:domain motion:LinearMotion ;
+    rdfs:range  xsd:float ;
+    rdfs:comment "Linear stroke length of a LinearMotion, in metres."@en .
 
 #################################################################
 # SKILL TYPES  (TBox — reusable specifications)
@@ -418,18 +446,24 @@ ex:Type_skPlace a skill:ManipulationSkill ;
 
 ex:Type_skLoad_adp a skill:HandlingSkill ;
     rdfs:label "skLoad_adp"@en ;
+    skill:requiresMotion ex:PusherLinearMotion ;
+    skill:expectedDurationSeconds 1.2 ;
     ex:controlsIO ex:IO_WPtype , ex:IO_empty , ex:IO_pos_e , ex:IO_pos_r ;
     ex:receivesIO ex:IO_retract ;
     rdfs:comment "Adapter-wrapped load skill: detects and (optionally) loads a workpiece. FBT: SkillToLoad.fbt"@en .
 
 ex:Type_skPush_adp a skill:HandlingSkill ;
     rdfs:label "skPush_adp"@en ;
+    skill:requiresMotion ex:PusherLinearMotion ;
+    skill:expectedDurationSeconds 1.2 ;
     ex:controlsIO ex:IO_WPtype , ex:IO_empty , ex:IO_pos_e , ex:IO_pos_r ;
     ex:receivesIO ex:IO_retract ;
     rdfs:comment "Adapter-wrapped push skill: pushes a workpiece onto the nest. FBT: skPush composite"@en .
 
 ex:Type_skPushSlow_adp a skill:HandlingSkill ;
     rdfs:label "skPushSlow_adp"@en ;
+    skill:requiresMotion ex:PusherLinearMotionSlow ;
+    skill:expectedDurationSeconds 2.4 ;
     ex:controlsIO ex:IO_WPtype , ex:IO_empty , ex:IO_pos_e , ex:IO_pos_r ;
     ex:receivesIO ex:IO_retract ;
     rdfs:comment "Adapter-wrapped half-speed push skill. FBT: PusherSlow.fbt"@en .
