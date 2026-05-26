@@ -1,0 +1,28 @@
+# Custom DS bridge rule:
+# A Resource that PROVIDES a TYPE skill of semantic category C realizes any
+# Capability whose library skill is also of category C. C is restricted to a
+# named allow-list of semantic skill categories (NOT the generic
+# Atomic/Composite roots, which OWL-RL collapses everything into).
+PREFIX core:  <https://w3id.org/maestro/core#>
+PREFIX cap:   <https://w3id.org/maestro/capability#>
+PREFIX skill: <https://w3id.org/maestro/skill#>
+
+INSERT {
+  GRAPH <https://w3id.org/maestro/reasoning/inferred> {
+    ?resource core:canPerform ?capability .
+  }
+}
+WHERE {
+  VALUES ?skillClass {
+    skill:MotionSkill
+    skill:ManipulationSkill
+    skill:HandlingSkill
+    skill:TransferSkill
+    skill:AssemblySkill
+    skill:ProcessSkill
+  }
+  ?resource   core:provides       ?typeSkill .
+  ?typeSkill  a                   ?skillClass .
+  ?libSkill   a                   ?skillClass .
+  ?capability cap:realizedBySkill ?libSkill .
+}

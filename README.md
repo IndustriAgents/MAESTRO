@@ -700,7 +700,7 @@ If you use MAESTRO in your research, please cite using the
 
 ```bibtex
 @software{xavier_maestro_2026,
-  author  = {Xavier, Midhun},
+  author  = {Xavier, Melwin},
   title   = {MAESTRO: Modular Ontology Stack for Future-Proof Manufacturing},
   year    = {2026},
   version = {0.3.0},
