@@ -1,0 +1,11 @@
+PREFIX security: <https://w3id.org/maestro/security#>
+
+# CQ07 — Which assets are exposed to a cyber threat that can trigger
+# a physical hazard? (safety/security convergence)
+
+SELECT ?asset ?threat ?hazard
+WHERE {
+    ?asset  security:exposedTo ?threat .
+    ?threat security:triggersHazard ?hazard .
+}
+ORDER BY ?asset ?threat

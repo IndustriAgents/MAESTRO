@@ -10,11 +10,11 @@
 #################################################################
 
 <https://w3id.org/maestro/safety> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/safety/0.3.0> ;
+    owl:versionIRI <https://w3id.org/maestro/safety/0.4.0> ;
     rdfs:label "MAESTRO Safety Ontology"@en ;
     owl:imports <https://w3id.org/maestro/core> ;
-    owl:versionInfo "0.3.0" ;
-    rdfs:comment "Functional safety vocabulary aligned with IEC 61508 and ISO 13849."@en .
+    owl:versionInfo "0.4.0" ;
+    rdfs:comment "Functional safety vocabulary aligned with IEC 61508 and ISO 13849. 0.4.0 adds risk assessment, a safety state, and links from SafetyFunction to the resources/skills it protects, plus a hazard-cause relation that the security module joins to via security:triggersHazard (safety/security convergence)."@en .
 
 #################################################################
 # CLASSES
@@ -32,6 +32,16 @@ safety:Hazard a owl:Class ;
 safety:Risk a owl:Class ;
     rdfs:label "Risk"@en ;
     rdfs:subClassOf core:LogicalEntity .
+
+safety:RiskAssessment a owl:Class ;
+    rdfs:label "RiskAssessment"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "An assessment that evaluates the Risk associated with a Hazard (ISO 12100 / IEC 61508-1). New in 0.4.0."@en .
+
+safety:SafetyState a owl:Class ;
+    rdfs:label "SafetyState"@en ;
+    rdfs:subClassOf core:State ;
+    rdfs:comment "A discrete safe operational condition a SafetyFunction can drive the system into (e.g. safe-torque-off). New in 0.4.0."@en .
 
 safety:SafetyIntegrityLevel a owl:Class ;
     rdfs:label "SafetyIntegrityLevel"@en ;
@@ -71,3 +81,37 @@ safety:hasPerformanceLevel a owl:ObjectProperty ;
 safety:mitigates a owl:ObjectProperty ;
     rdfs:domain safety:SafetyFunction ;
     rdfs:range  safety:Hazard .
+
+# --- New in 0.4.0: connect the (previously dangling) SafetyFunction ---
+
+safety:protectsResource a owl:ObjectProperty ;
+    rdfs:label "protectsResource"@en ;
+    rdfs:domain safety:SafetyFunction ;
+    rdfs:range  core:Resource ;
+    rdfs:comment "The SafetyFunction protects this Resource. Deliberately NOT a sub-property of core:dependsOn: the dependency runs the other way (the resource/application depends on the safety function), expressed at instance level with core:dependsOn."@en .
+
+safety:assuresSkill a owl:ObjectProperty ;
+    rdfs:label "assuresSkill"@en ;
+    rdfs:domain safety:SafetyFunction ;
+    rdfs:comment "The SafetyFunction assures safe execution of this Skill. Range left open (core:Skill) to avoid importing skill.ttl into core; populated with core:Skill individuals."@en .
+
+safety:hasRiskAssessment a owl:ObjectProperty ;
+    rdfs:label "hasRiskAssessment"@en ;
+    rdfs:domain safety:Hazard ;
+    rdfs:range  safety:RiskAssessment .
+
+safety:assessesRisk a owl:ObjectProperty ;
+    rdfs:label "assessesRisk"@en ;
+    rdfs:domain safety:RiskAssessment ;
+    rdfs:range  safety:Risk .
+
+safety:reachesState a owl:ObjectProperty ;
+    rdfs:label "reachesState"@en ;
+    rdfs:domain safety:SafetyFunction ;
+    rdfs:range  safety:SafetyState .
+
+safety:causedBy a owl:ObjectProperty ;
+    rdfs:label "causedBy"@en ;
+    rdfs:domain safety:Hazard ;
+    rdfs:range  core:Entity ;
+    rdfs:comment "The entity (resource, actuator, or — via security:triggersHazard — a cyber threat) whose behaviour can give rise to this Hazard."@en .

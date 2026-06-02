@@ -5,6 +5,64 @@ All notable changes to MAESTRO will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-02
+
+Additive, non-breaking release. Adds three professor-requested areas —
+**security**, **digital twin**, and **machine operations** — as proper
+standards-aligned vocabulary plus validated example instances. Ontology
+**modules** bump to 0.4.0; **example** files use their own version track
+(0.5.0) and were not downgraded.
+
+### Added
+
+- **Security (IEC 62443).** New `ontologies/cross-cutting/security.ttl`:
+  `SecurityZone`, `Conduit`, `Threat`, `Vulnerability`, `SecurityControl`,
+  `SecurityRisk` (⊑ `safety:Risk`), and `SecurityLevel` SL1–SL4, with
+  zone/conduit/threat/control relations. The convergence link
+  `security:triggersHazard` (Threat → `safety:Hazard`) ties cyber threats
+  to physical hazards (IEC 62443 ↔ IEC 61508).
+- **Functional safety deepened** in `safety.ttl`: `RiskAssessment`,
+  `SafetyState`, and links that connect the previously dangling
+  `SafetyFunction` (`protectsResource`, `assuresSkill`, `hasRiskAssessment`,
+  `assessesRisk`, `reachesState`, `causedBy`). `protectsResource` is
+  intentionally NOT a sub-property of `core:dependsOn`.
+- **Digital twin (AAS-3.0-inspired)** in `aas.ttl`:
+  `SubmodelElementCollection`, `OperationVariable`, `ConceptDescription`,
+  `ModelingKind` (`Template`/`Instance`), operation input/output/inout
+  variables, `value`/`valueType` on `Property`, and a twinning layer
+  (`mirrorsEntity` → `core:PhysicalEntity`, `reflectsState`,
+  `synchronizedVia`, `lastSynced`).
+- **Machine operations (ISO 14649 / STEP-NC-inspired).** New
+  `ontologies/logical/operation.ttl`: `MachineOperation` →
+  `MachiningOperation` → `Drilling/Milling/TurningOperation`, plus
+  `CuttingParameters` with unit-bearing `spindleSpeed`/`feedRate`/
+  `depthOfCut`/`cuttingSpeed`/`toolDiameter` (`unit:Quantity`, not
+  unit-suffixed datatypes). Bridges to process, skill, motion, and tool.
+- **Motion**: `motion:RotationalConstantSpeedMotion` and
+  `motion:LinearConstantSpeedMotion`.
+- **Units**: `RevolutionPerMinute`, `MillimetrePerMinute`, `MetrePerMinute`.
+- **Examples** — Distribution Station: `security.ttl` (safety + IEC 62443
+  + convergence), `digital-twin.ttl` (AAS twin of the station),
+  `motion-process.ttl` (constant-speed reclassification, consolidated
+  durations, process-step → skill bridge), plus a PLC + OPC UA server +
+  channel added to `plant.ttl`. New **Drilling Station**
+  (`examples/drilling-station/`): `plant`, `product`, `runtime`,
+  `machine-operations`, `digital-twin`.
+- **Validation**: `constraints/shapes-security.ttl` and
+  `shapes-operation.ttl`; queries `ds-02-cycle-time`, `ds-03-safety-coverage`,
+  `ds-04-security-exposure`, `drill-01-can-manufacture`,
+  `drill-02-gap-identification`; CQ06–CQ09; a negative test fixture under
+  `tests/fixtures/`; new validator assertions (exact-count gap
+  identification, cycle-time sum, drilling `canManufacture`).
+- `cap:MachiningCapability` is now realized by a new `skill-lib:Drill`
+  (with `skill-lib:SpindleRotate` / `skill-lib:Feed` constituents).
+
+### Fixed
+
+- Distribution Station `plant.ttl`: `ex:TransferArm1` now declares
+  `res:payload` as a `unit:Quantity`, fixing a pre-existing design-time
+  SHACL violation (`RobotShape`).
+
 ## [0.3.0] - 2026-05-23
 
 ### BREAKING

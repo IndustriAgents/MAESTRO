@@ -1,0 +1,61 @@
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix unit:  <https://w3id.org/maestro/unit#> .
+@prefix op:    <https://w3id.org/maestro/operation#> .
+@prefix shape: <https://w3id.org/maestro/shapes#> .
+
+#################################################################
+# SHACL SHAPES — MACHINE OPERATION LAYER (DESIGN-TIME)
+#
+# Cutting parameters are validated as unit:Quantity (value + unit),
+# NOT as unit-suffixed datatypes, consistent with the 0.4.0 model.
+#################################################################
+
+shape:MachiningOperationShape a sh:NodeShape ;
+    sh:targetClass op:MachiningOperation ;
+    rdfs:label "A machining operation must declare its cutting parameters."@en ;
+    sh:property [
+        sh:path op:hasCuttingParameters ;
+        sh:minCount 1 ;
+        sh:class op:CuttingParameters ;
+        sh:message "MachiningOperation must declare op:hasCuttingParameters (op:CuttingParameters)." ;
+    ] ;
+    sh:property [
+        sh:path op:realizesProcess ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "MachiningOperation should declare which proc:ManufacturingProcess it realises." ;
+    ] .
+
+shape:CuttingParametersShape a sh:NodeShape ;
+    sh:targetClass op:CuttingParameters ;
+    rdfs:label "Cutting parameters must carry a positive, unit-bearing spindle speed."@en ;
+    sh:property [
+        sh:path op:spindleSpeed ;
+        sh:minCount 1 ;
+        sh:class unit:Quantity ;
+        sh:message "CuttingParameters must declare op:spindleSpeed as a unit:Quantity." ;
+    ] ;
+    sh:property [
+        sh:path ( op:spindleSpeed unit:numericValue ) ;
+        sh:minCount 1 ;
+        sh:minExclusive 0 ;
+        sh:message "op:spindleSpeed must have a unit:numericValue greater than zero." ;
+    ] ;
+    sh:property [
+        sh:path ( op:spindleSpeed unit:hasUnit ) ;
+        sh:minCount 1 ;
+        sh:message "op:spindleSpeed must declare a unit:hasUnit." ;
+    ] .
+
+shape:DrillOperationMotionShape a sh:NodeShape ;
+    sh:targetClass op:DrillingOperation ;
+    rdfs:label "A drilling operation should compose at least two typed motions (spindle + feed)."@en ;
+    sh:property [
+        sh:path op:composedOfMotion ;
+        sh:minCount 2 ;
+        sh:severity sh:Warning ;
+        sh:message "DrillingOperation should compose at least two motions (spindle rotation + tool feed)." ;
+    ] .

@@ -11,8 +11,8 @@ authors:
   - family-names: "Xavier"
     given-names: "Melwin"
     email: "midhunxavier1993@gmail.com"
-version: "0.3.0"
-date-released: "2026-05-23"
+version: "0.4.0"
+date-released: "2026-06-02"
 license: MIT
 keywords:
   - manufacturing
@@ -27,6 +27,11 @@ keywords:
   - Industry 5.0
   - digital twin
   - asset administration shell
+  - cybersecurity
+  - IEC 62443
+  - functional safety
+  - STEP-NC
+  - machine operation
 references:
   - type: software
     title: "CaSkMan - Capability and Skill Ontology for Manufacturing"

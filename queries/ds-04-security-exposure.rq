@@ -1,0 +1,13 @@
+PREFIX security: <https://w3id.org/maestro/security#>
+
+# M2 — Security exposure: assets exposed to a cyber threat, with the
+# physical hazard that threat can trigger (safety/security
+# convergence) and whether a control mitigates it.
+
+SELECT ?asset ?threat ?hazard ?control
+WHERE {
+    ?asset security:exposedTo ?threat .
+    OPTIONAL { ?threat security:triggersHazard ?hazard . }
+    OPTIONAL { ?control security:mitigatesThreat ?threat . }
+}
+ORDER BY ?asset ?threat

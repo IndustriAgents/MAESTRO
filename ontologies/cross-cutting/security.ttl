@@ -1,0 +1,148 @@
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:      <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:     <https://w3id.org/maestro/core#> .
+@prefix safety:   <https://w3id.org/maestro/safety#> .
+@prefix security: <https://w3id.org/maestro/security#> .
+
+#################################################################
+# ONTOLOGY DECLARATION
+#################################################################
+
+<https://w3id.org/maestro/security> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/security/0.4.0> ;
+    rdfs:label "MAESTRO Security Ontology"@en ;
+    owl:imports <https://w3id.org/maestro/core> ,
+                <https://w3id.org/maestro/safety> ;
+    owl:versionInfo "0.4.0" ;
+    rdfs:comment "OT cybersecurity vocabulary aligned with IEC 62443 (zones, conduits, threats, vulnerabilities, security controls, security levels SL1–SL4). Imports safety.ttl so the safety/security convergence link (security:triggersHazard) can target safety:Hazard. New in 0.4.0."@en .
+
+#################################################################
+# CLASSES
+#################################################################
+
+security:SecurityZone a owl:Class ;
+    rdfs:label "SecurityZone"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "An IEC 62443 zone — a grouping of assets sharing common security requirements."@en .
+
+security:Conduit a owl:Class ;
+    rdfs:label "Conduit"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "An IEC 62443 conduit — a logical grouping of communication channels connecting two zones, with its own security requirements."@en .
+
+security:Threat a owl:Class ;
+    rdfs:label "Threat"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "A potential cause of an unwanted incident that may harm an asset (IEC 62443 / ISO 27000)."@en .
+
+security:Vulnerability a owl:Class ;
+    rdfs:label "Vulnerability"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "A weakness of an asset or control that can be exploited by a Threat."@en .
+
+security:SecurityControl a owl:Class ;
+    rdfs:label "SecurityControl"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "A countermeasure that protects an asset and/or mitigates a Threat (e.g. authentication, encryption, segmentation)."@en .
+
+security:SecurityRisk a owl:Class ;
+    rdfs:label "SecurityRisk"@en ;
+    rdfs:subClassOf safety:Risk ;
+    rdfs:comment "A cyber risk. Subclass of safety:Risk so safety and security risks share one root — the hinge of the safety/security convergence story."@en .
+
+security:SecurityLevel a owl:Class ;
+    rdfs:label "SecurityLevel"@en ;
+    rdfs:comment "IEC 62443 Security Level (SL1 … SL4)."@en .
+
+security:SL1 a security:SecurityLevel ; rdfs:label "SL 1 — protection against casual or coincidental violation"@en .
+security:SL2 a security:SecurityLevel ; rdfs:label "SL 2 — protection against intentional violation using simple means"@en .
+security:SL3 a security:SecurityLevel ; rdfs:label "SL 3 — protection against intentional violation using sophisticated means"@en .
+security:SL4 a security:SecurityLevel ; rdfs:label "SL 4 — protection against intentional violation using sophisticated means with extended resources"@en .
+
+#################################################################
+# PROPERTIES
+#################################################################
+
+security:hasSecurityLevel a owl:ObjectProperty ;
+    rdfs:label "hasSecurityLevel"@en ;
+    rdfs:domain security:SecurityZone ;
+    rdfs:range  security:SecurityLevel .
+
+security:connectsZones a owl:ObjectProperty ;
+    rdfs:label "connectsZones"@en ;
+    rdfs:domain security:Conduit ;
+    rdfs:range  security:SecurityZone .
+
+security:locatedInZone a owl:ObjectProperty ;
+    rdfs:label "locatedInZone"@en ;
+    rdfs:domain core:Resource ;
+    rdfs:range  security:SecurityZone ;
+    rdfs:comment "A physical Resource (controller, field device) is assigned to a security zone."@en .
+
+security:securesChannel a owl:ObjectProperty ;
+    rdfs:label "securesChannel"@en ;
+    rdfs:domain security:Conduit ;
+    rdfs:comment "The Conduit secures a communication channel. Range left open (com:Channel) to avoid importing communication.ttl here; populated with com:Channel individuals."@en .
+
+security:protects a owl:ObjectProperty ;
+    rdfs:label "protects"@en ;
+    rdfs:domain security:SecurityControl ;
+    rdfs:range  core:Entity ;
+    rdfs:comment "The SecurityControl protects this entity (asset, channel, server)."@en .
+
+security:mitigatesThreat a owl:ObjectProperty ;
+    rdfs:label "mitigatesThreat"@en ;
+    rdfs:domain security:SecurityControl ;
+    rdfs:range  security:Threat .
+
+security:exposedTo a owl:ObjectProperty ;
+    rdfs:label "exposedTo"@en ;
+    rdfs:domain core:Entity ;
+    rdfs:range  security:Threat ;
+    rdfs:comment "The entity is exposed to a Threat (asserted on the asset/channel under attack)."@en .
+
+security:hasVulnerability a owl:ObjectProperty ;
+    rdfs:label "hasVulnerability"@en ;
+    rdfs:domain core:Entity ;
+    rdfs:range  security:Vulnerability .
+
+security:exploits a owl:ObjectProperty ;
+    rdfs:label "exploits"@en ;
+    rdfs:domain security:Threat ;
+    rdfs:range  security:Vulnerability .
+
+security:posesRisk a owl:ObjectProperty ;
+    rdfs:label "posesRisk"@en ;
+    rdfs:domain security:Threat ;
+    rdfs:range  security:SecurityRisk .
+
+security:triggersHazard a owl:ObjectProperty ;
+    rdfs:label "triggersHazard"@en ;
+    rdfs:domain security:Threat ;
+    rdfs:range  safety:Hazard ;
+    rdfs:comment "Safety/security convergence: a cyber Threat can trigger a physical Hazard (IEC 62443 ↔ IEC 61508). Lets a query find hazards reachable from a cyber threat and check whether BOTH a SecurityControl and a safety:SafetyFunction cover them."@en .
+
+security:cveId a owl:DatatypeProperty ;
+    rdfs:label "cveId"@en ;
+    rdfs:domain security:Vulnerability ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "CVE identifier (e.g. 'CVE-2023-12345') where applicable."@en .
+
+security:likelihood a owl:DatatypeProperty ;
+    rdfs:label "likelihood"@en ;
+    rdfs:domain security:SecurityRisk ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "Qualitative likelihood (e.g. low / medium / high)."@en .
+
+security:severity a owl:DatatypeProperty ;
+    rdfs:label "severity"@en ;
+    rdfs:domain security:SecurityRisk ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "Qualitative severity (e.g. low / medium / high)."@en .
+
+security:zoneName a owl:DatatypeProperty ;
+    rdfs:label "zoneName"@en ;
+    rdfs:domain security:SecurityZone ;
+    rdfs:range  xsd:string .

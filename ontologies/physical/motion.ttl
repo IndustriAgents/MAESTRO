@@ -10,10 +10,10 @@
 #################################################################
 
 <https://w3id.org/maestro/motion> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/motion/0.3.0> ;
+    owl:versionIRI <https://w3id.org/maestro/motion/0.4.0> ;
     rdfs:label "MAESTRO Motion Ontology"@en ;
     owl:imports <https://w3id.org/maestro/core> ;
-    owl:versionInfo "0.3.0" ;
+    owl:versionInfo "0.4.0" ;
     rdfs:comment "Machine-independent motion semantics. Must remain independent of ROS, PLCs, and IEC 61499."@en .
 
 #################################################################
@@ -29,9 +29,19 @@ motion:LinearMotion a owl:Class ;
     rdfs:label "LinearMotion"@en ;
     rdfs:subClassOf motion:Motion .
 
+motion:LinearConstantSpeedMotion a owl:Class ;
+    rdfs:label "LinearConstantSpeedMotion"@en ;
+    rdfs:subClassOf motion:LinearMotion ;
+    rdfs:comment "Translation at constant linear velocity (e.g. a tool feed axis, a pneumatic pusher stroke). New in 0.4.0."@en .
+
 motion:RotationalMotion a owl:Class ;
     rdfs:label "RotationalMotion"@en ;
     rdfs:subClassOf motion:Motion .
+
+motion:RotationalConstantSpeedMotion a owl:Class ;
+    rdfs:label "RotationalConstantSpeedMotion"@en ;
+    rdfs:subClassOf motion:RotationalMotion ;
+    rdfs:comment "Rotation at constant angular velocity (e.g. a machining spindle, a rotary transfer arm). Lets a planner rely on the constant-speed assumption when estimating timing. New in 0.4.0."@en .
 
 motion:JointMotion a owl:Class ;
     rdfs:label "JointMotion"@en ;

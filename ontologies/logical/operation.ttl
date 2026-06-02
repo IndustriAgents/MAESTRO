@@ -1,0 +1,127 @@
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:   <https://w3id.org/maestro/core#> .
+@prefix proc:   <https://w3id.org/maestro/process#> .
+@prefix motion: <https://w3id.org/maestro/motion#> .
+@prefix unit:   <https://w3id.org/maestro/unit#> .
+@prefix op:     <https://w3id.org/maestro/operation#> .
+
+#################################################################
+# ONTOLOGY DECLARATION
+#################################################################
+
+<https://w3id.org/maestro/operation> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/operation/0.4.0> ;
+    rdfs:label "MAESTRO Machine Operation Ontology"@en ;
+    owl:imports <https://w3id.org/maestro/core> ,
+                <https://w3id.org/maestro/process> ,
+                <https://w3id.org/maestro/motion> ,
+                <https://w3id.org/maestro/unit> ;
+    owl:versionInfo "0.4.0" ;
+    rdfs:comment "Machine-operation layer INSPIRED BY (not strictly conformant to) ISO 14649 (STEP-NC) machining_operation. Fills the gap between the high-level DIN 8580 process taxonomy (process.ttl) and low-level kinematics (motion.ttl): a MachineOperation is the technology-bearing unit a machine executes (spindle speed, feed rate, depth of cut). It is a sibling of Skill/Process/Motion under core:LogicalEntity and BRIDGES all three rather than subclassing any of them. New in 0.4.0."@en .
+
+#################################################################
+# CLASSES
+#################################################################
+
+op:MachineOperation a owl:Class ;
+    rdfs:label "MachineOperation"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "A parametrised action a machine performs to realise (part of) a manufacturing process. ISO 14649 'operation'."@en .
+
+op:MachiningOperation a owl:Class ;
+    rdfs:label "MachiningOperation"@en ;
+    rdfs:subClassOf op:MachineOperation ;
+    rdfs:comment "A material-removal operation carrying cutting technology. ISO 14649 'machining_operation'."@en .
+
+op:DrillingOperation a owl:Class ;
+    rdfs:label "DrillingOperation"@en ;
+    rdfs:subClassOf op:MachiningOperation ;
+    rdfs:comment "ISO 14649 'drilling'."@en .
+
+op:MillingOperation a owl:Class ;
+    rdfs:label "MillingOperation"@en ;
+    rdfs:subClassOf op:MachiningOperation ;
+    rdfs:comment "ISO 14649 'milling'."@en .
+
+op:TurningOperation a owl:Class ;
+    rdfs:label "TurningOperation"@en ;
+    rdfs:subClassOf op:MachiningOperation ;
+    rdfs:comment "ISO 14649 'turning'."@en .
+
+op:CuttingParameters a owl:Class ;
+    rdfs:label "CuttingParameters"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "The cutting technology of a machining operation (ISO 14649 'machining_technology'). Each parameter is a unit:Quantity."@en .
+
+#################################################################
+# BRIDGE PROPERTIES  (Operation ↔ Process / Skill / Motion / Resource)
+#################################################################
+
+op:realizesProcess a owl:ObjectProperty ;
+    rdfs:label "realizesProcess"@en ;
+    rdfs:domain op:MachineOperation ;
+    rdfs:range  proc:ManufacturingProcess ;
+    rdfs:comment "The manufacturing process this operation realises. Kept distinct from the process taxonomy — an operation is HOW a process is carried out on a specific machine."@en .
+
+op:requiresSkill a owl:ObjectProperty ;
+    rdfs:label "requiresSkill"@en ;
+    rdfs:domain op:MachineOperation ;
+    rdfs:comment "The (composite) Skill that executes this operation. Range left open (core:Skill) to avoid importing skill.ttl; populated with core:Skill individuals."@en .
+
+op:composedOfMotion a owl:ObjectProperty ;
+    rdfs:label "composedOfMotion"@en ;
+    rdfs:domain op:MachineOperation ;
+    rdfs:range  motion:Motion ;
+    rdfs:comment "The typed motions that make up the operation (e.g. a drill cycle = spindle RotationalConstantSpeedMotion ∧ feed LinearConstantSpeedMotion)."@en .
+
+op:hasCuttingParameters a owl:ObjectProperty ;
+    rdfs:label "hasCuttingParameters"@en ;
+    rdfs:domain op:MachiningOperation ;
+    rdfs:range  op:CuttingParameters .
+
+op:onTool a owl:ObjectProperty ;
+    rdfs:label "onTool"@en ;
+    rdfs:domain op:MachineOperation ;
+    rdfs:range  core:Resource ;
+    rdfs:comment "The tool resource the operation acts with (e.g. a drill bit)."@en .
+
+#################################################################
+# CUTTING-PARAMETER PROPERTIES  (unit-bearing, per repo direction)
+#
+# Modelled as unit:Quantity object properties — NOT unit-suffixed
+# datatype properties — consistent with res:payload and the
+# deprecation of res:payloadKg.
+#################################################################
+
+op:spindleSpeed a owl:ObjectProperty ;
+    rdfs:label "spindleSpeed"@en ;
+    rdfs:domain op:CuttingParameters ;
+    rdfs:range  unit:Quantity ;
+    rdfs:comment "Rotational speed of the spindle (typically in unit:RevolutionPerMinute)."@en .
+
+op:feedRate a owl:ObjectProperty ;
+    rdfs:label "feedRate"@en ;
+    rdfs:domain op:CuttingParameters ;
+    rdfs:range  unit:Quantity ;
+    rdfs:comment "Linear feed rate of the tool (typically in unit:MillimetrePerMinute)."@en .
+
+op:depthOfCut a owl:ObjectProperty ;
+    rdfs:label "depthOfCut"@en ;
+    rdfs:domain op:CuttingParameters ;
+    rdfs:range  unit:Quantity ;
+    rdfs:comment "Axial/radial depth of cut (typically in unit:Millimetre)."@en .
+
+op:cuttingSpeed a owl:ObjectProperty ;
+    rdfs:label "cuttingSpeed"@en ;
+    rdfs:domain op:CuttingParameters ;
+    rdfs:range  unit:Quantity ;
+    rdfs:comment "Surface cutting speed (typically in unit:MetrePerMinute)."@en .
+
+op:toolDiameter a owl:ObjectProperty ;
+    rdfs:label "toolDiameter"@en ;
+    rdfs:domain op:CuttingParameters ;
+    rdfs:range  unit:Quantity ;
+    rdfs:comment "Diameter of the cutting tool (typically in unit:Millimetre)."@en .

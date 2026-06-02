@@ -1,0 +1,22 @@
+PREFIX core: <https://w3id.org/maestro/core#>
+PREFIX proc: <https://w3id.org/maestro/process#>
+PREFIX prod: <https://w3id.org/maestro/product#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+# M3 — Gap identification: for a product's required process, return
+# the capabilities NO resource in the plant can perform. Run AFTER
+# materialisation. On a complete plant this returns zero rows; on an
+# incomplete plant it returns the missing capability.
+
+SELECT ?plant ?process ?missingCap
+WHERE {
+    ?plant a core:Plant .
+    ?product a/rdfs:subClassOf* core:Product ;
+             prod:requiresProcess ?process .
+    ?process proc:requiresCapability ?missingCap .
+    FILTER NOT EXISTS {
+        ?plant core:hasPart+ ?r .
+        ?r core:canPerform ?missingCap .
+    }
+}
+ORDER BY ?plant ?process ?missingCap

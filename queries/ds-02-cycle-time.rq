@@ -1,0 +1,15 @@
+PREFIX skill: <https://w3id.org/maestro/skill#>
+PREFIX ex:    <https://w3id.org/maestro/examples/distribution-station#>
+
+# M2 — Cycle time: sum the expected durations along the five-step
+# transport chain. Relies on the process-step → skill-type bridge
+# (ex:realizedBySkillType, in motion-process.ttl).
+
+SELECT ?process (SUM(?seconds) AS ?totalSeconds)
+WHERE {
+    ?process ex:hasSubProcess ?step .
+    ?step    ex:realizedBySkillType ?skill .
+    ?skill   skill:expectedDurationSeconds ?seconds .
+}
+GROUP BY ?process
+ORDER BY ?process

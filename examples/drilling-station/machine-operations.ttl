@@ -1,0 +1,46 @@
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix unit:   <https://w3id.org/maestro/unit#> .
+@prefix skill-lib: <https://w3id.org/maestro/skill-lib#> .
+@prefix op:     <https://w3id.org/maestro/operation#> .
+@prefix ex:     <https://w3id.org/maestro/examples/drilling-station#> .
+
+#################################################################
+# EXAMPLE — DRILLING STATION: MACHINE OPERATIONS (M3)
+#
+# A drill cycle expressed as an ISO-14649-inspired operation that
+# BRIDGES the process (DrillHoleProcess), the executing skill
+# (skill-lib:Drill), and the typed motions (spindle rotation + tool
+# feed), carrying its cutting technology as unit-bearing quantities.
+#################################################################
+
+<https://w3id.org/maestro/examples/drilling-station/machine-operations> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/drilling-station/machine-operations/0.5.0> ;
+    rdfs:label "MAESTRO Example: Drilling Station — Machine Operations"@en ;
+    owl:imports <https://w3id.org/maestro/examples/drilling-station> ;
+    owl:versionInfo "0.5.0" .
+
+#################################################################
+# DRILL CYCLE OPERATION
+#################################################################
+
+ex:DrillCycle1 a op:DrillingOperation ;
+    rdfs:label "Drill Ø6 mm hole, 10 mm deep" ;
+    op:realizesProcess ex:DrillHoleProcess ;
+    op:requiresSkill skill-lib:Drill ;
+    op:composedOfMotion ex:DrillSpindleMotion , ex:DrillFeedMotion ;
+    op:hasCuttingParameters ex:DrillParams1 ;
+    op:onTool ex:DrillBit1 .
+
+#################################################################
+# CUTTING PARAMETERS  (unit:Quantity — not unit-suffixed datatypes)
+#################################################################
+
+ex:DrillParams1 a op:CuttingParameters ;
+    rdfs:label "Cutting parameters for the Ø6 mm drill cycle" ;
+    op:spindleSpeed [ a unit:Quantity ; unit:numericValue 1200.0 ; unit:hasUnit unit:RevolutionPerMinute ] ;
+    op:feedRate     [ a unit:Quantity ; unit:numericValue 80.0   ; unit:hasUnit unit:MillimetrePerMinute ] ;
+    op:depthOfCut   [ a unit:Quantity ; unit:numericValue 10.0   ; unit:hasUnit unit:Millimetre ] ;
+    op:toolDiameter [ a unit:Quantity ; unit:numericValue 6.0    ; unit:hasUnit unit:Millimetre ] .

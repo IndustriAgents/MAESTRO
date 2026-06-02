@@ -1,0 +1,65 @@
+@prefix sh:       <http://www.w3.org/ns/shacl#> .
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix safety:   <https://w3id.org/maestro/safety#> .
+@prefix security: <https://w3id.org/maestro/security#> .
+@prefix shape:    <https://w3id.org/maestro/shapes#> .
+
+#################################################################
+# SHACL SHAPES — SECURITY LAYER (DESIGN-TIME, IEC 62443)
+#################################################################
+
+shape:SecurityZoneShape a sh:NodeShape ;
+    sh:targetClass security:SecurityZone ;
+    rdfs:label "Every security zone must declare exactly one security level."@en ;
+    sh:property [
+        sh:path security:hasSecurityLevel ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class security:SecurityLevel ;
+        sh:message "SecurityZone must declare exactly one security:hasSecurityLevel (SL1–SL4)." ;
+    ] .
+
+shape:ConduitShape a sh:NodeShape ;
+    sh:targetClass security:Conduit ;
+    rdfs:label "A conduit must connect exactly two zones."@en ;
+    sh:property [
+        sh:path security:connectsZones ;
+        sh:minCount 2 ;
+        sh:maxCount 2 ;
+        sh:class security:SecurityZone ;
+        sh:message "Conduit must connect exactly two security:SecurityZone individuals." ;
+    ] .
+
+shape:ThreatMitigationShape a sh:NodeShape ;
+    sh:targetClass security:Threat ;
+    rdfs:label "A threat should be addressed by a security control."@en ;
+    sh:property [
+        sh:path [ sh:inversePath security:mitigatesThreat ] ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Threat has no mitigating security:SecurityControl." ;
+    ] .
+
+# Safety/security convergence: a hazard reachable from a cyber threat
+# (via security:triggersHazard) that has NO mitigating SafetyFunction
+# is flagged as a warning. Healthy examples mitigate such hazards, so
+# this does not fire on a complete plant.
+shape:ConvergenceShape a sh:NodeShape ;
+    sh:targetClass safety:Hazard ;
+    rdfs:label "Cyber-triggerable hazards must also be mitigated by a safety function."@en ;
+    sh:sparql [
+        sh:severity sh:Warning ;
+        sh:message "Hazard is triggerable by a cyber threat but has no mitigating safety:SafetyFunction (safety/security convergence gap)." ;
+        sh:prefixes [
+            sh:declare [ sh:prefix "security" ; sh:namespace "https://w3id.org/maestro/security#"^^xsd:anyURI ] ;
+            sh:declare [ sh:prefix "safety" ; sh:namespace "https://w3id.org/maestro/safety#"^^xsd:anyURI ]
+        ] ;
+        sh:select """
+            SELECT $this WHERE {
+                ?threat security:triggersHazard $this .
+                FILTER NOT EXISTS { ?sf safety:mitigates $this . }
+            }
+        """ ;
+    ] .

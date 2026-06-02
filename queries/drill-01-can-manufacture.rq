@@ -1,0 +1,17 @@
+PREFIX core: <https://w3id.org/maestro/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX ex:   <https://w3id.org/maestro/examples/drilling-station#>
+
+# M3 — Reuse the manufacturing-ability inference on the new plant:
+# can the Drilling Station manufacture the drilled plate? Returns
+# results only AFTER the capability/manufacturing CONSTRUCT rules
+# have been materialised.
+
+SELECT ?plant ?plantLabel ?product ?productLabel
+WHERE {
+    ?plant core:canManufacture ?product .
+    FILTER(?plant = ex:DrillingStation1)
+    OPTIONAL { ?plant rdfs:label ?plantLabel }
+    OPTIONAL { ?product rdfs:label ?productLabel }
+}
+ORDER BY ?product

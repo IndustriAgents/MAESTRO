@@ -1,0 +1,63 @@
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:   <https://w3id.org/maestro/core#> .
+@prefix proc:   <https://w3id.org/maestro/process#> .
+@prefix motion: <https://w3id.org/maestro/motion#> .
+@prefix skill:  <https://w3id.org/maestro/skill#> .
+@prefix ex:     <https://w3id.org/maestro/examples/distribution-station#> .
+
+#################################################################
+# EXAMPLE — DISTRIBUTING STATION: MOTION-WITH-TIME (M2)
+#
+# 1. Reclassify the DS motions under the 0.4.0 constant-speed
+#    sub-classes so a planner can rely on the type.
+# 2. Consolidate per-skill expected durations (adds the two missing
+#    manipulation-skill durations).
+# 3. Bridge each process step to the skill type whose duration it
+#    consumes, so a cycle-time query can sum along the 5-step chain.
+#################################################################
+
+<https://w3id.org/maestro/examples/distribution-station/motion-process> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station/motion-process/0.5.0> ;
+    rdfs:label "MAESTRO Example: Festo Distributing Station — Motion with time"@en ;
+    owl:imports <https://w3id.org/maestro/examples/distribution-station> ;
+    owl:versionInfo "0.5.0" .
+
+#################################################################
+# 1. CONSTANT-SPEED RECLASSIFICATION
+#################################################################
+
+ex:ArmRotationalMotion     a motion:RotationalConstantSpeedMotion .
+ex:ArmRotationalMotionSlow a motion:RotationalConstantSpeedMotion .
+ex:PusherLinearMotion      a motion:LinearConstantSpeedMotion .
+ex:PusherLinearMotionSlow  a motion:LinearConstantSpeedMotion .
+
+#################################################################
+# 2. CONSOLIDATED DURATIONS (the two manipulation skills lacked one)
+#################################################################
+
+ex:Type_skPick  skill:expectedDurationSeconds 0.8 .
+ex:Type_skPlace skill:expectedDurationSeconds 0.8 .
+
+#################################################################
+# 3. PROCESS-STEP → SKILL-TYPE BRIDGE
+#
+# Each sub-process of ex:DistributeWorkpieceProcess is realised by
+# the skill type whose expected duration it consumes. Without this
+# relation the cycle-time query has no way to join steps (in
+# product.ttl) to durations (in plant.ttl).
+#################################################################
+
+ex:realizedBySkillType a owl:ObjectProperty ;
+    rdfs:label "realizedBySkillType"@en ;
+    rdfs:domain proc:ManufacturingProcess ;
+    rdfs:range  core:Skill ;
+    rdfs:comment "Links a process step to the skill TYPE that executes it (and carries its expected duration)."@en .
+
+ex:LoadProcess   ex:realizedBySkillType ex:Type_skLoad_adp .
+ex:PushProcess   ex:realizedBySkillType ex:Type_skPush_adp .
+ex:PickProcess   ex:realizedBySkillType ex:Type_skPick .
+ex:RotateProcess ex:realizedBySkillType ex:Type_skGoToRight .
+ex:PlaceProcess  ex:realizedBySkillType ex:Type_skPlace .

@@ -1,0 +1,14 @@
+PREFIX op:   <https://w3id.org/maestro/operation#>
+PREFIX unit: <https://w3id.org/maestro/unit#>
+
+# CQ08 — Which cutting parameters (spindle speed) are defined for
+# each machining operation?
+
+SELECT ?operation ?params ?spindleRpm ?unit
+WHERE {
+    ?operation op:hasCuttingParameters ?params .
+    ?params    op:spindleSpeed ?q .
+    ?q unit:numericValue ?spindleRpm ;
+       unit:hasUnit ?unit .
+}
+ORDER BY ?operation

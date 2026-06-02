@@ -1,0 +1,49 @@
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:       <http://www.w3.org/2002/07/owl#> .
+@prefix core:      <https://w3id.org/maestro/core#> .
+@prefix res:       <https://w3id.org/maestro/resource#> .
+@prefix cap:       <https://w3id.org/maestro/capability#> .
+@prefix proc:      <https://w3id.org/maestro/process#> .
+@prefix prod:      <https://w3id.org/maestro/product#> .
+@prefix skill-lib: <https://w3id.org/maestro/skill-lib#> .
+@prefix exf:       <https://w3id.org/maestro/fixtures/incomplete-drilling#> .
+
+#################################################################
+# NEGATIVE TEST FIXTURE — INCOMPLETE DRILLING PLANT
+#
+# Deliberately kept OUTSIDE examples/ so the validator's
+# example_plant_files() glob does not load it into the shared
+# design graph (it would otherwise contaminate every assertion).
+# Loaded only by the gap-identification test, in isolation.
+#
+# The plant has a spindle but NO control component implementing
+# skill-lib:Drill / controlling the spindle, so the capability-
+# inference rule cannot derive canPerform cap:MachiningCapability —
+# the gap-identification query must surface MachiningCapability as
+# the missing capability.
+#################################################################
+
+<https://w3id.org/maestro/fixtures/incomplete-drilling> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/fixtures/incomplete-drilling/0.5.0> ;
+    rdfs:label "MAESTRO Fixture: Incomplete Drilling Plant"@en ;
+    owl:imports <https://w3id.org/maestro> ;
+    owl:versionInfo "0.5.0" .
+
+exf:IncompleteDrillingStation a core:Plant ;
+    rdfs:label "Incomplete drilling station (no drill controller)" ;
+    core:identifier "fixture-incomplete-drilling-001" ;
+    core:hasPart exf:Spindle .
+
+exf:Spindle a res:Machine ;
+    rdfs:label "Drill spindle (uncontrolled)" ;
+    core:identifier "fixture-spindle-001" ;
+    core:provides skill-lib:Drill .
+
+exf:Plate a prod:Part ;
+    rdfs:label "Plate to be drilled" ;
+    prod:requiresProcess exf:DrillProc .
+
+exf:DrillProc a proc:MachiningProcess ;
+    rdfs:label "Drill hole" ;
+    proc:requiresCapability cap:MachiningCapability .

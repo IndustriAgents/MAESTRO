@@ -13,6 +13,7 @@
 @prefix skill-lib:  <https://w3id.org/maestro/skill-lib#> .
 @prefix iec61499:   <https://w3id.org/maestro/iec61499#> .
 @prefix opcua:      <https://w3id.org/maestro/opcua#> .
+@prefix com:        <https://w3id.org/maestro/communication#> .
 @prefix ex:         <https://w3id.org/maestro/examples/distribution-station#> .
 
 #################################################################
@@ -210,6 +211,11 @@ ex:TransferArm1 a res:TransferArm ;
     core:identifier "resource-transfer-arm-001" ;
     res:manufacturer "Festo" ;
     res:model        "MPS-Rotary-Arm" ;
+    res:payload [
+        a unit:Quantity ;
+        unit:numericValue 0.2 ;
+        unit:hasUnit unit:Kilogram
+    ] ;
     core:hasPart ex:VacuumUnit1 ;
     core:provides ex:Type_skGoToLeft , ex:Type_skGoToRight , ex:Type_skGoToRight2x .
 
@@ -643,3 +649,39 @@ ex:OpcUaDistributionInterface a opcua:OpcUaSkillInterface ;
     opcua:exposes   ex:cmpTrans , ex:cmpTransSlow ,
                     ex:LoadWP , ex:LoadWP_toslow ,
                     ex:PushWP , ex:PushWPslow .
+
+#################################################################
+# CONTROLLER, OPC UA SERVER & COMMUNICATION CHANNEL
+#
+# The physical controller (PLC) is a core:Resource; the OPC UA
+# server is a core:ControlComponent deployed on it. Only a
+# ControlComponent may core:communicatesThrough a com:Channel
+# (domain core:ControlComponent), so the channel link sits on the
+# server, not the PLC. This infrastructure is the join target for
+# the security zones/conduits (security.ttl) and the digital-twin
+# synchronisation link (digital-twin.ttl).
+#################################################################
+
+ex:DS_PLC a res:PLC ;
+    rdfs:label "Distributing Station PLC" ;
+    core:identifier "resource-ds-plc-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "CECC-LK" ;
+    core:hosts ex:DS_OpcUaServer .
+
+ex:DS_OpcUaServer a opcua:OpcUaServer ;
+    rdfs:label "Distributing Station OPC UA Server" ;
+    core:identifier "control-ds-opcua-server-001" ;
+    core:deployedOn ex:DS_PLC ;
+    opcua:hostsInterface ex:OpcUaDistributionInterface ;
+    core:communicatesThrough ex:DS_OpcUaChannel .
+
+ex:DS_OpcUaChannel a com:Channel ;
+    rdfs:label "Distributing Station OPC UA channel" ;
+    com:usesProtocol com:OpcUaProtocol ;
+    com:hasEndpoint ex:DS_OpcUaEndpoint .
+
+ex:DS_OpcUaEndpoint a com:Endpoint ;
+    rdfs:label "DS OPC UA endpoint" ;
+    com:address "opc.tcp://ds-plc:4840" ;
+    com:port 4840 .

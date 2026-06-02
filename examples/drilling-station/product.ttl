@@ -1,0 +1,36 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix core: <https://w3id.org/maestro/core#> .
+@prefix cap:  <https://w3id.org/maestro/capability#> .
+@prefix proc: <https://w3id.org/maestro/process#> .
+@prefix prod: <https://w3id.org/maestro/product#> .
+@prefix ex:   <https://w3id.org/maestro/examples/drilling-station#> .
+
+#################################################################
+# EXAMPLE — DRILLING STATION: PRODUCT & PROCESS (M3)
+#################################################################
+
+<https://w3id.org/maestro/examples/drilling-station/product> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/drilling-station/product/0.5.0> ;
+    rdfs:label "MAESTRO Example: Drilling Station — Product"@en ;
+    owl:imports <https://w3id.org/maestro/examples/drilling-station> ;
+    owl:versionInfo "0.5.0" .
+
+#################################################################
+# PROCESS
+#################################################################
+
+ex:DrillHoleProcess a proc:MachiningProcess ;
+    rdfs:label "Drill a Ø6 mm through-hole" ;
+    proc:requiresCapability cap:MachiningCapability .
+
+#################################################################
+# PRODUCT
+#################################################################
+
+ex:DrilledPlate a prod:Part ;
+    rdfs:label "Aluminium plate with one Ø6 mm hole" ;
+    prod:massKg 0.120 ;
+    prod:requiresProcess ex:DrillHoleProcess .

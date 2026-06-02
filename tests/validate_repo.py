@@ -162,6 +162,10 @@ def assert_competency_questions_pre_materialization(graph: Graph) -> None:
         "cq02-skill-implementations.rq": 5,
         "cq03-product-capabilities.rq": 1,
         "cq04-resources-without-provided-skills.rq": 1,
+        "cq06-safety-mitigations.rq": 1,
+        "cq07-cyber-physical-exposure.rq": 1,
+        "cq08-cutting-parameters.rq": 1,
+        "cq09-twin-reflected-states.rq": 1,
     }
     for query_name, minimum in minimums.items():
         query = (ROOT / "queries" / "cq" / query_name).read_text(encoding="utf-8")
@@ -229,7 +233,68 @@ def assert_materialized_inference(graph: Graph) -> None:
     assert (EX_TRANSFER.Plant1, CORE.canManufacture, EX_TRANSFER.ProductA) in graph, (
         "Plant1 canManufacture ProductA was not materialized."
     )
+    # drill-01: the Drilling Station materialises canManufacture for the drilled plate.
+    drill_rows = list(graph.query((ROOT / "queries/drill-01-can-manufacture.rq").read_text(encoding="utf-8")))
+    assert len(drill_rows) >= 1, (
+        "drill-01-can-manufacture returned no rows; DrillingStation1 canManufacture was not materialized."
+    )
     assert_competency_questions_post_materialization(graph)
+
+
+def assert_security_safety_operation_queries(graph: Graph) -> None:
+    """Time-aware, safety, and security queries (no materialisation needed)."""
+    # ds-02 cycle time: one process chain summing to 5.0 s.
+    rows = list(graph.query((ROOT / "queries/ds-02-cycle-time.rq").read_text(encoding="utf-8")))
+    assert len(rows) == 1, f"ds-02-cycle-time returned {len(rows)} rows, expected 1"
+    total = float(rows[0][1])
+    assert abs(total - 5.0) < 1e-6, f"ds-02-cycle-time total = {total}, expected 5.0"
+
+    # ds-03 safety coverage: a healthy plant has NO unmitigated hazard.
+    rows = list(graph.query((ROOT / "queries/ds-03-safety-coverage.rq").read_text(encoding="utf-8")))
+    assert len(rows) == 0, (
+        f"ds-03-safety-coverage returned {len(rows)} unmitigated hazards on a healthy plant, expected 0"
+    )
+
+    # ds-04 security exposure: at least one exposed asset.
+    rows = list(graph.query((ROOT / "queries/ds-04-security-exposure.rq").read_text(encoding="utf-8")))
+    assert len(rows) >= 1, "ds-04-security-exposure returned no exposed assets, expected at least 1"
+
+
+def build_materialized_graph(*example_files: Path) -> Graph:
+    """Ontologies + the given example files, with CONSTRUCT rules applied."""
+    g = Graph()
+    for p in ontology_turtle_files():
+        g.parse(p, format="turtle")
+    for p in example_files:
+        g.parse(p, format="turtle")
+    apply_construct_rules(g)
+    return g
+
+
+def assert_gap_identification() -> None:
+    """drill-02 returns the missing capability on an incomplete plant and
+    nothing on the complete Drilling Station (exact-count, in isolation)."""
+    gap_query = (ROOT / "queries/drill-02-gap-identification.rq").read_text(encoding="utf-8")
+
+    complete = build_materialized_graph(
+        ROOT / "examples/drilling-station/plant.ttl",
+        ROOT / "examples/drilling-station/product.ttl",
+        ROOT / "examples/drilling-station/machine-operations.ttl",
+    )
+    complete_rows = list(complete.query(gap_query))
+    assert len(complete_rows) == 0, (
+        f"gap-identification returned {len(complete_rows)} rows on the complete plant, expected 0"
+    )
+
+    incomplete = build_materialized_graph(ROOT / "tests/fixtures/incomplete-drilling-plant.ttl")
+    incomplete_rows = list(incomplete.query(gap_query))
+    assert len(incomplete_rows) == 1, (
+        f"gap-identification returned {len(incomplete_rows)} rows on the incomplete fixture, expected 1"
+    )
+    missing_cap = str(incomplete_rows[0][2])
+    assert missing_cap == "https://w3id.org/maestro/capability#MachiningCapability", (
+        f"gap-identification surfaced {missing_cap}, expected cap:MachiningCapability"
+    )
 
 
 def main() -> None:
@@ -241,6 +306,8 @@ def main() -> None:
         ROOT / "constraints/shapes-resource.ttl",
         ROOT / "constraints/shapes-process.ttl",
         ROOT / "constraints/shapes-skill.ttl",
+        ROOT / "constraints/shapes-security.ttl",
+        ROOT / "constraints/shapes-operation.ttl",
     )
     shacl_validate(design, design_shapes, "design-time")
 
@@ -251,6 +318,8 @@ def main() -> None:
     assert_semantic_spine(runtime)
     assert_query_counts(runtime)
     assert_competency_questions_pre_materialization(runtime)
+    assert_security_safety_operation_queries(runtime)
+    assert_gap_identification()
     assert_materialized_inference(runtime)
 
     print("MAESTRO validation passed")

@@ -4,7 +4,7 @@
 *Industry 4.0 / Industry 5.0 — semantic, skill-based, vendor-independent*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](CHANGELOG.md)
 [![Ontology: OWL2-RL](https://img.shields.io/badge/ontology-OWL2--RL-green.svg)](https://www.w3.org/TR/owl2-overview/)
 
 MAESTRO is a unified, standards-aligned semantic framework for modelling
@@ -134,17 +134,19 @@ arrows to the external standards each module aligns with:
 | [`ontologies/lib/motion-lib.ttl`](ontologies/lib/motion-lib.ttl) | Reusable motion **specifications** (LinearMotionSpec, …) |
 | [`ontologies/logical/process.ttl`](ontologies/logical/process.ttl) | DIN 8580 / VDI 3682 processes |
 | [`ontologies/logical/product.ttl`](ontologies/logical/product.ttl) | Products, parts, tolerances |
+| [`ontologies/logical/operation.ttl`](ontologies/logical/operation.ttl) | Machine operations + cutting technology (ISO 14649-inspired) |
 | [`ontologies/execution/iec61131.ttl`](ontologies/execution/iec61131.ttl) | PLC semantics |
 | [`ontologies/execution/iec61499.ttl`](ontologies/execution/iec61499.ttl) | Event-driven distributed FBs |
 | [`ontologies/execution/ros.ttl`](ontologies/execution/ros.ttl) | ROS / ROS 2 nodes, topics, actions |
 | [`ontologies/execution/opcua.ttl`](ontologies/execution/opcua.ttl) | OPC UA skill interfaces |
-| [`ontologies/execution/aas.ttl`](ontologies/execution/aas.ttl) | Asset Administration Shell |
+| [`ontologies/execution/aas.ttl`](ontologies/execution/aas.ttl) | Asset Administration Shell digital twin (AAS-3.0-inspired) + twinning layer |
 | [`ontologies/runtime/runtime.ttl`](ontologies/runtime/runtime.ttl) | Live operational state (PackML) |
 | [`ontologies/runtime/state.ttl`](ontologies/runtime/state.ttl) | Generic state machine vocab |
 | [`ontologies/cross-cutting/sensor.ttl`](ontologies/cross-cutting/sensor.ttl) | SSN / SOSA sensor model |
 | [`ontologies/cross-cutting/unit.ttl`](ontologies/cross-cutting/unit.ttl) | QUDT-aligned units |
 | [`ontologies/cross-cutting/communication.ttl`](ontologies/cross-cutting/communication.ttl) | DDS / MQTT / OPC UA transport |
-| [`ontologies/cross-cutting/safety.ttl`](ontologies/cross-cutting/safety.ttl) | IEC 61508 safety |
+| [`ontologies/cross-cutting/safety.ttl`](ontologies/cross-cutting/safety.ttl) | IEC 61508 / ISO 13849 functional safety |
+| [`ontologies/cross-cutting/security.ttl`](ontologies/cross-cutting/security.ttl) | IEC 62443 OT cybersecurity + safety/security convergence |
 | [`ontologies/cross-cutting/quality.ttl`](ontologies/cross-cutting/quality.ttl) | ISO 9001 quality |
 | [`ontologies/cross-cutting/maintenance.ttl`](ontologies/cross-cutting/maintenance.ttl) | Maintenance & predictive |
 | [`ontologies/cross-cutting/energy.ttl`](ontologies/cross-cutting/energy.ttl) | Energy-aware manufacturing |
@@ -153,6 +155,12 @@ arrows to the external standards each module aligns with:
 | [`ontologies/maestro.ttl`](ontologies/maestro.ttl) | **Top-level umbrella** — imports every module |
 
 See [docs/03-modular-stack.md](docs/03-modular-stack.md).
+
+**New in 0.4.0:** [security (IEC 62443) + safety/security convergence](docs/19-security.md),
+[digital twin (AAS) + twinning layer](docs/20-digital-twin.md), and the
+[machine-operation layer (ISO 14649-inspired)](docs/21-operations.md).
+Validated on the existing Distribution Station and a new Drilling Station
+(`examples/drilling-station/`).
 
 ---
 
@@ -165,7 +173,8 @@ See [docs/03-modular-stack.md](docs/03-modular-stack.md).
 | `iec61131.ttl` | IEC 61131 |
 | `iec61499.ttl` | IEC 61499 |
 | `opcua.ttl` | OPC UA |
-| `aas.ttl` | Asset Administration Shell |
+| `aas.ttl` | Asset Administration Shell (AAS 3.0-inspired bridge) |
+| `operation.ttl` | ISO 14649 / STEP-NC (inspired) |
 | `sensor.ttl` | SSN / SOSA |
 | `unit.ttl` | QUDT |
 | `process.ttl` | DIN 8580 / VDI 3682 |
@@ -175,7 +184,8 @@ See [docs/03-modular-stack.md](docs/03-modular-stack.md).
 | `communication.ttl` | DDS / MQTT |
 | `ros.ttl` | ROS 2 |
 | `quality.ttl` | ISO 9001 |
-| `safety.ttl` | IEC 61508 |
+| `safety.ttl` | IEC 61508 / ISO 13849 |
+| `security.ttl` | IEC 62443 |
 
 See [docs/04-standard-alignment.md](docs/04-standard-alignment.md).
 
@@ -388,7 +398,10 @@ See [docs/12-execution-adapters.md](docs/12-execution-adapters.md).
 ## 16. AAS Ontology
 
 [`aas.ttl`](ontologies/execution/aas.ttl) represents Asset Administration
-Shell structure: AAS, submodels, properties, operations, references — the
+Shell structure (AAS-3.0-inspired): AAS, submodels, submodel-element
+collections, properties (with value/valueType), operations and operation
+variables, modelling kind, plus a **twinning layer** (`mirrorsEntity`,
+`reflectsState`, `synchronizedVia`) — see [docs/20-digital-twin.md](docs/20-digital-twin.md). It covers the
 backbone of Industry 4.0 digital twins.
 
 See [docs/13-aas-runtime.md](docs/13-aas-runtime.md).

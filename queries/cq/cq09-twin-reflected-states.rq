@@ -1,0 +1,12 @@
+PREFIX aas:  <https://w3id.org/maestro/aas#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+# CQ09 — Which AAS submodels reflect which runtime states (i.e. what
+# does each digital twin's State submodel track)?
+
+SELECT ?shell ?submodel ?state
+WHERE {
+    ?shell aas:hasSubmodel ?submodel .
+    ?submodel aas:reflectsState ?state .
+}
+ORDER BY ?shell ?submodel ?state

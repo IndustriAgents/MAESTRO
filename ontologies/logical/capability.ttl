@@ -79,7 +79,9 @@ cap:WeldingCapability a core:Capability , skos:Concept ;
 cap:MachiningCapability a core:Capability , skos:Concept ;
     rdfs:label "MachiningCapability"@en ;
     skos:inScheme cap:CapabilityScheme ;
-    skos:prefLabel "Machining capability"@en .
+    cap:realizedBySkill skill-lib:Drill ;
+    skos:prefLabel "Machining capability"@en ;
+    rdfs:comment "Ability to remove material by a machining operation (e.g. drilling). Realised by skill-lib:Drill."@en .
 
 cap:PackagingCapability a core:Capability , skos:Concept ;
     rdfs:label "PackagingCapability"@en ;

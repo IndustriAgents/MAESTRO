@@ -1,0 +1,94 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:    <https://w3id.org/maestro/core#> .
+@prefix aas:     <https://w3id.org/maestro/aas#> .
+@prefix runtime: <https://w3id.org/maestro/runtime#> .
+@prefix ex:      <https://w3id.org/maestro/examples/drilling-station#> .
+
+#################################################################
+# EXAMPLE — DRILLING STATION: DIGITAL TWIN (AAS, M3)
+#
+# AAS-3.0-inspired twin of the Drilling Station. The Operation
+# submodel ties an AAS Operation to the drill skill method; the
+# State submodel declares the runtime states the twin tracks.
+#################################################################
+
+<https://w3id.org/maestro/examples/drilling-station/digital-twin> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/drilling-station/digital-twin/0.5.0> ;
+    rdfs:label "MAESTRO Example: Drilling Station — Digital Twin"@en ;
+    owl:imports <https://w3id.org/maestro/examples/drilling-station> ;
+    owl:versionInfo "0.5.0" .
+
+#################################################################
+# ASSET ADMINISTRATION SHELL
+#################################################################
+
+ex:DrillingStation_AAS a aas:AssetAdministrationShell ;
+    rdfs:label "Drilling Station AAS" ;
+    core:identifier "aas-drilling-001" ;
+    aas:mirrorsEntity ex:DrillingStation1 ;
+    aas:synchronizedVia ex:Drill_OpcUaChannel ;
+    aas:lastSynced "2026-05-25T08:00:00Z"^^xsd:dateTime ;
+    aas:hasSubmodel ex:Drill_SM_Identification ,
+                    ex:Drill_SM_TechnicalData ,
+                    ex:Drill_SM_Operation ,
+                    ex:Drill_SM_State .
+
+#################################################################
+# SUBMODEL — IDENTIFICATION
+#################################################################
+
+ex:Drill_SM_Identification a aas:Submodel ;
+    aas:idShort "Identification" ;
+    aas:hasKind aas:Instance ;
+    aas:hasSubmodelElement ex:Drill_Prop_Manufacturer , ex:Drill_Prop_Model .
+
+ex:Drill_Prop_Manufacturer a aas:Property ;
+    aas:idShort "Manufacturer" ; aas:value "Festo" ; aas:valueType "xs:string" .
+ex:Drill_Prop_Model a aas:Property ;
+    aas:idShort "ModelName" ; aas:value "MPS-Drilling" ; aas:valueType "xs:string" .
+
+#################################################################
+# SUBMODEL — TECHNICAL DATA
+#################################################################
+
+ex:Drill_SM_TechnicalData a aas:Submodel ;
+    aas:idShort "TechnicalData" ;
+    aas:hasKind aas:Instance ;
+    aas:hasSubmodelElement ex:Drill_Prop_SpindleSpeed , ex:Drill_Prop_FeedRate .
+
+ex:Drill_Prop_SpindleSpeed a aas:Property ;
+    aas:idShort "RatedSpindleSpeed_rpm" ;
+    aas:value "1200.0" ; aas:valueType "xs:double" ;
+    aas:semanticId "0173-1#02-BAE001#008" .
+ex:Drill_Prop_FeedRate a aas:Property ;
+    aas:idShort "FeedRate_mm_per_min" ;
+    aas:value "80.0" ; aas:valueType "xs:double" .
+
+#################################################################
+# SUBMODEL — OPERATION  (ties an AAS Operation to the drill skill)
+#################################################################
+
+ex:Drill_SM_Operation a aas:Submodel ;
+    aas:idShort "Operation" ;
+    aas:hasKind aas:Instance ;
+    aas:hasSubmodelElement ex:Drill_Op_Drill .
+
+ex:Drill_Op_Drill a aas:Operation ;
+    aas:idShort "Drill" ;
+    aas:hasInputVariable ex:Drill_OpVar_Depth ;
+    aas:hasOutputVariable ex:Drill_OpVar_AtHome .
+
+ex:Drill_OpVar_Depth  a aas:OperationVariable ; aas:idShort "TargetDepth_mm" .
+ex:Drill_OpVar_AtHome a aas:OperationVariable ; aas:idShort "AtHome" .
+
+#################################################################
+# SUBMODEL — STATE  (structure only; live values live in runtime.ttl)
+#################################################################
+
+ex:Drill_SM_State a aas:Submodel ;
+    aas:idShort "State" ;
+    aas:hasKind aas:Instance ;
+    aas:reflectsState runtime:Available , runtime:Executing , runtime:Held , runtime:Fault .

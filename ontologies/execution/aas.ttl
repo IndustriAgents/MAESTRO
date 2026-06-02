@@ -10,11 +10,11 @@
 #################################################################
 
 <https://w3id.org/maestro/aas> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/aas/0.3.0> ;
+    owl:versionIRI <https://w3id.org/maestro/aas/0.4.0> ;
     rdfs:label "MAESTRO AAS Ontology"@en ;
     owl:imports <https://w3id.org/maestro/core> ;
-    owl:versionInfo "0.3.0" ;
-    rdfs:comment "Asset Administration Shell digital twin structure (Plattform Industrie 4.0)."@en .
+    owl:versionInfo "0.4.0" ;
+    rdfs:comment "Asset Administration Shell digital-twin structure, INSPIRED BY (not strictly conformant to) the AAS 3.0 metamodel (Plattform Industrie 4.0 / IDTA). 0.4.0 adds submodel-element collections, operation variables, a modelling kind, value/valueType on properties, and a twinning layer (mirrorsEntity / reflectsState / synchronizedVia) that links the shell to live runtime state."@en .
 
 #################################################################
 # CLASSES
@@ -44,6 +44,28 @@ aas:Property a owl:Class ;
 aas:Operation a owl:Class ;
     rdfs:label "Operation"@en ;
     rdfs:subClassOf aas:SubmodelElement .
+
+aas:SubmodelElementCollection a owl:Class ;
+    rdfs:label "SubmodelElementCollection"@en ;
+    rdfs:subClassOf aas:SubmodelElement ;
+    rdfs:comment "An ordered/unordered collection of nested submodel elements (AAS SMC). New in 0.4.0."@en .
+
+aas:OperationVariable a owl:Class ;
+    rdfs:label "OperationVariable"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "An input, output, or inout variable of an aas:Operation. New in 0.4.0."@en .
+
+aas:ConceptDescription a owl:Class ;
+    rdfs:label "ConceptDescription"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "A dictionary entry describing the semantics behind an aas:semanticId. New in 0.4.0."@en .
+
+aas:ModelingKind a owl:Class ;
+    rdfs:label "ModelingKind"@en ;
+    rdfs:comment "Whether a Submodel is a Template (type) or an Instance. New in 0.4.0."@en .
+
+aas:Template a aas:ModelingKind ; rdfs:label "Template"@en .
+aas:Instance a aas:ModelingKind ; rdfs:label "Instance"@en .
 
 aas:Reference a owl:Class ;
     rdfs:label "Reference"@en ;
@@ -76,3 +98,73 @@ aas:semanticId a owl:DatatypeProperty ;
     rdfs:label "semanticId"@en ;
     rdfs:range  xsd:string ;
     rdfs:comment "ECLASS / IEC CDD identifier."@en .
+
+# --- New in 0.4.0: AAS-3.0-inspired structure ---
+
+aas:hasInputVariable a owl:ObjectProperty ;
+    rdfs:label "hasInputVariable"@en ;
+    rdfs:domain aas:Operation ;
+    rdfs:range  aas:OperationVariable .
+
+aas:hasOutputVariable a owl:ObjectProperty ;
+    rdfs:label "hasOutputVariable"@en ;
+    rdfs:domain aas:Operation ;
+    rdfs:range  aas:OperationVariable .
+
+aas:hasInoutputVariable a owl:ObjectProperty ;
+    rdfs:label "hasInoutputVariable"@en ;
+    rdfs:domain aas:Operation ;
+    rdfs:range  aas:OperationVariable .
+
+aas:referencesElement a owl:ObjectProperty ;
+    rdfs:label "referencesElement"@en ;
+    rdfs:domain aas:OperationVariable ;
+    rdfs:range  core:LogicalEntity ;
+    rdfs:comment "The submodel element (or other logical entity, e.g. an I/O signal) carried by this operation variable. Range kept open to core:LogicalEntity so it can reference application artefacts such as IEC 61499 I/O signals that are not themselves AAS elements."@en .
+
+aas:hasValueElement a owl:ObjectProperty ;
+    rdfs:label "hasValueElement"@en ;
+    rdfs:domain aas:SubmodelElementCollection ;
+    rdfs:range  aas:SubmodelElement .
+
+aas:hasKind a owl:ObjectProperty ;
+    rdfs:label "hasKind"@en ;
+    rdfs:domain aas:Submodel ;
+    rdfs:range  aas:ModelingKind .
+
+aas:value a owl:DatatypeProperty ;
+    rdfs:label "value"@en ;
+    rdfs:domain aas:Property ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "The (string-serialised) value of an aas:Property."@en .
+
+aas:valueType a owl:DatatypeProperty ;
+    rdfs:label "valueType"@en ;
+    rdfs:domain aas:Property ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "The AAS valueType of an aas:Property (e.g. 'xs:string', 'xs:float')."@en .
+
+# --- New in 0.4.0: twinning / synchronisation layer ---
+
+aas:mirrorsEntity a owl:ObjectProperty ;
+    rdfs:label "mirrorsEntity"@en ;
+    rdfs:domain aas:AssetAdministrationShell ;
+    rdfs:range  core:PhysicalEntity ;
+    rdfs:comment "The physical entity (a Resource OR a Plant) whose live behaviour this digital twin mirrors. Range is core:PhysicalEntity — broader than core:Resource — so a shell can mirror a whole core:Plant."@en .
+
+aas:reflectsState a owl:ObjectProperty ;
+    rdfs:label "reflectsState"@en ;
+    rdfs:domain aas:Submodel ;
+    rdfs:range  core:State ;
+    rdfs:comment "A State submodel reflects (structurally points at) a runtime state value of the mirrored entity. The live core:hasState assertion stays in the runtime graph; this only declares which states the twin tracks."@en .
+
+aas:synchronizedVia a owl:ObjectProperty ;
+    rdfs:label "synchronizedVia"@en ;
+    rdfs:domain aas:AssetAdministrationShell ;
+    rdfs:range  core:LogicalEntity ;
+    rdfs:comment "The communication channel through which the twin is kept in sync with the asset. Range kept open (com:Channel) to avoid importing communication.ttl."@en .
+
+aas:lastSynced a owl:DatatypeProperty ;
+    rdfs:label "lastSynced"@en ;
+    rdfs:domain aas:AssetAdministrationShell ;
+    rdfs:range  xsd:dateTime .

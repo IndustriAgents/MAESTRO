@@ -1,0 +1,106 @@
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:      <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:     <https://w3id.org/maestro/core#> .
+@prefix safety:   <https://w3id.org/maestro/safety#> .
+@prefix security: <https://w3id.org/maestro/security#> .
+@prefix ex:       <https://w3id.org/maestro/examples/distribution-station#> .
+
+#################################################################
+# EXAMPLE — DISTRIBUTING STATION: SAFETY + SECURITY (M2)
+#
+# Functional safety (IEC 61508/13849) + OT cybersecurity (IEC 62443)
+# on one plant, joined by the safety/security convergence link
+# security:triggersHazard (a MITM threat on the OPC UA conduit can
+# trigger the pneumatic pinch hazard at the magazine).
+#
+# Depends on the controller / channel infrastructure in plant.ttl
+# (ex:DS_PLC, ex:DS_OpcUaServer, ex:DS_OpcUaChannel).
+#################################################################
+
+<https://w3id.org/maestro/examples/distribution-station/security> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station/security/0.5.0> ;
+    rdfs:label "MAESTRO Example: Festo Distributing Station — Safety & Security"@en ;
+    owl:imports <https://w3id.org/maestro/examples/distribution-station> ;
+    owl:versionInfo "0.5.0" .
+
+#################################################################
+# FUNCTIONAL SAFETY (IEC 61508 / ISO 13849)
+#################################################################
+
+ex:PinchHazardAtMagazine a safety:Hazard ;
+    rdfs:label "Pinch hazard at the magazine pusher" ;
+    safety:causedBy ex:FeederCylinder1 ;
+    safety:hasRiskAssessment ex:PinchRiskAssessment .
+
+ex:PinchRisk a safety:Risk ;
+    rdfs:label "Operator finger pinch during pusher stroke" .
+
+ex:PinchRiskAssessment a safety:RiskAssessment ;
+    rdfs:label "Risk assessment for the magazine pinch hazard" ;
+    safety:assessesRisk ex:PinchRisk .
+
+ex:SafeTorqueOff a safety:SafetyState ;
+    rdfs:label "Safe state: pneumatic supply exhausted, pusher de-energised" .
+
+ex:DS_EStop a safety:EmergencyStop ;
+    rdfs:label "Distributing Station emergency stop" ;
+    safety:hasSIL safety:SIL2 ;
+    safety:hasPerformanceLevel safety:PLd ;
+    safety:mitigates ex:PinchHazardAtMagazine ;
+    safety:protectsResource ex:FeederUnit1 ;
+    safety:assuresSkill ex:Type_skPush_adp ;
+    safety:reachesState ex:SafeTorqueOff .
+
+# The application depends on the E-stop (dependency runs this way —
+# NOT via safety:protectsResource, which is intentionally standalone).
+ex:App_Comp_Skill_Adp core:dependsOn ex:DS_EStop .
+
+#################################################################
+# OT CYBERSECURITY (IEC 62443)
+#################################################################
+
+ex:ControlZone a security:SecurityZone ;
+    rdfs:label "Control zone (PLC / OPC UA server)" ;
+    security:zoneName "Control" ;
+    security:hasSecurityLevel security:SL2 .
+
+ex:FieldZone a security:SecurityZone ;
+    rdfs:label "Field zone (actuators / sensors)" ;
+    security:zoneName "Field" ;
+    security:hasSecurityLevel security:SL1 .
+
+ex:DS_PLC      security:locatedInZone ex:ControlZone .
+ex:FeederUnit1 security:locatedInZone ex:FieldZone .
+
+ex:ControlConduit a security:Conduit ;
+    rdfs:label "Control↔Field conduit (OPC UA)" ;
+    security:connectsZones ex:ControlZone , ex:FieldZone ;
+    security:securesChannel ex:DS_OpcUaChannel .
+
+ex:UnauthedOpcUaVuln a security:Vulnerability ;
+    rdfs:label "Unauthenticated OPC UA endpoint" ;
+    security:cveId "N/A (weak-auth configuration)" .
+
+ex:MitmThreat a security:Threat ;
+    rdfs:label "Man-in-the-middle on the OPC UA conduit" ;
+    security:exploits ex:UnauthedOpcUaVuln ;
+    security:posesRisk ex:MitmRisk ;
+    security:triggersHazard ex:PinchHazardAtMagazine .
+
+ex:MitmRisk a security:SecurityRisk ;
+    rdfs:label "Spoofed pusher command risk" ;
+    security:likelihood "medium" ;
+    security:severity "high" .
+
+# Explicit exposure assertions so the exposure query has edges to join on.
+ex:DS_OpcUaChannel security:exposedTo ex:MitmThreat .
+ex:DS_OpcUaServer  security:hasVulnerability ex:UnauthedOpcUaVuln .
+
+# Mitigating control — closes both the cyber threat and (together with
+# the E-stop) the convergence gap.
+ex:OpcUaAuth a security:SecurityControl ;
+    rdfs:label "OPC UA mutual authentication + signing" ;
+    security:mitigatesThreat ex:MitmThreat ;
+    security:protects ex:DS_OpcUaServer .

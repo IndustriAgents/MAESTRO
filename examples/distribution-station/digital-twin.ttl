@@ -1,0 +1,124 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:    <https://w3id.org/maestro/core#> .
+@prefix aas:     <https://w3id.org/maestro/aas#> .
+@prefix runtime: <https://w3id.org/maestro/runtime#> .
+@prefix ex:      <https://w3id.org/maestro/examples/distribution-station#> .
+
+#################################################################
+# EXAMPLE — DISTRIBUTING STATION: DIGITAL TWIN (AAS)
+#
+# An AAS-3.0-inspired digital twin of the whole station. The shell
+# mirrors the Plant (core:Plant ⊑ core:PhysicalEntity), is kept in
+# sync via the OPC UA channel, and carries four submodels:
+# Identification, TechnicalData, Operation, State.
+#
+# The State submodel only DECLARES which runtime states the twin
+# tracks (aas:reflectsState). The live core:hasState assertions stay
+# in runtime.ttl (decisions/0002-runtime-graph-separation.md).
+#################################################################
+
+<https://w3id.org/maestro/examples/distribution-station/digital-twin> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station/digital-twin/0.5.0> ;
+    rdfs:label "MAESTRO Example: Festo Distributing Station — Digital Twin"@en ;
+    owl:imports <https://w3id.org/maestro/examples/distribution-station> ;
+    owl:versionInfo "0.5.0" .
+
+#################################################################
+# ASSET ADMINISTRATION SHELL
+#################################################################
+
+ex:DS_AAS a aas:AssetAdministrationShell ;
+    rdfs:label "Distributing Station AAS" ;
+    core:identifier "aas-ds-001" ;
+    aas:mirrorsEntity ex:DistributingStation1 ;
+    aas:synchronizedVia ex:DS_OpcUaChannel ;
+    aas:lastSynced "2026-05-25T08:00:00Z"^^xsd:dateTime ;
+    aas:hasSubmodel ex:DS_SM_Identification ,
+                    ex:DS_SM_TechnicalData ,
+                    ex:DS_SM_Operation ,
+                    ex:DS_SM_State .
+
+#################################################################
+# SUBMODEL — IDENTIFICATION
+#################################################################
+
+ex:DS_SM_Identification a aas:Submodel ;
+    aas:idShort "Identification" ;
+    aas:hasKind aas:Instance ;
+    aas:hasSubmodelElement ex:DS_Prop_Manufacturer ,
+                           ex:DS_Prop_Model ,
+                           ex:DS_Prop_SerialNumber .
+
+ex:DS_Prop_Manufacturer a aas:Property ;
+    aas:idShort "Manufacturer" ; aas:value "Festo" ; aas:valueType "xs:string" .
+ex:DS_Prop_Model a aas:Property ;
+    aas:idShort "ModelName" ; aas:value "MPS-Distributing" ; aas:valueType "xs:string" .
+ex:DS_Prop_SerialNumber a aas:Property ;
+    aas:idShort "SerialNumber" ; aas:value "DS-2026-001" ; aas:valueType "xs:string" .
+
+#################################################################
+# SUBMODEL — TECHNICAL DATA
+#################################################################
+
+ex:DS_SM_TechnicalData a aas:Submodel ;
+    aas:idShort "TechnicalData" ;
+    aas:hasKind aas:Instance ;
+    aas:hasSubmodelElement ex:DS_Prop_ArmAngularVelocity ,
+                           ex:DS_Prop_PusherStroke .
+
+ex:DS_Prop_ArmAngularVelocity a aas:Property ;
+    aas:idShort "ArmAngularVelocity" ;
+    aas:value "1.5708" ; aas:valueType "xs:double" ;
+    aas:semanticId "0173-1#02-AAR972#003" .
+ex:DS_Prop_PusherStroke a aas:Property ;
+    aas:idShort "PusherStrokeLength_mm" ;
+    aas:value "50.0" ; aas:valueType "xs:double" ;
+    aas:semanticId "0173-1#02-BAF016#006" .
+
+#################################################################
+# SUBMODEL — OPERATION
+#
+# One aas:Operation per registered station skill. Operation
+# variables reference the IEC 61499 I/O signals directly (allowed:
+# aas:referencesElement has an open range, and ex:IOSignal is a
+# core:State / core:LogicalEntity, not an aas:SubmodelElement).
+#################################################################
+
+ex:DS_SM_Operation a aas:Submodel ;
+    aas:idShort "Operation" ;
+    aas:hasKind aas:Instance ;
+    aas:hasSubmodelElement ex:DS_Op_Transfer , ex:DS_Op_Load , ex:DS_Op_Push .
+
+ex:DS_Op_Transfer a aas:Operation ;
+    aas:idShort "Transfer" ;
+    aas:hasInputVariable ex:DS_OpVar_WPtype ;
+    aas:hasOutputVariable ex:DS_OpVar_AtNext .
+
+ex:DS_Op_Load a aas:Operation ;
+    aas:idShort "Load" ;
+    aas:hasInputVariable ex:DS_OpVar_Empty ;
+    aas:hasOutputVariable ex:DS_OpVar_Retract .
+
+ex:DS_Op_Push a aas:Operation ;
+    aas:idShort "Push" ;
+    aas:hasInputVariable ex:DS_OpVar_PosR ;
+    aas:hasOutputVariable ex:DS_OpVar_ToNext .
+
+ex:DS_OpVar_WPtype  a aas:OperationVariable ; aas:idShort "WPtype"  ; aas:referencesElement ex:IO_WPtype .
+ex:DS_OpVar_AtNext  a aas:OperationVariable ; aas:idShort "at_next" ; aas:referencesElement ex:IO_at_next .
+ex:DS_OpVar_Empty   a aas:OperationVariable ; aas:idShort "empty"   ; aas:referencesElement ex:IO_empty .
+ex:DS_OpVar_Retract a aas:OperationVariable ; aas:idShort "retract" ; aas:referencesElement ex:IO_retract .
+ex:DS_OpVar_PosR    a aas:OperationVariable ; aas:idShort "pos_r"   ; aas:referencesElement ex:IO_pos_r .
+ex:DS_OpVar_ToNext  a aas:OperationVariable ; aas:idShort "to_next" ; aas:referencesElement ex:IO_to_next .
+
+#################################################################
+# SUBMODEL — STATE  (structure only; live values live in runtime.ttl)
+#################################################################
+
+ex:DS_SM_State a aas:Submodel ;
+    aas:idShort "State" ;
+    aas:hasKind aas:Instance ;
+    aas:reflectsState runtime:Available , runtime:Executing , runtime:Held , runtime:Aborted .

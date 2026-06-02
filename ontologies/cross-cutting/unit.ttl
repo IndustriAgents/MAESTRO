@@ -12,10 +12,10 @@
 #################################################################
 
 <https://w3id.org/maestro/unit> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/unit/0.3.0> ;
+    owl:versionIRI <https://w3id.org/maestro/unit/0.4.0> ;
     rdfs:label "MAESTRO Unit Ontology"@en ;
     owl:imports <https://w3id.org/maestro/core> ;
-    owl:versionInfo "0.3.0" ;
+    owl:versionInfo "0.4.0" ;
     rdfs:comment "Physical units aligned with QUDT."@en .
 
 #################################################################
@@ -52,6 +52,11 @@ unit:DegreeCelsius  a unit:Unit ; rdfs:label "degree Celsius"@en ; unit:symbol "
 unit:MetrePerSecond a unit:Unit ; rdfs:label "metre per second"@en ; unit:symbol "m/s" ; owl:sameAs qudt-unit:M-PER-SEC .
 unit:Radian         a unit:Unit ; rdfs:label "radian"@en         ; unit:symbol "rad" ; owl:sameAs qudt-unit:RAD     .
 unit:Degree         a unit:Unit ; rdfs:label "degree"@en         ; unit:symbol "°"   ; owl:sameAs qudt-unit:DEG     .
+
+# Machining-operation units (new in 0.4.0) — used by the operation layer.
+unit:RevolutionPerMinute a unit:Unit ; rdfs:label "revolution per minute"@en ; unit:symbol "rpm"    ; owl:sameAs qudt-unit:REV-PER-MIN .
+unit:MillimetrePerMinute a unit:Unit ; rdfs:label "millimetre per minute"@en ; unit:symbol "mm/min" ; owl:sameAs qudt-unit:MilliM-PER-MIN .
+unit:MetrePerMinute      a unit:Unit ; rdfs:label "metre per minute"@en      ; unit:symbol "m/min"  ; owl:sameAs qudt-unit:M-PER-MIN .
 
 #################################################################
 # PROPERTIES

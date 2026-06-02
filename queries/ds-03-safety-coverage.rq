@@ -1,0 +1,13 @@
+PREFIX safety: <https://w3id.org/maestro/safety#>
+PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+
+# M2 — Safety coverage gap: hazards that have NO mitigating safety
+# function. On a healthy plant this returns zero rows.
+
+SELECT ?hazard ?label
+WHERE {
+    ?hazard a safety:Hazard .
+    OPTIONAL { ?hazard rdfs:label ?label }
+    FILTER NOT EXISTS { ?sf safety:mitigates ?hazard . }
+}
+ORDER BY ?hazard

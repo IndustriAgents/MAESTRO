@@ -1,0 +1,12 @@
+PREFIX safety: <https://w3id.org/maestro/safety#>
+PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+
+# CQ06 — Which safety functions mitigate which hazards, and at what
+# safety integrity level?
+
+SELECT ?safetyFunction ?hazard ?sil
+WHERE {
+    ?safetyFunction safety:mitigates ?hazard .
+    OPTIONAL { ?safetyFunction safety:hasSIL ?sil }
+}
+ORDER BY ?safetyFunction ?hazard

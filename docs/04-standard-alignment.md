@@ -19,8 +19,11 @@ Prefer:
 | `skill.ttl` | VDI 2860 | Local skill taxonomy; formal mappings still needed |
 | `runtime.ttl` | PackML | Local SKOS state values aligned by label; formal mappings still needed |
 | `planning.ttl` | ISA-95 | Local planning classes; formal mappings still needed |
-| `aas.ttl` | AAS | Lightweight AAS bridge; full AAS 3.0 Reference/Key model still needed |
+| `aas.ttl` | AAS | Lightweight, AAS-3.0-*inspired* bridge (submodels, operation variables, modelling kind, twinning); full AAS 3.0 Reference/Key model still needed |
 | `opcua.ttl` | OPC UA | SkillInterface pattern; companion-spec mappings still needed |
+| `safety.ttl` | IEC 61508 / ISO 13849 | Local SIL/PL/hazard vocabulary; label-level alignment |
+| `security.ttl` | IEC 62443 | Local zone/conduit/threat/SL vocabulary; safety/security convergence via `security:triggersHazard`; formal mappings still needed |
+| `operation.ttl` | ISO 14649 / STEP-NC | *Inspired-by* operation + cutting-technology model (not the full workingstep/feature/toolpath model); formal mappings still needed |
 
 ## Import Policy
 

@@ -12,12 +12,12 @@
 #################################################################
 
 <https://w3id.org/maestro> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/0.3.0> ;
+    owl:versionIRI <https://w3id.org/maestro/0.4.0> ;
     rdfs:label    "MAESTRO — Modular Ontology Stack for Future-Proof Manufacturing"@en ;
     dct:title     "MAESTRO" ;
     dct:creator   "Melwin Xavier" ;
     dct:license   <https://opensource.org/licenses/MIT> ;
-    owl:versionInfo "0.3.0" ;
+    owl:versionInfo "0.4.0" ;
     rdfs:comment  "Top-level umbrella ontology. Importing this file pulls in every MAESTRO module: core, physical, logical, execution adapters, runtime, cross-cutting concerns, and reasoning."@en ;
 
     # Core
@@ -32,6 +32,7 @@
     owl:imports <https://w3id.org/maestro/capability> ;
     owl:imports <https://w3id.org/maestro/process> ;
     owl:imports <https://w3id.org/maestro/product> ;
+    owl:imports <https://w3id.org/maestro/operation> ;
 
     # Library individuals (reusable skill / motion specifications)
     owl:imports <https://w3id.org/maestro/skill-lib> ;
@@ -53,6 +54,7 @@
     owl:imports <https://w3id.org/maestro/unit> ;
     owl:imports <https://w3id.org/maestro/communication> ;
     owl:imports <https://w3id.org/maestro/safety> ;
+    owl:imports <https://w3id.org/maestro/security> ;
     owl:imports <https://w3id.org/maestro/quality> ;
     owl:imports <https://w3id.org/maestro/maintenance> ;
     owl:imports <https://w3id.org/maestro/energy> ;

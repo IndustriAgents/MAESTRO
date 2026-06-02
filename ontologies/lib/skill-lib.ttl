@@ -50,3 +50,17 @@ skill-lib:Transfer a skill:TransferSkill ;
                           skill-lib:VacuumPick ,
                           skill-lib:Release ;
     rdfs:comment "Composite pick-and-place skill — moves a part from A to B."@en .
+
+skill-lib:SpindleRotate a skill:MotionSkill ;
+    rdfs:label "SpindleRotate"@en ;
+    rdfs:comment "Rotate a machining spindle at a constant angular speed."@en .
+
+skill-lib:Feed a skill:MotionSkill ;
+    rdfs:label "Feed"@en ;
+    rdfs:comment "Advance a tool axis linearly at a constant feed rate."@en .
+
+skill-lib:Drill a skill:ProcessSkill ;
+    rdfs:label "Drill"@en ;
+    skill:composedOfSkill skill-lib:SpindleRotate ,
+                          skill-lib:Feed ;
+    rdfs:comment "Composite machining skill — rotate the spindle and feed the tool to produce a hole. Realises cap:MachiningCapability; bound to a machine operation (op:DrillingOperation) at the example level."@en .

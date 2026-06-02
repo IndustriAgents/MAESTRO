@@ -1,0 +1,168 @@
+@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:        <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:        <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:       <https://w3id.org/maestro/core#> .
+@prefix res:        <https://w3id.org/maestro/resource#> .
+@prefix sensor:     <https://w3id.org/maestro/sensor#> .
+@prefix unit:       <https://w3id.org/maestro/unit#> .
+@prefix motion:     <https://w3id.org/maestro/motion#> .
+@prefix skill:      <https://w3id.org/maestro/skill#> .
+@prefix skill-lib:  <https://w3id.org/maestro/skill-lib#> .
+@prefix iec61499:   <https://w3id.org/maestro/iec61499#> .
+@prefix opcua:      <https://w3id.org/maestro/opcua#> .
+@prefix com:        <https://w3id.org/maestro/communication#> .
+@prefix ex:         <https://w3id.org/maestro/examples/drilling-station#> .
+
+#################################################################
+# EXAMPLE — DRILLING STATION PLANT (DESIGN-TIME, M3)
+#
+# A second Festo MPS-style station modelled with the same stack, to
+# demonstrate portability + the new machine-operation layer. The
+# spindle is a DIRECT core:hasPart of the plant (the manufacturing-
+# ability rule uses direct hasPart, not hasPart+), and the drill
+# function block implements the LIBRARY skill skill-lib:Drill
+# directly (the capability-inference rule matches the exact skill a
+# control component implements — not ex:ofType).
+#################################################################
+
+<https://w3id.org/maestro/examples/drilling-station> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/drilling-station/0.5.0> ;
+    rdfs:label "MAESTRO Example: Drilling Station Plant"@en ;
+    owl:imports <https://w3id.org/maestro> ;
+    owl:versionInfo "0.5.0" .
+
+#################################################################
+# PLANT  (spindle is a direct part — required for canManufacture)
+#################################################################
+
+ex:DrillingStation1 a core:Plant ;
+    rdfs:label "Drilling Station" ;
+    core:identifier "plant-drilling-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "MPS-Drilling" ;
+    core:hasPart ex:DrillSpindle1 , ex:FeedAxis1 ,
+                 ex:ClampingFixture1 , ex:DrillBit1 ,
+                 ex:DrillPLC , ex:DepthSensor1 , ex:HomeSensor1 .
+
+#################################################################
+# PHYSICAL RESOURCES
+#################################################################
+
+ex:DrillSpindle1 a res:Machine ;
+    rdfs:label "Drill spindle" ;
+    core:identifier "resource-drill-spindle-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "MPS-Drill-Spindle" ;
+    core:hasPart ex:DrillBit1 ;
+    core:provides skill-lib:Drill .
+
+ex:FeedAxis1 a res:ServoMotor ;
+    rdfs:label "Vertical feed axis" ;
+    core:identifier "resource-feed-axis-001" .
+
+ex:ClampingFixture1 a res:Tool ;
+    rdfs:label "Workpiece clamping fixture" ;
+    core:identifier "resource-clamping-fixture-001" .
+
+ex:DrillBit1 a res:Tool ;
+    rdfs:label "HSS drill bit Ø6 mm" ;
+    core:identifier "resource-drill-bit-001" .
+
+ex:DrillPLC a res:PLC ;
+    rdfs:label "Drilling Station PLC" ;
+    core:identifier "resource-drill-plc-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "CECC-LK" ;
+    core:hosts ex:Drill_OpcUaServer .
+
+ex:DepthSensor1 a sensor:ProximitySensor ;
+    rdfs:label "Drill depth / bottom-of-stroke sensor" ;
+    core:identifier "sensor-drill-depth-001" .
+
+ex:HomeSensor1 a sensor:ProximitySensor ;
+    rdfs:label "Feed axis home position sensor" ;
+    core:identifier "sensor-drill-home-001" .
+
+#################################################################
+# MOTIONS  (constant-speed types from 0.4.0)
+#################################################################
+
+ex:DrillSpindleMotion a motion:RotationalConstantSpeedMotion ;
+    rdfs:label "Spindle rotation (≈1200 rpm)" ;
+    motion:hasVelocity "125.66"^^xsd:float .   # ≈ 1200 rpm in rad·s⁻¹
+
+ex:DrillFeedMotion a motion:LinearConstantSpeedMotion ;
+    rdfs:label "Tool feed (≈80 mm/min)" ;
+    motion:hasVelocity "0.00133"^^xsd:float .  # ≈ 80 mm·min⁻¹ in m·s⁻¹
+
+#################################################################
+# SKILL TYPES
+#################################################################
+
+ex:Type_skSpindleRotate a skill:MotionSkill ;
+    rdfs:label "skSpindleRotate"@en ;
+    skill:requiresMotion ex:DrillSpindleMotion ;
+    skill:expectedDurationSeconds 3.0 .
+
+ex:Type_skFeed a skill:MotionSkill ;
+    rdfs:label "skFeed"@en ;
+    skill:requiresMotion ex:DrillFeedMotion ;
+    skill:expectedDurationSeconds 7.5 .
+
+ex:Type_skDrill a skill:ProcessSkill ;
+    rdfs:label "skDrill"@en ;
+    skill:composedOfSkill ex:Type_skSpindleRotate , ex:Type_skFeed ;
+    skill:expectedDurationSeconds 8.0 ;
+    rdfs:comment "Composite drill cycle: rotate spindle while feeding the tool to depth."@en .
+
+#################################################################
+# CONTROL  (FB implements the LIBRARY skill directly so the
+# capability-inference rule materialises canPerform)
+#################################################################
+
+ex:FBT_Drill a iec61499:BasicFB ;
+    rdfs:label "Drill.fbt" ;
+    core:identifier "fbt-Drill" ;
+    iec61499:implementsSkill skill-lib:Drill ;
+    iec61499:controlsResource ex:DrillSpindle1 .
+
+ex:FBT_Spindle a iec61499:BasicFB ;
+    rdfs:label "Spindle.fbt" ;
+    core:identifier "fbt-Spindle" ;
+    iec61499:implementsSkill ex:Type_skSpindleRotate ;
+    iec61499:controlsResource ex:DrillSpindle1 .
+
+ex:FBT_Feed a iec61499:BasicFB ;
+    rdfs:label "Feed.fbt" ;
+    core:identifier "fbt-Feed" ;
+    iec61499:implementsSkill ex:Type_skFeed ;
+    iec61499:controlsResource ex:FeedAxis1 .
+
+#################################################################
+# OPC UA SERVER & COMMUNICATION CHANNEL
+#################################################################
+
+ex:Drill_OpcUaServer a opcua:OpcUaServer ;
+    rdfs:label "Drilling Station OPC UA Server" ;
+    core:identifier "control-drill-opcua-server-001" ;
+    core:deployedOn ex:DrillPLC ;
+    opcua:hostsInterface ex:Drill_OpcUaInterface ;
+    core:communicatesThrough ex:Drill_OpcUaChannel .
+
+ex:Drill_OpcUaInterface a opcua:OpcUaSkillInterface ;
+    rdfs:label "OPC UA SkillInterface for the Drilling Station" ;
+    core:identifier "interface-opcua-drilling-001" ;
+    opcua:nodeId    "ns=2;s=Skill.Drill" ;
+    opcua:browseName "DrillingStationSkill" ;
+    opcua:exposes   skill-lib:Drill .
+
+ex:Drill_OpcUaChannel a com:Channel ;
+    rdfs:label "Drilling Station OPC UA channel" ;
+    com:usesProtocol com:OpcUaProtocol ;
+    com:hasEndpoint ex:Drill_OpcUaEndpoint .
+
+ex:Drill_OpcUaEndpoint a com:Endpoint ;
+    rdfs:label "Drill OPC UA endpoint" ;
+    com:address "opc.tcp://drill-plc:4840" ;
+    com:port 4840 .
