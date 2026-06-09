@@ -13,7 +13,7 @@
     owl:versionIRI <https://w3id.org/maestro/core/0.3.0> ;
     rdfs:label    "MAESTRO Core Ontology"@en ;
     dct:title     "MAESTRO Core Ontology" ;
-    dct:creator   "Midhun Xavier" ;
+    dct:creator   "Melwin Xavier" ;
     dct:license   <https://opensource.org/licenses/MIT> ;
     owl:versionInfo "0.3.0" ;
     rdfs:comment  "Root abstractions of the MAESTRO modular manufacturing ontology stack. Every other module imports from here."@en .

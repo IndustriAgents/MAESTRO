@@ -23,6 +23,9 @@ env/
 Thumbs.db
 desktop.ini
 
+# Office temp/lock files
+~$*
+
 # Render artifacts
 figures/png/*.tmp
 figures/src/.*

@@ -1,0 +1,645 @@
+@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:        <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:        <http://www.w3.org/2001/XMLSchema#> .
+@prefix sosa:       <http://www.w3.org/ns/sosa/> .
+@prefix core:       <https://w3id.org/maestro/core#> .
+@prefix res:        <https://w3id.org/maestro/resource#> .
+@prefix sensor:     <https://w3id.org/maestro/sensor#> .
+@prefix unit:       <https://w3id.org/maestro/unit#> .
+@prefix motion:     <https://w3id.org/maestro/motion#> .
+@prefix motion-lib: <https://w3id.org/maestro/motion-lib#> .
+@prefix skill:      <https://w3id.org/maestro/skill#> .
+@prefix skill-lib:  <https://w3id.org/maestro/skill-lib#> .
+@prefix iec61499:   <https://w3id.org/maestro/iec61499#> .
+@prefix opcua:      <https://w3id.org/maestro/opcua#> .
+@prefix ex:         <https://w3id.org/maestro/examples/distribution-station#> .
+
+#################################################################
+# EXAMPLE — FESTO DISTRIBUTING STATION (DESIGN-TIME)
+#
+# Aligned with the Schneider EAE / 4DIAC project
+#   ~/Documents/Medusa/eae_projects/FESTO_DS_skills_reg
+# specifically the application "Comp_Skill_Adp" whose skills are
+# registered to a GraphDB-based skill registry at runtime.
+#
+# Layout (mirrors the OntologyIntegration figure):
+#   DistributingStation
+#     ├── FeederUnit        (Magazine + Pusher + Cylinder + 2 sensors)
+#     │     └── feeds → TransferUnit
+#     └── TransferUnit      (TransferArm + VacuumUnit + 2 arm sensors)
+#
+# Skill model (from the EAE project):
+#   - Skill TYPES        : reusable specifications (Type_sk*).
+#   - Skill INSTANCES    : "registered" application skills owned by
+#                          an iec61499:Application individual.
+#   - I/O datapoints     : every signal has ex:ioDirection
+#                          ("input" = read on the FB pin,
+#                           "output" = written on the FB pin)
+#   - controlsIO         : the IOs a skill TYPE manages
+#   - receivesIO         : the IOs a skill TYPE depends on
+#
+# Runtime state (core:hasState) lives in the sibling runtime.ttl,
+# loaded into a separate named graph. See
+# decisions/0002-runtime-graph-separation.md.
+#################################################################
+
+<https://w3id.org/maestro/examples/distribution-station> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station/0.5.0> ;
+    rdfs:label "MAESTRO Example: Festo Distributing Station — Plant"@en ;
+    owl:imports <https://w3id.org/maestro> ;
+    owl:versionInfo "0.5.0" ;
+    rdfs:comment "Festo MPS Distributing Station mapped to the Schneider EAE 'FESTO_DS_skills_reg' / 'Comp_Skill_Adp' application. A magazine feeds workpieces onto a nest; a rotary transfer arm with a vacuum end-effector picks them from the nest and places them on the next station."@en .
+
+#################################################################
+# LOCAL CLASS EXTENSIONS (Festo MPS-specific mechatronics)
+#################################################################
+
+ex:FeederUnit a owl:Class ;
+    rdfs:label "FeederUnit"@en ;
+    rdfs:subClassOf res:Machine ;
+    rdfs:comment "Festo MPS feeder: ejects the bottom workpiece from the stack-magazine onto the transfer nest."@en .
+
+ex:TransferUnit a owl:Class ;
+    rdfs:label "TransferUnit"@en ;
+    rdfs:subClassOf res:Machine ;
+    rdfs:comment "Festo MPS transfer module: rotary arm carrying a vacuum end-effector."@en .
+
+ex:Magazine a owl:Class ;
+    rdfs:label "Magazine"@en ;
+    rdfs:subClassOf res:Machine ;
+    rdfs:comment "Vertical (gravity-fed) FIFO stack holding workpieces."@en .
+
+ex:PneumaticCylinder a owl:Class ;
+    rdfs:label "PneumaticCylinder"@en ;
+    rdfs:subClassOf res:Actuator ;
+    rdfs:comment "Double-acting pneumatic linear actuator."@en .
+
+ex:VacuumValve a owl:Class ;
+    rdfs:label "VacuumValve"@en ;
+    rdfs:subClassOf res:Actuator ;
+    rdfs:comment "Solenoid valve switching the vacuum supply on/off."@en .
+
+ex:Pusher a owl:Class ;
+    rdfs:label "Pusher"@en ;
+    rdfs:subClassOf res:Tool ;
+    rdfs:comment "Slider attached to the feeder cylinder rod that ejects a workpiece."@en .
+
+#################################################################
+# LOCAL PROPERTY EXTENSIONS
+#################################################################
+
+ex:feeds a owl:ObjectProperty ;
+    rdfs:label "feeds"@en ;
+    rdfs:subPropertyOf core:connectedTo ;
+    rdfs:domain core:Resource ;
+    rdfs:range  core:Resource ;
+    rdfs:comment "Material-flow link: the source resource delivers workpieces to the target resource."@en .
+
+ex:drivenBy a owl:ObjectProperty ;
+    rdfs:label "drivenBy"@en ;
+    rdfs:subPropertyOf core:dependsOn ;
+    rdfs:domain core:Resource ;
+    rdfs:range  res:Actuator ;
+    rdfs:comment "A passive mechanical element (e.g. a Pusher) is moved by an Actuator."@en .
+
+ex:createsSignal a owl:ObjectProperty ;
+    rdfs:label "createsSignal"@en ;
+    rdfs:domain core:Resource ;
+    rdfs:range  ex:IOSignal ;
+    rdfs:comment "Sensor produces (or actuator command line accepts) an I/O datapoint."@en .
+
+ex:commandsActuator a owl:ObjectProperty ;
+    rdfs:label "commandsActuator"@en ;
+    rdfs:domain ex:IOSignal ;
+    rdfs:range  res:Actuator ;
+    rdfs:comment "An I/O datapoint that, when set, drives the referenced actuator."@en .
+
+ex:receivesIO a owl:ObjectProperty ;
+    rdfs:label "receivesIO"@en ;
+    rdfs:subPropertyOf skill:hasPrecondition ;
+    rdfs:domain core:Skill ;
+    rdfs:range  ex:IOSignal ;
+    rdfs:comment "Skill reads / depends on this I/O datapoint."@en .
+
+ex:controlsIO a owl:ObjectProperty ;
+    rdfs:label "controlsIO"@en ;
+    rdfs:subPropertyOf skill:hasPostcondition ;
+    rdfs:domain core:Skill ;
+    rdfs:range  ex:IOSignal ;
+    rdfs:comment "Skill manages / drives this I/O datapoint."@en .
+
+ex:hasSubSkill a owl:ObjectProperty ;
+    rdfs:label "hasSubSkill"@en ;
+    rdfs:subPropertyOf skill:composedOfSkill ;
+    rdfs:domain core:Skill ;
+    rdfs:range  core:Skill ;
+    rdfs:comment "A composite skill TYPE references its sub-skill (atomic or composite)."@en .
+
+ex:ofType a owl:ObjectProperty ;
+    rdfs:label "ofType"@en ;
+    rdfs:domain core:Skill ;
+    rdfs:range  core:Skill ;
+    rdfs:comment "A registered application skill instance (ABox) is an instance of a reusable skill TYPE."@en .
+
+ex:ioDirection a owl:DatatypeProperty ;
+    rdfs:label "ioDirection"@en ;
+    rdfs:domain ex:IOSignal ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "IEC 61499 FB pin direction of the signal: 'input' (read by the FB) or 'output' (written by the FB)."@en .
+
+ex:IOSignal a owl:Class ;
+    rdfs:label "IOSignal"@en ;
+    rdfs:subClassOf core:State ;
+    rdfs:comment "Boolean (or typed) IEC 61499 datapoint exposed on a skill FB. Modelled as a core:State so skills can reference it via standard pre/post-condition properties."@en .
+
+#################################################################
+# PLANT
+#################################################################
+
+ex:DistributingStation1 a core:Plant ;
+    rdfs:label "Festo Distributing Station #1" ;
+    core:identifier "plant-distributing-station-001" ;
+    core:hasPart ex:FeederUnit1 , ex:TransferUnit1 .
+
+#################################################################
+# FEEDER UNIT (left half of the figure)
+#################################################################
+
+ex:FeederUnit1 a ex:FeederUnit ;
+    rdfs:label "Feeder unit" ;
+    core:identifier "resource-feeder-unit-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "MPS-Distributing-Feeder" ;
+    core:hasPart  ex:Magazine1 , ex:FeederPusher1 , ex:FeederCylinder1 ,
+                  ex:PusherRearSensor1 , ex:PusherFrontSensor1 ;
+    ex:feeds      ex:TransferUnit1 ;
+    core:provides ex:Type_skLoad_adp , ex:Type_skPush_adp , ex:Type_skPushSlow_adp .
+
+ex:Magazine1 a ex:Magazine ;
+    rdfs:label "Magazine (vertical FIFO)" ;
+    core:identifier "resource-magazine-001" ;
+    core:hasPart ex:EmptySensor1 .
+
+ex:FeederPusher1 a ex:Pusher ;
+    rdfs:label "Feeder pusher" ;
+    core:identifier "resource-feeder-pusher-001" ;
+    ex:drivenBy ex:FeederCylinder1 .
+
+ex:FeederCylinder1 a ex:PneumaticCylinder ;
+    rdfs:label "Feeder pneumatic cylinder" ;
+    core:identifier "resource-feeder-cylinder-001" .
+
+#################################################################
+# TRANSFER UNIT (right half of the figure)
+#################################################################
+
+ex:TransferUnit1 a ex:TransferUnit ;
+    rdfs:label "Transfer unit" ;
+    core:identifier "resource-transfer-unit-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "MPS-Distributing-Transfer" ;
+    core:hasPart  ex:TransferArm1 , ex:VacuumUnit1 ,
+                  ex:TransferArmRightSensor1 , ex:TransferArmLeftSensor1 ;
+    core:provides ex:Type_skGoToLeft , ex:Type_skGoToRight , ex:Type_skGoToRight2x ,
+                  ex:Type_skPick , ex:Type_skPlace ,
+                  ex:Type_skTransfer_adp , ex:Type_skTransferSlow_adp .
+
+ex:TransferArm1 a res:TransferArm ;
+    rdfs:label "Transfer arm (rotary)" ;
+    core:identifier "resource-transfer-arm-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "MPS-Rotary-Arm" ;
+    core:hasPart ex:VacuumUnit1 ;
+    core:provides ex:Type_skGoToLeft , ex:Type_skGoToRight , ex:Type_skGoToRight2x .
+
+ex:VacuumUnit1 a res:VacuumUnit ;
+    rdfs:label "Vacuum unit (end-effector)" ;
+    core:identifier "resource-vacuum-unit-001" ;
+    core:hasPart ex:VacuumValve1 , ex:VacuumSense1 ;
+    core:provides ex:Type_skPick , ex:Type_skPlace .
+
+ex:VacuumValve1 a ex:VacuumValve ;
+    rdfs:label "Vacuum solenoid valve" ;
+    core:identifier "resource-vacuum-valve-001" .
+
+#################################################################
+# SENSORS  (each "creates" an I/O datapoint)
+#################################################################
+
+ex:EmptySensor1 a sensor:ProximitySensor ;
+    rdfs:label "Magazine empty sensor" ;
+    core:identifier "sensor-magazine-empty-001" ;
+    sosa:observes ex:MagazineLoad ;
+    ex:createsSignal ex:IO_empty .
+
+ex:PusherRearSensor1 a sensor:ProximitySensor ;
+    rdfs:label "Pusher rear (retracted) sensor" ;
+    core:identifier "sensor-pusher-rear-001" ;
+    sosa:observes ex:PusherPosition ;
+    ex:createsSignal ex:IO_pos_r .
+
+ex:PusherFrontSensor1 a sensor:ProximitySensor ;
+    rdfs:label "Pusher front (extended) sensor" ;
+    core:identifier "sensor-pusher-front-001" ;
+    sosa:observes ex:PusherPosition ;
+    ex:createsSignal ex:IO_pos_e .
+
+ex:TransferArmRightSensor1 a sensor:ProximitySensor ;
+    rdfs:label "Transfer-arm right (at-next-station) sensor" ;
+    core:identifier "sensor-arm-right-001" ;
+    sosa:observes ex:ArmPosition ;
+    ex:createsSignal ex:IO_at_next .
+
+ex:TransferArmLeftSensor1 a sensor:ProximitySensor ;
+    rdfs:label "Transfer-arm left (at-magazine) sensor" ;
+    core:identifier "sensor-arm-left-001" ;
+    sosa:observes ex:ArmPosition ;
+    ex:createsSignal ex:IO_at_mgz .
+
+ex:VacuumSense1 a sensor:PressureSensor ;
+    rdfs:label "Vacuum-monitor sensor" ;
+    core:identifier "sensor-vacuum-monitor-001" ;
+    sosa:observes ex:VacuumPressure ;
+    ex:createsSignal ex:IO_vmon .
+
+# Observable properties (SOSA-aligned)
+ex:MagazineLoad   a sensor:ObservableProperty ; rdfs:label "Magazine load (empty/loaded)"@en .
+ex:PusherPosition a sensor:ObservableProperty ; rdfs:label "Pusher position"@en .
+ex:ArmPosition    a sensor:ObservableProperty ; rdfs:label "Transfer-arm angular position"@en .
+ex:VacuumPressure a sensor:ObservableProperty ; rdfs:label "Vacuum-line pressure"@en .
+
+#################################################################
+# I/O DATAPOINTS (matches Comp_Skill_Adp / skills_tbox.ttl)
+#################################################################
+
+# --- Inputs (signals the skill FBs READ) ---
+ex:IO_WPtype  a ex:IOSignal ; rdfs:label "WPtype"@en  ;
+    ex:ioDirection "input" ;
+    rdfs:comment "Detected workpiece type code (set by vision/colour sensor)."@en .
+
+ex:IO_empty   a ex:IOSignal ; rdfs:label "empty"@en   ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the magazine is empty."@en .
+
+ex:IO_pos_r   a ex:IOSignal ; rdfs:label "pos_r"@en   ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the feeder pusher is fully retracted."@en .
+
+ex:IO_pos_e   a ex:IOSignal ; rdfs:label "pos_e"@en   ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the feeder pusher is fully extended."@en .
+
+ex:IO_at_next a ex:IOSignal ; rdfs:label "at_next"@en ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the transfer arm is at the next-station drop position."@en .
+
+ex:IO_at_mgz  a ex:IOSignal ; rdfs:label "at_mgz"@en  ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the transfer arm is at the magazine pickup position."@en .
+
+ex:IO_vmon    a ex:IOSignal ; rdfs:label "vmon"@en    ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when vacuum monitor confirms a workpiece is held."@en .
+
+ex:IO_vm_on   a ex:IOSignal ; rdfs:label "vm_on"@en   ;
+    ex:ioDirection "input" ;
+    rdfs:comment "Vacuum-on monitor feedback (composite-skill side)."@en .
+
+# --- Outputs (signals the skill FBs WRITE) ---
+ex:IO_retract a ex:IOSignal ; rdfs:label "retract"@en ;
+    ex:ioDirection "output" ;
+    ex:commandsActuator ex:FeederCylinder1 ;
+    rdfs:comment "Command: retract the feeder cylinder."@en .
+
+ex:IO_to_next a ex:IOSignal ; rdfs:label "to_next"@en ;
+    ex:ioDirection "output" ;
+    rdfs:comment "Command: rotate the arm toward the next station (right)."@en .
+
+ex:IO_to_mgz  a ex:IOSignal ; rdfs:label "to_mgz"@en  ;
+    ex:ioDirection "output" ;
+    rdfs:comment "Command: rotate the arm toward the magazine (left)."@en .
+
+ex:IO_vcm_on  a ex:IOSignal ; rdfs:label "vcm_on"@en  ;
+    ex:ioDirection "output" ;
+    ex:commandsActuator ex:VacuumValve1 ;
+    rdfs:comment "Command: open the vacuum valve (suction ON)."@en .
+
+ex:IO_vcm_off a ex:IOSignal ; rdfs:label "vcm_off"@en ;
+    ex:ioDirection "output" ;
+    ex:commandsActuator ex:VacuumValve1 ;
+    rdfs:comment "Command: close the vacuum valve (suction OFF)."@en .
+
+ex:IO_vm_off  a ex:IOSignal ; rdfs:label "vm_off"@en  ;
+    ex:ioDirection "output" ;
+    rdfs:comment "Vacuum-off command echo (composite-skill side)."@en .
+
+#################################################################
+# MOTION SPECIFICATION
+#
+# The arm performs a rotational, constant-speed move of ~1 s
+# (Move Right → next station, Move Left → magazine). The slow
+# variant (skGoToRight2x) takes ~2 s for the right move.
+#################################################################
+
+ex:ArmRotationalMotion a motion:RotationalMotion ;
+    rdfs:label "Transfer-arm rotational motion (constant speed, ~1 s)"@en ;
+    motion:hasVelocity "1.5708"^^xsd:float ;     # ≈ π/2 rad·s⁻¹  (90° in 1 s)
+    ex:hasDuration [
+        a unit:Quantity ;
+        unit:numericValue 1.0 ;
+        unit:hasUnit unit:Second
+    ] ;
+    rdfs:comment "Rotational motion of the transfer arm between the magazine and the next-station drop point."@en .
+
+ex:ArmRotationalMotionSlow a motion:RotationalMotion ;
+    rdfs:label "Transfer-arm rotational motion (half-speed, ~2 s)"@en ;
+    motion:hasVelocity "0.7854"^^xsd:float ;     # ≈ π/4 rad·s⁻¹  (90° in 2 s)
+    ex:hasDuration [
+        a unit:Quantity ;
+        unit:numericValue 2.0 ;
+        unit:hasUnit unit:Second
+    ] ;
+    rdfs:comment "Half-speed rotational motion used by the skTransferSlow_adp composite (skGoToRight2x)."@en .
+
+ex:PusherLinearMotion a motion:LinearMotion ;
+    rdfs:label "Feeder-pusher linear motion (constant speed, ~1.2 s extend)"@en ;
+    motion:hasVelocity "0.05"^^xsd:float ;       # m·s⁻¹  (~50 mm in 1.2 s)
+    ex:hasStrokeMeters "0.06"^^xsd:float ;
+    ex:hasDuration [
+        a unit:Quantity ;
+        unit:numericValue 1.2 ;
+        unit:hasUnit unit:Second
+    ] ;
+    rdfs:comment "Linear extension of the feeder pneumatic cylinder ejecting a workpiece from the magazine onto the nest."@en .
+
+ex:PusherLinearMotionSlow a motion:LinearMotion ;
+    rdfs:label "Feeder-pusher linear motion (half-speed, ~2.4 s extend)"@en ;
+    motion:hasVelocity "0.025"^^xsd:float ;      # m·s⁻¹  (~50 mm in 2.4 s)
+    ex:hasStrokeMeters "0.06"^^xsd:float ;
+    ex:hasDuration [
+        a unit:Quantity ;
+        unit:numericValue 2.4 ;
+        unit:hasUnit unit:Second
+    ] ;
+    rdfs:comment "Half-speed pusher extension used by the skPushSlow_adp composite."@en .
+
+ex:hasDuration a owl:ObjectProperty ;
+    rdfs:label "hasDuration"@en ;
+    rdfs:domain motion:Motion ;
+    rdfs:range  unit:Quantity .
+
+ex:hasStrokeMeters a owl:DatatypeProperty ;
+    rdfs:label "hasStrokeMeters"@en ;
+    rdfs:domain motion:LinearMotion ;
+    rdfs:range  xsd:float ;
+    rdfs:comment "Linear stroke length of a LinearMotion, in metres."@en .
+
+#################################################################
+# SKILL TYPES  (TBox — reusable specifications)
+#
+# Mirrors the FBT library in IEC61499/ and the type IRIs in
+# ontology/Comp_Skill_Adp/skills_tbox.ttl.
+#################################################################
+
+# --- Atomic motion skills (TransferUnit) ---
+
+ex:Type_skGoToLeft a skill:MotionSkill ;
+    rdfs:label "skGoToLeft"@en ;
+    skill:requiresMotion ex:ArmRotationalMotion ;
+    skill:expectedDurationSeconds 1.0 ;
+    ex:controlsIO ex:IO_to_mgz , ex:IO_to_next ;
+    ex:receivesIO ex:IO_at_mgz , ex:IO_at_next ;
+    rdfs:comment "Rotate the transfer arm to the magazine (left). FBT: SkillGoToLeft.fbt"@en .
+
+ex:Type_skGoToRight a skill:MotionSkill ;
+    rdfs:label "skGoToRight"@en ;
+    skill:requiresMotion ex:ArmRotationalMotion ;
+    skill:expectedDurationSeconds 1.0 ;
+    ex:controlsIO ex:IO_to_mgz , ex:IO_to_next ;
+    ex:receivesIO ex:IO_at_mgz , ex:IO_at_next ;
+    rdfs:comment "Rotate the transfer arm to the next station (right). FBT: SkillGoToRight.fbt"@en .
+
+ex:Type_skGoToRight2x a skill:MotionSkill ;
+    rdfs:label "skGoToRight2x"@en ;
+    skill:requiresMotion ex:ArmRotationalMotionSlow ;
+    skill:expectedDurationSeconds 2.0 ;
+    ex:controlsIO ex:IO_to_mgz , ex:IO_to_next ;
+    ex:receivesIO ex:IO_at_mgz , ex:IO_at_next ;
+    rdfs:comment "Rotate the transfer arm to the next station at half speed. FBT: SkillGoToRight2x.fbt"@en .
+
+# --- Atomic manipulation skills (VacuumUnit) ---
+
+ex:Type_skPick a skill:ManipulationSkill ;
+    rdfs:label "skPick"@en ;
+    ex:controlsIO ex:IO_vcm_on , ex:IO_vcm_off ;
+    ex:receivesIO ex:IO_vm_on ;
+    rdfs:comment "Activate vacuum and grip the workpiece. FBT: SkillVcmOn.fbt"@en .
+
+ex:Type_skPlace a skill:ManipulationSkill ;
+    rdfs:label "skPlace"@en ;
+    ex:controlsIO ex:IO_vcm_on , ex:IO_vcm_off ;
+    ex:receivesIO ex:IO_vm_on ;
+    rdfs:comment "Release the workpiece by switching the vacuum off. FBT: SkillVcmOff.fbt"@en .
+
+# --- Atomic handling skills (FeederUnit, adapter variants) ---
+
+ex:Type_skLoad_adp a skill:HandlingSkill ;
+    rdfs:label "skLoad_adp"@en ;
+    skill:requiresMotion ex:PusherLinearMotion ;
+    skill:expectedDurationSeconds 1.2 ;
+    ex:controlsIO ex:IO_WPtype , ex:IO_empty , ex:IO_pos_e , ex:IO_pos_r ;
+    ex:receivesIO ex:IO_retract ;
+    rdfs:comment "Adapter-wrapped load skill: detects and (optionally) loads a workpiece. FBT: SkillToLoad.fbt"@en .
+
+ex:Type_skPush_adp a skill:HandlingSkill ;
+    rdfs:label "skPush_adp"@en ;
+    skill:requiresMotion ex:PusherLinearMotion ;
+    skill:expectedDurationSeconds 1.2 ;
+    ex:controlsIO ex:IO_WPtype , ex:IO_empty , ex:IO_pos_e , ex:IO_pos_r ;
+    ex:receivesIO ex:IO_retract ;
+    rdfs:comment "Adapter-wrapped push skill: pushes a workpiece onto the nest. FBT: skPush composite"@en .
+
+ex:Type_skPushSlow_adp a skill:HandlingSkill ;
+    rdfs:label "skPushSlow_adp"@en ;
+    skill:requiresMotion ex:PusherLinearMotionSlow ;
+    skill:expectedDurationSeconds 2.4 ;
+    ex:controlsIO ex:IO_WPtype , ex:IO_empty , ex:IO_pos_e , ex:IO_pos_r ;
+    ex:receivesIO ex:IO_retract ;
+    rdfs:comment "Adapter-wrapped half-speed push skill. FBT: PusherSlow.fbt"@en .
+
+# --- Composite transfer skills ---
+
+ex:Type_skTransfer_adp a skill:TransferSkill ;
+    rdfs:label "skTransfer_adp"@en ;
+    ex:hasSubSkill ex:Type_skGoToLeft ,
+                   ex:Type_skPick ,
+                   ex:Type_skPlace ,
+                   ex:Type_skGoToRight ;
+    ex:controlsIO ex:IO_WPtype , ex:IO_at_mgz , ex:IO_at_next , ex:IO_vmon ;
+    ex:receivesIO ex:IO_to_mgz , ex:IO_to_next , ex:IO_vm_off , ex:IO_vm_on ;
+    rdfs:comment "Composite transfer: pick at magazine, rotate, place at next station. FBT: skTransfer composite"@en .
+
+ex:Type_skTransferSlow_adp a skill:TransferSkill ;
+    rdfs:label "skTransferSlow_adp"@en ;
+    ex:hasSubSkill ex:Type_skGoToLeft ,
+                   ex:Type_skPick ,
+                   ex:Type_skPlace ,
+                   ex:Type_skGoToRight2x ;
+    ex:controlsIO ex:IO_WPtype , ex:IO_at_mgz , ex:IO_at_next , ex:IO_vmon ;
+    ex:receivesIO ex:IO_to_mgz , ex:IO_to_next , ex:IO_vm_off , ex:IO_vm_on ;
+    rdfs:comment "Composite transfer with half-speed return (uses skGoToRight2x). FBT: TransferUnitSlow.fbt"@en .
+
+#################################################################
+# IEC 61499 LAYER — Function Block Types implementing each skill
+#################################################################
+
+ex:FBT_SkillGoToLeft a iec61499:BasicFB ;
+    rdfs:label "SkillGoToLeft.fbt" ;
+    core:identifier "fbt-SkillGoToLeft" ;
+    iec61499:implementsSkill ex:Type_skGoToLeft ;
+    iec61499:controlsResource ex:TransferArm1 .
+
+ex:FBT_SkillGoToRight a iec61499:BasicFB ;
+    rdfs:label "SkillGoToRight.fbt" ;
+    core:identifier "fbt-SkillGoToRight" ;
+    iec61499:implementsSkill ex:Type_skGoToRight ;
+    iec61499:controlsResource ex:TransferArm1 .
+
+ex:FBT_SkillGoToRight2x a iec61499:BasicFB ;
+    rdfs:label "SkillGoToRight2x.fbt" ;
+    core:identifier "fbt-SkillGoToRight2x" ;
+    iec61499:implementsSkill ex:Type_skGoToRight2x ;
+    iec61499:controlsResource ex:TransferArm1 .
+
+ex:FBT_SkillVcmOn a iec61499:BasicFB ;
+    rdfs:label "SkillVcmOn.fbt" ;
+    core:identifier "fbt-SkillVcmOn" ;
+    iec61499:implementsSkill ex:Type_skPick ;
+    iec61499:controlsResource ex:VacuumUnit1 .
+
+ex:FBT_SkillVcmOff a iec61499:BasicFB ;
+    rdfs:label "SkillVcmOff.fbt" ;
+    core:identifier "fbt-SkillVcmOff" ;
+    iec61499:implementsSkill ex:Type_skPlace ;
+    iec61499:controlsResource ex:VacuumUnit1 .
+
+ex:FBT_SkillToLoad a iec61499:BasicFB ;
+    rdfs:label "SkillToLoad.fbt" ;
+    core:identifier "fbt-SkillToLoad" ;
+    iec61499:implementsSkill ex:Type_skLoad_adp ;
+    iec61499:controlsResource ex:FeederUnit1 .
+
+ex:FBT_Pusher a iec61499:CompositeFB ;
+    rdfs:label "Pusher.fbt" ;
+    core:identifier "fbt-Pusher" ;
+    iec61499:implementsSkill ex:Type_skPush_adp ;
+    iec61499:controlsResource ex:FeederUnit1 .
+
+ex:FBT_PusherSlow a iec61499:CompositeFB ;
+    rdfs:label "PusherSlow.fbt" ;
+    core:identifier "fbt-PusherSlow" ;
+    iec61499:implementsSkill ex:Type_skPushSlow_adp ;
+    iec61499:controlsResource ex:FeederUnit1 .
+
+ex:FBT_TransferUnit a iec61499:CompositeFB ;
+    rdfs:label "TransferUnit.fbt" ;
+    core:identifier "fbt-TransferUnit" ;
+    iec61499:implementsSkill ex:Type_skTransfer_adp ;
+    iec61499:controlsResource ex:TransferUnit1 .
+
+ex:FBT_TransferUnitSlow a iec61499:CompositeFB ;
+    rdfs:label "TransferUnitSlow.fbt" ;
+    core:identifier "fbt-TransferUnitSlow" ;
+    iec61499:implementsSkill ex:Type_skTransferSlow_adp ;
+    iec61499:controlsResource ex:TransferUnit1 .
+
+#################################################################
+# APPLICATION  Comp_Skill_Adp  +  REGISTERED SKILL INSTANCES
+#
+# Mirrors ontology/Comp_Skill_Adp/skills_abox_io.ttl — the runtime-
+# registered skills that GraphDB knows about for orchestration.
+#################################################################
+
+ex:App_Comp_Skill_Adp a iec61499:Application ;
+    rdfs:label "Comp_Skill_Adp" ;
+    core:identifier "iec61499-app-comp-skill-adp" ;
+    rdfs:comment "Festo DS application that registers six application-level skills to the GraphDB skills register."@en .
+
+# --- Atomic registered skills owned by Comp_Skill_Adp ---
+
+ex:LoadWP a core:Skill ;
+    rdfs:label "LoadWP" ;
+    core:description "Replenishes workpieces" ;
+    core:partOf ex:App_Comp_Skill_Adp ;
+    ex:ofType   ex:Type_skLoad_adp .
+
+ex:LoadWP_toslow a core:Skill ;
+    rdfs:label "LoadWP_toslow" ;
+    core:description "Replenishes workpieces to the slow magazine" ;
+    core:partOf ex:App_Comp_Skill_Adp ;
+    ex:ofType   ex:Type_skLoad_adp .
+
+ex:PushWP a core:Skill ;
+    rdfs:label "PushWP" ;
+    core:description "Pushes the workpiece forward to the pickup position" ;
+    core:partOf ex:App_Comp_Skill_Adp ;
+    ex:ofType   ex:Type_skPush_adp .
+
+ex:PushWPslow a core:Skill ;
+    rdfs:label "PushWPslow" ;
+    core:description "Pushes workpiece at half speed, returns at normal speed" ;
+    core:partOf ex:App_Comp_Skill_Adp ;
+    ex:ofType   ex:Type_skPushSlow_adp .
+
+# --- Composite registered skills + their nested sub-instances ---
+
+ex:cmpTrans a core:Skill ;
+    rdfs:label "cmpTrans" ;
+    core:description "Picks up workpiece from the magazine and drops it on the opposite side" ;
+    core:partOf ex:App_Comp_Skill_Adp ;
+    ex:ofType   ex:Type_skTransfer_adp ;
+    ex:hasSubSkill ex:cmpTrans_GTL2 , ex:cmpTrans_Pick2 ,
+                   ex:cmpTrans_Place2 , ex:cmpTrans_GTR2 .
+
+ex:cmpTrans_GTL2   a core:Skill ; rdfs:label "GTL2"   ;
+    core:partOf ex:App_Comp_Skill_Adp ; ex:ofType ex:Type_skGoToLeft .
+ex:cmpTrans_Pick2  a core:Skill ; rdfs:label "Pick2"  ;
+    core:partOf ex:App_Comp_Skill_Adp ; ex:ofType ex:Type_skPick .
+ex:cmpTrans_Place2 a core:Skill ; rdfs:label "Place2" ;
+    core:partOf ex:App_Comp_Skill_Adp ; ex:ofType ex:Type_skPlace .
+ex:cmpTrans_GTR2   a core:Skill ; rdfs:label "GTR2"   ;
+    core:partOf ex:App_Comp_Skill_Adp ; ex:ofType ex:Type_skGoToRight .
+
+ex:cmpTransSlow a core:Skill ;
+    rdfs:label "cmpTransSlow" ;
+    core:description "Picks up workpiece at normal speed, carries it back at half speed" ;
+    core:partOf ex:App_Comp_Skill_Adp ;
+    ex:ofType   ex:Type_skTransferSlow_adp ;
+    ex:hasSubSkill ex:cmpTransSlow_GTL2 , ex:cmpTransSlow_Pick2 ,
+                   ex:cmpTransSlow_Place2 , ex:cmpTransSlow_GTR2 .
+
+ex:cmpTransSlow_GTL2   a core:Skill ; rdfs:label "GTL2"   ;
+    core:partOf ex:App_Comp_Skill_Adp ; ex:ofType ex:Type_skGoToLeft .
+ex:cmpTransSlow_Pick2  a core:Skill ; rdfs:label "Pick2"  ;
+    core:partOf ex:App_Comp_Skill_Adp ; ex:ofType ex:Type_skPick .
+ex:cmpTransSlow_Place2 a core:Skill ; rdfs:label "Place2" ;
+    core:partOf ex:App_Comp_Skill_Adp ; ex:ofType ex:Type_skPlace .
+ex:cmpTransSlow_GTR2   a core:Skill ; rdfs:label "GTR2"   ;
+    core:partOf ex:App_Comp_Skill_Adp ; ex:ofType ex:Type_skGoToRight2x .
+
+#################################################################
+# OPC UA SKILL INTERFACE (network-visible — CaSkMan pattern)
+#
+# Exposes the application-level registered skills (not the raw
+# type specifications) since clients orchestrate registered skills.
+#################################################################
+
+ex:OpcUaDistributionInterface a opcua:OpcUaSkillInterface ;
+    rdfs:label "OPC UA SkillInterface for the Distributing Station" ;
+    core:identifier "interface-opcua-distribution-001" ;
+    opcua:nodeId    "ns=2;s=Skill.CmpTrans" ;
+    opcua:browseName "DistributingStationSkill" ;
+    opcua:exposes   ex:cmpTrans , ex:cmpTransSlow ,
+                    ex:LoadWP , ex:LoadWP_toslow ,
+                    ex:PushWP , ex:PushWPslow .

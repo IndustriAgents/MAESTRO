@@ -15,7 +15,7 @@
     owl:versionIRI <https://w3id.org/maestro/0.3.0> ;
     rdfs:label    "MAESTRO — Modular Ontology Stack for Future-Proof Manufacturing"@en ;
     dct:title     "MAESTRO" ;
-    dct:creator   "Midhun Xavier" ;
+    dct:creator   "Melwin Xavier" ;
     dct:license   <https://opensource.org/licenses/MIT> ;
     owl:versionInfo "0.3.0" ;
     rdfs:comment  "Top-level umbrella ontology. Importing this file pulls in every MAESTRO module: core, physical, logical, execution adapters, runtime, cross-cutting concerns, and reasoning."@en ;

@@ -1,0 +1,78 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix core: <https://w3id.org/maestro/core#> .
+@prefix cap:  <https://w3id.org/maestro/capability#> .
+@prefix proc: <https://w3id.org/maestro/process#> .
+@prefix prod: <https://w3id.org/maestro/product#> .
+@prefix ex:   <https://w3id.org/maestro/examples/distribution-station#> .
+
+#################################################################
+# EXAMPLE — DISTRIBUTING STATION: PRODUCT & PROCESS
+#################################################################
+
+<https://w3id.org/maestro/examples/distribution-station/product> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station/product/0.4.0> ;
+    rdfs:label "MAESTRO Example: Festo Distributing Station — Product"@en ;
+    owl:imports <https://w3id.org/maestro/examples/distribution-station> ;
+    owl:versionInfo "0.4.0" .
+
+#################################################################
+# LOCAL PROPERTY EXTENSIONS
+#################################################################
+
+ex:hasSubProcess a owl:ObjectProperty ;
+    rdfs:label "hasSubProcess"@en ;
+    rdfs:subPropertyOf core:hasPart ;
+    rdfs:domain proc:ManufacturingProcess ;
+    rdfs:range  proc:ManufacturingProcess ;
+    rdfs:comment "A composite process decomposes into ordered sub-processes."@en .
+
+#################################################################
+# PROCESSES (DIN 8580 — Handling / Transport)
+#
+# Distribute cycle decomposes into five ordered sub-processes:
+#   Load → Push → Pick → Rotate → Place
+#################################################################
+
+ex:DistributeWorkpieceProcess a proc:TransportProcess ;
+    rdfs:label "Distribute workpiece (magazine → next station)" ;
+    proc:requiresCapability cap:HandlingCapability ,
+                            cap:PickPlaceCapability ,
+                            cap:TransportCapability ;
+    ex:hasSubProcess ex:LoadProcess , ex:PushProcess ,
+                     ex:PickProcess , ex:RotateProcess , ex:PlaceProcess .
+
+ex:LoadProcess a proc:HandlingProcess ;
+    rdfs:label "Detect and load workpiece into magazine nest" ;
+    proc:requiresCapability cap:HandlingCapability ;
+    proc:precedes ex:PushProcess .
+
+ex:PushProcess a proc:HandlingProcess ;
+    rdfs:label "Push workpiece from magazine onto pickup nest" ;
+    proc:requiresCapability cap:HandlingCapability ;
+    proc:precedes ex:PickProcess .
+
+ex:PickProcess a proc:HandlingProcess ;
+    rdfs:label "Pick workpiece from nest with vacuum end-effector" ;
+    proc:requiresCapability cap:PickPlaceCapability ;
+    proc:precedes ex:RotateProcess .
+
+ex:RotateProcess a proc:TransportProcess ;
+    rdfs:label "Rotate transfer arm from magazine to next station" ;
+    proc:requiresCapability cap:TransportCapability ;
+    proc:precedes ex:PlaceProcess .
+
+ex:PlaceProcess a proc:HandlingProcess ;
+    rdfs:label "Release workpiece at next station" ;
+    proc:requiresCapability cap:PickPlaceCapability .
+
+#################################################################
+# PRODUCT
+#################################################################
+
+ex:WorkpieceWP3 a prod:Part ;
+    rdfs:label "Workpiece WP3 (Festo cylindrical blank)" ;
+    prod:massKg 0.030 ;
+    prod:requiresProcess ex:DistributeWorkpieceProcess .
