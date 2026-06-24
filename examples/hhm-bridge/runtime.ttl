@@ -1,0 +1,56 @@
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:       <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:      <https://w3id.org/maestro/core#> .
+@prefix skill:     <https://w3id.org/maestro/skill#> .
+@prefix skill-lib: <https://w3id.org/maestro/skill-lib#> .
+@prefix runtime:   <https://w3id.org/maestro/runtime#> .
+@prefix trace:     <https://w3id.org/maestro/trace#> .
+@prefix ex:        <https://w3id.org/maestro/examples/hhm-bridge#> .
+
+#################################################################
+# EXAMPLE — HHM-CORE BRIDGE (RUNTIME SNAPSHOT)
+#
+# A runtime:SkillExecution record (P5): the Transfer skill ran on
+# Station1, was invoked through the OPC UA endpoint, consumed a
+# ParameterValue, reached an Executing status, ran over a TimeInterval
+# and produced a traceable Item (SAREF4INMA) — PROV-O alignment is
+# inherited from execution/prov.ttl.
+#################################################################
+
+<https://w3id.org/maestro/examples/hhm-bridge/runtime> a owl:Ontology , runtime:Snapshot ;
+    owl:versionIRI <https://w3id.org/maestro/examples/hhm-bridge/runtime/0.4.0> ;
+    rdfs:label "MAESTRO Example: HHM-Core Bridge — Runtime Snapshot"@en ;
+    owl:imports <https://w3id.org/maestro/examples/hhm-bridge> ;
+    owl:versionInfo "0.4.0" ;
+    runtime:snapshotTaken "2026-06-24T08:00:00Z"^^xsd:dateTime .
+
+ex:Exec1 a runtime:SkillExecution ;
+    rdfs:label "Transfer execution #1" ;
+    core:identifier "execution-transfer-001" ;
+    runtime:executes    skill-lib:Transfer ;
+    runtime:executedOn  ex:Station1 ;
+    runtime:invokedVia  ex:Endpoint1 ;
+    runtime:hasInput    ex:PV1 ;
+    runtime:hasStatus   runtime:Executing ;
+    runtime:hasTime     ex:TI1 ;
+    trace:producedItem  ex:Item1 ;
+    trace:usedEquipment ex:Station1 .
+
+ex:TI1 a runtime:TimeInterval ;
+    runtime:startTime "2026-06-24T08:00:01Z"^^xsd:dateTime ;
+    runtime:endTime   "2026-06-24T08:00:04Z"^^xsd:dateTime .
+
+ex:PV1 a skill:ParameterValue ;
+    skill:instanceOf ex:Param1 ;
+    skill:value "50.0" .
+
+ex:Item1 a trace:Item ;
+    rdfs:label "produced widget item #1" ;
+    core:identifier "item-widget-0001" ;
+    trace:partOfBatch ex:Batch1 .
+
+ex:Batch1 a trace:Batch ;
+    rdfs:label "batch 2026-06-24-A" ;
+    core:identifier "batch-20260624A" .

@@ -10,11 +10,11 @@
 #################################################################
 
 <https://w3id.org/maestro/safety> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/safety/0.3.0> ;
+    owl:versionIRI <https://w3id.org/maestro/safety/0.4.0> ;
     rdfs:label "MAESTRO Safety Ontology"@en ;
     owl:imports <https://w3id.org/maestro/core> ;
-    owl:versionInfo "0.3.0" ;
-    rdfs:comment "Functional safety vocabulary aligned with IEC 61508 and ISO 13849."@en .
+    owl:versionInfo "0.4.0" ;
+    rdfs:comment "Functional safety vocabulary aligned with IEC 61508 and ISO 13849. 0.4.0 promotes mitigation to a class and adds Hazard→Risk / Mitigation→Risk relations (HHM-Core Priority 3)."@en .
 
 #################################################################
 # CLASSES
@@ -71,3 +71,24 @@ safety:hasPerformanceLevel a owl:ObjectProperty ;
 safety:mitigates a owl:ObjectProperty ;
     rdfs:domain safety:SafetyFunction ;
     rdfs:range  safety:Hazard .
+
+#################################################################
+# MITIGATION AS A CLASS + RISK RELATIONS (new 0.4.0, HHM-Core P3)
+#################################################################
+
+safety:Mitigation a owl:Class ;
+    rdfs:label "Mitigation"@en ;
+    rdfs:subClassOf core:LogicalEntity ;
+    rdfs:comment "A reified mitigation measure that reduces a Risk. Promotes the safety:mitigates relation to a first-class object, mirroring HHM-Core Mitigation."@en .
+
+safety:increases a owl:ObjectProperty ;
+    rdfs:label "increases"@en ;
+    rdfs:domain safety:Hazard ;
+    rdfs:range  safety:Risk ;
+    rdfs:comment "A Hazard increases a Risk (HHM-Core Hazard→Risk edge)."@en .
+
+safety:reduces a owl:ObjectProperty ;
+    rdfs:label "reduces"@en ;
+    rdfs:domain safety:Mitigation ;
+    rdfs:range  safety:Risk ;
+    rdfs:comment "A Mitigation reduces a Risk (HHM-Core Mitigation→Risk edge)."@en .

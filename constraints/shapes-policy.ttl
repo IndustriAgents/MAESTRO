@@ -1,0 +1,30 @@
+@prefix sh:     <http://www.w3.org/ns/shacl#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix core:   <https://w3id.org/maestro/core#> .
+@prefix policy: <https://w3id.org/maestro/policy#> .
+@prefix shape:  <https://w3id.org/maestro/shapes#> .
+
+#################################################################
+# SHACL SHAPES — POLICY / ACCESS-CONTROL LAYER (DESIGN-TIME)
+#################################################################
+
+shape:PolicyShape a sh:NodeShape ;
+    sh:targetClass policy:Policy ;
+    rdfs:label "Every Policy must contain at least one Constraint."@en ;
+    sh:property [
+        sh:path policy:contains ;
+        sh:minCount 1 ;
+        sh:class core:Constraint ;
+        sh:message "A policy:Policy must contain at least one core:Constraint via policy:contains." ;
+    ] .
+
+shape:PermissionShape a sh:NodeShape ;
+    sh:targetClass policy:Permission ;
+    rdfs:label "Every Permission must be granted to a Role."@en ;
+    sh:property [
+        sh:path policy:grantedTo ;
+        sh:minCount 1 ;
+        sh:class policy:Role ;
+        sh:message "A policy:Permission must be granted to a policy:Role via policy:grantedTo." ;
+    ] .

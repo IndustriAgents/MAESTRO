@@ -241,6 +241,9 @@ def main() -> None:
         ROOT / "constraints/shapes-resource.ttl",
         ROOT / "constraints/shapes-process.ttl",
         ROOT / "constraints/shapes-skill.ttl",
+        ROOT / "constraints/shapes-recipe.ttl",
+        ROOT / "constraints/shapes-policy.ttl",
+        ROOT / "constraints/shapes-product.ttl",
     )
     shacl_validate(design, design_shapes, "design-time")
 

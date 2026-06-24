@@ -1,0 +1,30 @@
+@prefix sh:     <http://www.w3.org/ns/shacl#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix core:   <https://w3id.org/maestro/core#> .
+@prefix recipe: <https://w3id.org/maestro/recipe#> .
+@prefix shape:  <https://w3id.org/maestro/shapes#> .
+
+#################################################################
+# SHACL SHAPES — RECIPE / PLAN LAYER (DESIGN-TIME)
+#################################################################
+
+shape:RecipeShape a sh:NodeShape ;
+    sh:targetClass recipe:Recipe ;
+    rdfs:label "Every Recipe must contain at least one PlanStep."@en ;
+    sh:property [
+        sh:path recipe:hasStep ;
+        sh:minCount 1 ;
+        sh:class recipe:PlanStep ;
+        sh:message "A Recipe must declare at least one recipe:PlanStep via recipe:hasStep." ;
+    ] .
+
+shape:PlanStepShape a sh:NodeShape ;
+    sh:targetClass recipe:PlanStep ;
+    rdfs:label "Every PlanStep must be realised by a Skill."@en ;
+    sh:property [
+        sh:path recipe:realizedBy ;
+        sh:minCount 1 ;
+        sh:class core:Skill ;
+        sh:message "A recipe:PlanStep must be realised by a core:Skill via recipe:realizedBy." ;
+    ] .

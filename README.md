@@ -4,7 +4,7 @@
 *Industry 4.0 / Industry 5.0 — semantic, skill-based, vendor-independent*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](CHANGELOG.md)
 [![Ontology: OWL2-RL](https://img.shields.io/badge/ontology-OWL2--RL-green.svg)](https://www.w3.org/TR/owl2-overview/)
 
 MAESTRO is a unified, standards-aligned semantic framework for modelling
@@ -128,17 +128,22 @@ arrows to the external standards each module aligns with:
 | [`ontologies/core/manufacturing-core.ttl`](ontologies/core/manufacturing-core.ttl) | Root abstractions (Entity, Resource, Skill, Capability, …) |
 | [`ontologies/physical/resource.ttl`](ontologies/physical/resource.ttl) | Machines, robots, PLCs, tooling |
 | [`ontologies/physical/motion.ttl`](ontologies/physical/motion.ttl) | Motion semantics (classes + properties only — see motion-lib for specs) |
+| [`ontologies/physical/automationml.ttl`](ontologies/physical/automationml.ttl) | AutomationML / CAEX plant topology (IEC 62714) |
 | [`ontologies/logical/skill.ttl`](ontologies/logical/skill.ttl) | Atomic + composite skill **classes** (vocabulary) |
 | [`ontologies/logical/capability.ttl`](ontologies/logical/capability.ttl) | Manufacturing capabilities |
 | [`ontologies/lib/skill-lib.ttl`](ontologies/lib/skill-lib.ttl) | Reusable skill **individuals** (Transfer, MoveLinear, VacuumPick, …) |
 | [`ontologies/lib/motion-lib.ttl`](ontologies/lib/motion-lib.ttl) | Reusable motion **specifications** (LinearMotionSpec, …) |
 | [`ontologies/logical/process.ttl`](ontologies/logical/process.ttl) | DIN 8580 / VDI 3682 processes |
-| [`ontologies/logical/product.ttl`](ontologies/logical/product.ttl) | Products, parts, tolerances |
+| [`ontologies/logical/product.ttl`](ontologies/logical/product.ttl) | Products, parts, tolerances, type/instance, variants, identifiers, BOM |
+| [`ontologies/logical/recipe.ttl`](ontologies/logical/recipe.ttl) | ISA-88 procedural recipe / plan-step layer |
 | [`ontologies/execution/iec61131.ttl`](ontologies/execution/iec61131.ttl) | PLC semantics |
 | [`ontologies/execution/iec61499.ttl`](ontologies/execution/iec61499.ttl) | Event-driven distributed FBs |
 | [`ontologies/execution/ros.ttl`](ontologies/execution/ros.ttl) | ROS / ROS 2 nodes, topics, actions |
 | [`ontologies/execution/opcua.ttl`](ontologies/execution/opcua.ttl) | OPC UA skill interfaces |
 | [`ontologies/execution/aas.ttl`](ontologies/execution/aas.ttl) | Asset Administration Shell |
+| [`ontologies/execution/dtdl.ttl`](ontologies/execution/dtdl.ttl) | Azure Digital Twins DTDL interfaces |
+| [`ontologies/execution/prov.ttl`](ontologies/execution/prov.ttl) | PROV-O provenance bridge for SkillExecution |
+| [`ontologies/execution/trace.ttl`](ontologies/execution/trace.ttl) | SAREF4INMA batch/item traceability |
 | [`ontologies/runtime/runtime.ttl`](ontologies/runtime/runtime.ttl) | Live operational state (PackML) |
 | [`ontologies/runtime/state.ttl`](ontologies/runtime/state.ttl) | Generic state machine vocab |
 | [`ontologies/cross-cutting/sensor.ttl`](ontologies/cross-cutting/sensor.ttl) | SSN / SOSA sensor model |
@@ -148,6 +153,8 @@ arrows to the external standards each module aligns with:
 | [`ontologies/cross-cutting/quality.ttl`](ontologies/cross-cutting/quality.ttl) | ISO 9001 quality |
 | [`ontologies/cross-cutting/maintenance.ttl`](ontologies/cross-cutting/maintenance.ttl) | Maintenance & predictive |
 | [`ontologies/cross-cutting/energy.ttl`](ontologies/cross-cutting/energy.ttl) | Energy-aware manufacturing |
+| [`ontologies/cross-cutting/policy.ttl`](ontologies/cross-cutting/policy.ttl) | ODRL policy / permission / role / mode / evidence |
+| [`ontologies/cross-cutting/dpp.ttl`](ontologies/cross-cutting/dpp.ttl) | Digital Product Passport + ECLASS dictionary |
 | [`ontologies/reasoning/reasoning.ttl`](ontologies/reasoning/reasoning.ttl) | Reasoning model documentation |
 | [`ontologies/reasoning/planning.ttl`](ontologies/reasoning/planning.ttl) | ISA-95 production planning |
 | [`ontologies/maestro.ttl`](ontologies/maestro.ttl) | **Top-level umbrella** — imports every module |

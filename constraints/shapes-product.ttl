@@ -1,0 +1,43 @@
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:  <https://w3id.org/maestro/core#> .
+@prefix prod:  <https://w3id.org/maestro/product#> .
+@prefix shape: <https://w3id.org/maestro/shapes#> .
+
+#################################################################
+# SHACL SHAPES — PRODUCT IDENTITY / BOM (DESIGN-TIME)
+#################################################################
+
+shape:IdentifierShape a sh:NodeShape ;
+    sh:targetClass prod:Identifier ;
+    rdfs:label "Every Identifier must declare a scheme and a value."@en ;
+    sh:property [
+        sh:path prod:scheme ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A prod:Identifier must declare prod:scheme." ;
+    ] ;
+    sh:property [
+        sh:path prod:value ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "A prod:Identifier must declare prod:value." ;
+    ] .
+
+shape:BOMNodeShape a sh:NodeShape ;
+    sh:targetClass prod:BOMNode ;
+    rdfs:label "Every BOM node must reference a Product with a quantity."@en ;
+    sh:property [
+        sh:path prod:nodeFor ;
+        sh:minCount 1 ;
+        sh:class core:Product ;
+        sh:message "A prod:BOMNode must reference a core:Product via prod:nodeFor." ;
+    ] ;
+    sh:property [
+        sh:path prod:quantity ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:message "A prod:BOMNode must declare prod:quantity (xsd:decimal)." ;
+    ] .
