@@ -56,6 +56,12 @@ Additional pages:
 [Citation](#citation) ·
 [License](#license)
 
+0.4.0 / HHM-Core pages:
+[HHM-Core Bridge](docs/19-hhm-core-bridge.md) ·
+[Recipe / Plan](docs/20-recipe-ontology.md) ·
+[Policy / Access](docs/21-policy-access.md) ·
+[Provenance & Traceability](docs/22-provenance-traceability.md)
+
 ---
 
 ## 1. Core Philosophy
@@ -109,6 +115,9 @@ The MAESTRO semantic stack — nine layers, each independent and replaceable:
 │ Physical Factory              │
 └───────────────────────────────┘
 ```
+
+The **Orchestration Layer** (skill composition, recipes, control/data flow) was
+formalised in 0.4.0 — see [docs/19-hhm-core-bridge.md](docs/19-hhm-core-bridge.md).
 
 See [docs/02-master-architecture.md](docs/02-master-architecture.md).
 
@@ -183,8 +192,18 @@ See [docs/03-modular-stack.md](docs/03-modular-stack.md).
 | `ros.ttl` | ROS 2 |
 | `quality.ttl` | ISO 9001 |
 | `safety.ttl` | IEC 61508 |
+| `recipe.ttl` | ISA-88 (IEC 61512) |
+| `policy.ttl` | ODRL 2.2 |
+| `prov.ttl` | W3C PROV-O |
+| `trace.ttl` | ETSI SAREF4INMA |
+| `dpp.ttl` | DPP (ESPR) / ECLASS |
+| `automationml.ttl` | AutomationML / CAEX (IEC 62714) |
+| `dtdl.ttl` | DTDL (Azure Digital Twins) |
 
-See [docs/04-standard-alignment.md](docs/04-standard-alignment.md).
+The 0.4.0 rows close the *MAESTRO vs. HHM-Core* gap — see
+[docs/04-standard-alignment.md](docs/04-standard-alignment.md) for the exact
+bridge axioms and [docs/19-hhm-core-bridge.md](docs/19-hhm-core-bridge.md) for
+how each maps to a HHM-Core priority.
 
 ---
 
@@ -287,21 +306,27 @@ Skill
 Example:
 
 ```turtle
-skill:MoveLinear   a skill:MotionSkill ;
-    skill:requiresMotion motion:LinearMotionSpec .
+skill-lib:MoveLinear   a skill:MotionSkill ;
+    skill:requiresMotion motion-lib:LinearMotionSpec .
 
-skill:VacuumPick   a skill:ManipulationSkill .
+skill-lib:VacuumPick   a skill:ManipulationSkill .
 
-skill:Transfer     a skill:TransferSkill ;
-    skill:composedOfSkill skill:MoveLinear ;
-    skill:composedOfSkill skill:VacuumPick ;
-    skill:composedOfSkill skill:Release .
+skill-lib:Transfer     a skill:TransferSkill ;
+    skill:composedOfSkill skill-lib:MoveLinear ;
+    skill:composedOfSkill skill-lib:VacuumPick ;
+    skill:composedOfSkill skill-lib:Release .
 ```
+
+> Skill **classes** (`skill:MotionSkill`, …) live in `skill:`; the reusable
+> **individuals** (`skill-lib:MoveLinear`, …) live in `skill-lib:` since 0.3.0.
 
 > **Critical.** Skills are LOGICAL. They are NOT ROS nodes, PLC FBs, or
 > IEC 61499 FBs. Execution technologies *implement* skills.
 
-See [docs/08-skill-ontology.md](docs/08-skill-ontology.md).
+0.4.0 adds reified **skill orchestration** — `SubSkillLink`, `ControlFlow`,
+`DataBinding`, typed `ParameterDef`/`ParameterValue`, and a protocol-neutral
+`SkillInterface`/`SkillService`. See [docs/08-skill-ontology.md](docs/08-skill-ontology.md)
+and [docs/19-hhm-core-bridge.md](docs/19-hhm-core-bridge.md).
 
 ---
 
@@ -503,9 +528,12 @@ Use named graphs to keep design-time and run-time semantics cleanly separated:
 ```
 graph/core           graph/resource       graph/motion
 graph/skill          graph/capability     graph/process
-graph/product        graph/ros            graph/iec61131
-graph/iec61499       graph/opcua          graph/runtime
-graph/reasoning      graph/planning       graph/aas
+graph/product        graph/recipe         graph/ros
+graph/iec61131       graph/iec61499       graph/opcua
+graph/runtime        graph/reasoning      graph/planning
+graph/aas            graph/dtdl           graph/prov
+graph/trace          graph/policy         graph/dpp
+graph/automationml
 ```
 
 See [docs/15-graphdb-organization.md](docs/15-graphdb-organization.md).
@@ -625,12 +653,12 @@ MAESTRO/
 ├── CITATION.cff
 ├── ontologies/        # Modular .ttl ontology files (vocabulary)
 │   ├── core/          # Root abstractions
-│   ├── physical/      # Resource, motion
-│   ├── logical/       # Skill, capability, process, product
+│   ├── physical/      # Resource, motion, automationml (CAEX)
+│   ├── logical/       # Skill, capability, process, product, recipe (ISA-88)
 │   ├── lib/           # Reusable individuals: skill-lib, motion-lib (new in 0.3.0)
-│   ├── execution/     # IEC 61131 / IEC 61499 / ROS / OPC UA / AAS adapters
+│   ├── execution/     # IEC 61131 / IEC 61499 / ROS / OPC UA / AAS / DTDL + prov, trace bridges
 │   ├── runtime/       # Runtime + state vocabularies
-│   ├── cross-cutting/ # Sensor (SOSA), unit (QUDT), safety, quality, …
+│   ├── cross-cutting/ # Sensor (SOSA), unit (QUDT), safety, quality, policy (ODRL), dpp …
 │   └── reasoning/     # Reasoning + ISA-95 planning
 ├── constraints/       # SHACL shapes (design-time + runtime)
 ├── rules/             # SPARQL CONSTRUCT rules + 0.2→0.3 migration script
@@ -710,7 +738,7 @@ If you use MAESTRO in your research, please cite using the
   author  = {Xavier, Melwin},
   title   = {MAESTRO: Modular Ontology Stack for Future-Proof Manufacturing},
   year    = {2026},
-  version = {0.3.0},
+  version = {0.4.0},
   license = {MIT},
   url     = {https://github.com/midhunxavier/MAESTRO}
 }

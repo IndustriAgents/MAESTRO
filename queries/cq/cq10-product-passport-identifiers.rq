@@ -1,0 +1,19 @@
+PREFIX core: <https://w3id.org/maestro/core#>
+PREFIX prod: <https://w3id.org/maestro/product#>
+PREFIX dpp:  <https://w3id.org/maestro/dpp#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+# CQ10 — Which Digital Product Passport and scheme-qualified identifiers
+#         belong to a product instance (via its ProductType)?
+SELECT ?instance ?type ?passport ?scheme ?value
+WHERE {
+    ?instance a/rdfs:subClassOf* prod:ProductInstance ;
+              prod:instanceOfType ?type .
+    OPTIONAL {
+        ?type prod:hasIdentifier ?identifier .
+        ?identifier prod:scheme ?scheme ;
+                    prod:value  ?value .
+    }
+    OPTIONAL { ?passport dpp:describes ?type }
+}
+ORDER BY ?instance ?scheme

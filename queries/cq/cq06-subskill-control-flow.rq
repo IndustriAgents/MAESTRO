@@ -1,0 +1,16 @@
+PREFIX core:  <https://w3id.org/maestro/core#>
+PREFIX skill: <https://w3id.org/maestro/skill#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+# CQ06 — Which sub-skills, in what control-flow order, compose a composite skill?
+SELECT ?composite ?subSkill ?controlFlow ?controlFlowType
+WHERE {
+    ?composite skill:hasSubSkillLink ?link .
+    ?link      skill:linksTo ?subSkill .
+    OPTIONAL {
+        ?link skill:hasControlFlow ?controlFlow .
+        ?controlFlow a ?controlFlowType .
+        ?controlFlowType rdfs:subClassOf* skill:ControlFlow .
+    }
+}
+ORDER BY ?composite ?subSkill

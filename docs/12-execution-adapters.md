@@ -1,8 +1,8 @@
-# 12 — Execution Adapters (ROS · IEC 61131 · IEC 61499 · OPC UA)
+# 12 — Execution Adapters (ROS · IEC 61131 · IEC 61499 · OPC UA · AAS · DTDL)
 
 > *See README [§12](../README.md#12-ros-ontology), [§13](../README.md#13-iec-61131-ontology), [§14](../README.md#14-iec-61499-ontology), [§15](../README.md#15-opc-ua-ontology).*
 
-Five execution adapters live under `ontologies/execution/`. Each one:
+The execution adapters live under `ontologies/execution/`. Each invocation adapter:
 
 1. Declares its native control-component class (`ros:ROSNode`,
    `plc:FunctionBlock`, `iec61499:BasicFB`, `opcua:OpcUaMethod`,
@@ -64,13 +64,45 @@ Skills are exposed network-wide through `opcua:OpcUaSkillInterface`:
 ex:OpcUaTransferInterface a opcua:OpcUaSkillInterface ;
     opcua:nodeId "ns=2;s=Skill.Transfer" ;
     opcua:browseName "TransferSkill" ;
-    opcua:exposes skill:Transfer .
+    opcua:exposes skill-lib:Transfer .
 ```
 
 The inverse `opcua:accessibleThrough` lets clients ask: *"how do I
-invoke `skill:Transfer` over the wire?"*
+invoke `skill-lib:Transfer` over the wire?"*
 
-## Why five adapters, not one universal one
+As of 0.4.0, `opcua:OpcUaSkillInterface` is a subclass of the protocol-neutral
+`skill:SkillInterface` (see [08-skill-ontology.md](08-skill-ontology.md)).
+
+## DTDL (Azure Digital Twins — new in 0.4.0)
+
+[`dtdl.ttl`](../ontologies/execution/dtdl.ttl) mirrors the Azure Digital Twins
+Definition Language so a skill interface can be projected onto a twin. DTDL is a
+JSON-LD vocabulary (`dtmi:` identifiers), not OWL, so these are MAESTRO-local
+mirrors that specialise the neutral contracts:
+
+| Class | `rdfs:subClassOf` | Purpose |
+|---|---|---|
+| `dtdl:Interface` | `skill:SkillInterface` | The twin realisation of a neutral skill interface |
+| `dtdl:Command` | `com:OperationSignature` | A twin command = a skill operation |
+| `dtdl:Telemetry` | `com:EventStream` | A telemetry channel = an event stream |
+| `dtdl:Property` | `core:LogicalEntity` | A readable/writable twin property |
+
+Edges: `dtdl:hasCommand`, `dtdl:hasTelemetry`, `dtdl:hasProperty`.
+
+## Provenance & traceability bridges (new in 0.4.0)
+
+Two execution-side bridges turn a `runtime:SkillExecution` into a standards-aligned
+lineage record (HHM-Core P5) — see
+[22-provenance-traceability.md](22-provenance-traceability.md):
+
+- [`prov.ttl`](../ontologies/execution/prov.ttl) — `runtime:SkillExecution
+  rdfs:subClassOf prov:Activity`, with `runtime:executes`/`hasInput` →
+  `prov:used` and `executedOn` → `prov:wasAssociatedWith` (**W3C PROV-O**).
+- [`trace.ttl`](../ontologies/execution/trace.ttl) — `trace:Item`/`trace:Batch`
+  with `trace:producedItem` (a `prov:generated` edge) and `trace:usedEquipment`
+  (**ETSI SAREF4INMA**).
+
+## Why separate adapters, not one universal one
 
 Each protocol has runtime semantics that cannot be flattened into a
 universal vocabulary without losing fidelity (ROS topics ≠ OPC UA

@@ -1,0 +1,19 @@
+PREFIX core:   <https://w3id.org/maestro/core#>
+PREFIX policy: <https://w3id.org/maestro/policy#>
+PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+
+# CQ08 — Which policy governs which skill/target, for which role and operating mode?
+SELECT ?policy ?target ?role ?mode
+WHERE {
+    ?policy a/rdfs:subClassOf* policy:Policy .
+    OPTIONAL {
+        ?policy policy:contains ?constraint .
+        ?constraint core:constrains ?target .
+    }
+    OPTIONAL {
+        ?policy policy:hasPermission ?permission .
+        ?permission policy:grantedTo ?role .
+    }
+    OPTIONAL { ?policy policy:requiresMode ?mode }
+}
+ORDER BY ?policy ?target

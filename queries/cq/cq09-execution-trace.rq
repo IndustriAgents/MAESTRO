@@ -1,0 +1,18 @@
+PREFIX core:    <https://w3id.org/maestro/core#>
+PREFIX runtime: <https://w3id.org/maestro/runtime#>
+PREFIX trace:   <https://w3id.org/maestro/trace#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+
+# CQ09 — Which SkillExecution produced a traced item, over what time interval?
+SELECT ?execution ?skill ?item ?startTime ?endTime
+WHERE {
+    ?execution a/rdfs:subClassOf* runtime:SkillExecution ;
+               trace:producedItem ?item .
+    OPTIONAL { ?execution runtime:executes ?skill }
+    OPTIONAL {
+        ?execution runtime:hasTime ?interval .
+        ?interval  runtime:startTime ?startTime ;
+                   runtime:endTime   ?endTime .
+    }
+}
+ORDER BY ?execution ?item
