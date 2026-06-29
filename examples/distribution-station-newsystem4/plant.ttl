@@ -1,0 +1,827 @@
+@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:        <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:        <http://www.w3.org/2001/XMLSchema#> .
+@prefix sosa:       <http://www.w3.org/ns/sosa/> .
+@prefix core:       <https://w3id.org/maestro/core#> .
+@prefix res:        <https://w3id.org/maestro/resource#> .
+@prefix sensor:     <https://w3id.org/maestro/sensor#> .
+@prefix unit:       <https://w3id.org/maestro/unit#> .
+@prefix motion:     <https://w3id.org/maestro/motion#> .
+@prefix motion-lib: <https://w3id.org/maestro/motion-lib#> .
+@prefix skill:      <https://w3id.org/maestro/skill#> .
+@prefix skill-lib:  <https://w3id.org/maestro/skill-lib#> .
+@prefix cap:        <https://w3id.org/maestro/capability#> .
+@prefix iec61499:   <https://w3id.org/maestro/iec61499#> .
+@prefix opcua:      <https://w3id.org/maestro/opcua#> .
+@prefix ex:         <https://w3id.org/maestro/examples/distribution-station-newsystem4#> .
+
+#################################################################
+# EXAMPLE — FESTO DISTRIBUTING STATION (DESIGN-TIME)
+#
+# Grounded in two real artifacts:
+#   - CONTROL  : the IEC 61499 / 4diac project at
+#                ~/Documents/newsystem4/IEC61499
+#                (device Soft_dPAC "EcoRT_0" / RES0 / application APP1)
+#   - PHYSICAL : the Festo Didactic design documents +
+#                the stakeholder topology figures (Picture1/Picture2).
+#
+# The PHYSICAL / SENSOR / DATAPOINT layer below matches the stakeholder
+# figure exactly (functional naming); real Festo part numbers/models are
+# retained as attributes. The SKILL / IEC 61499 / capability / OPC UA
+# layers are kept from the control code and re-wired to these resources.
+#
+# Layout (mirrors the figure):
+#   DistributingStation
+#     ├── FeederUnit     (Magazine + FeederPusher + FeederCylinder
+#     │                   + PusherFront/Rear sensors + EmptySensor)
+#     │     └── feeds → TransferUnit
+#     ├── TransferUnit   (TransferMotor + TransferArm + VacuumUnit
+#     │                   + TransferArm Left/Right sensors + VacuumSensor)
+#     └── ControlConsole (HMI — retained from the control layer; not drawn
+#                          in the material-flow figure)
+#
+# Datapoints (figure):
+#   inputs  : pos_e, pos_r, empty, at_mgz, at_next, vmon
+#   outputs : push, to_next, to_mgz, vcm_on, vcm_off
+#
+# Runtime state (core:hasState) lives in the sibling runtime.ttl, loaded
+# into a separate named graph. See decisions/0002-runtime-graph-separation.md.
+#################################################################
+
+<https://w3id.org/maestro/examples/distribution-station-newsystem4> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station-newsystem4/0.2.0> ;
+    rdfs:label "MAESTRO Example: Festo Distributing Station (newsystem4) — Plant"@en ;
+    owl:imports <https://w3id.org/maestro> ;
+    owl:versionInfo "0.2.0" ;
+    rdfs:comment "Festo MPS Distributing Station. A feeder unit ejects the bottom workpiece from a vertical FIFO magazine with a pneumatic cylinder/pusher; a transfer unit (semi-rotary motor + arm carrying a vacuum suction cup) grips the workpiece at the magazine, rotates 180°, and releases it at the downstream station. Physical/sensor/datapoint layer aligned to the stakeholder topology figure."@en .
+
+#################################################################
+# LOCAL CLASS EXTENSIONS (Festo MPS-specific mechatronics)
+#################################################################
+
+ex:FeederUnit a owl:Class ;
+    rdfs:label "FeederUnit"@en ;
+    rdfs:subClassOf res:Machine ;
+    rdfs:comment "Festo MPS feeder / stack-magazine unit: ejects the bottom workpiece from the vertical FIFO magazine onto the pickup position."@en .
+
+ex:TransferUnit a owl:Class ;
+    rdfs:label "TransferUnit"@en ;
+    rdfs:subClassOf res:Machine ;
+    rdfs:comment "Festo MPS transfer / changer unit: a semi-rotary motor swings an arm carrying a vacuum end-effector that transfers a workpiece from the magazine to the downstream station."@en .
+
+ex:Magazine a owl:Class ;
+    rdfs:label "Magazine"@en ;
+    rdfs:subClassOf res:Machine ;
+    rdfs:comment "Vertical gravity-fed FIFO magazine barrel (Magazinrohr) holding up to 8 workpieces, open side up."@en .
+
+ex:PneumaticCylinder a owl:Class ;
+    rdfs:label "PneumaticCylinder"@en ;
+    rdfs:subClassOf res:Actuator ;
+    rdfs:comment "Double-acting pneumatic linear actuator."@en .
+
+ex:Pusher a owl:Class ;
+    rdfs:label "Pusher"@en ;
+    rdfs:subClassOf res:Tool ;
+    rdfs:comment "Slider attached to the feeder cylinder rod that ejects a workpiece from the magazine."@en .
+
+ex:RotaryDrive a owl:Class ;
+    rdfs:label "RotaryDrive"@en ;
+    rdfs:subClassOf res:Actuator ;
+    rdfs:comment "Double-acting pneumatic semi-rotary drive (Schwenkantrieb) with an adjustable 0–180° swivel range set by mechanical end stops."@en .
+
+ex:VacuumGenerator a owl:Class ;
+    rdfs:label "VacuumGenerator"@en ;
+    rdfs:subClassOf res:Actuator ;
+    rdfs:comment "Venturi vacuum generator creating suction from compressed air for the suction cup."@en .
+
+ex:VacuumValve a owl:Class ;
+    rdfs:label "VacuumValve"@en ;
+    rdfs:subClassOf res:Actuator ;
+    rdfs:comment "3/2-way solenoid valve switching the vacuum generator on/off."@en .
+
+ex:VacuumFilter a owl:Class ;
+    rdfs:label "VacuumFilter"@en ;
+    rdfs:subClassOf res:Tool ;
+    rdfs:comment "In-line filter protecting the vacuum generator from contamination."@en .
+
+ex:SuctionCup a owl:Class ;
+    rdfs:label "SuctionCup"@en ;
+    rdfs:subClassOf res:Tool ;
+    rdfs:comment "Vacuum suction cup (Sauger) end-effector that grips the workpiece."@en .
+
+ex:ControlConsole a owl:Class ;
+    rdfs:label "ControlConsole"@en ;
+    rdfs:subClassOf res:Machine ;
+    rdfs:comment "Operator HMI panel (Bedienpult): START/STOP/RESET illuminated buttons, AUTO/MAN key switch, EMERGENCY-STOP, and indicator lamps."@en .
+
+# --- Sensor specialisations (subclasses of sensor:Sensor) ---
+
+ex:MagneticProximitySensor a owl:Class ;
+    rdfs:label "MagneticProximitySensor"@en ;
+    rdfs:subClassOf sensor:Sensor ;
+    rdfs:comment "Magneto-inductive proximity switch (Festo SME-8) that detects the permanent magnet on a cylinder piston at an end position."@en .
+
+ex:ThroughBeamSensor a owl:Class ;
+    rdfs:label "ThroughBeamSensor"@en ;
+    rdfs:subClassOf sensor:Sensor ;
+    rdfs:comment "Fibre-optic through-beam light barrier (Festo SOEG-L + SOEZ-SE) detecting whether the magazine barrel is filled."@en .
+
+ex:LimitSwitch a owl:Class ;
+    rdfs:label "LimitSwitch"@en ;
+    rdfs:subClassOf sensor:Sensor ;
+    rdfs:comment "Mechanical micro limit switch (Festo S-3-E) actuated by a trip cam on the rotary-drive shaft to sense an end position."@en .
+
+ex:VacuumSwitch a owl:Class ;
+    rdfs:label "VacuumSwitch"@en ;
+    rdfs:subClassOf sensor:Sensor ;
+    rdfs:comment "Vacuum pressure switch (Festo VPEV) that confirms a workpiece is securely held once the vacuum threshold is reached."@en .
+
+ex:IOSignal a owl:Class ;
+    rdfs:label "IOSignal"@en ;
+    rdfs:subClassOf core:State ;
+    rdfs:comment "An IEC 61499 datapoint exposed on a skill FB pin. Modelled as a core:State so skills can reference it via standard pre/post-condition properties."@en .
+
+# --- IEC 61499 adapter-FB specialisations ---
+
+ex:ProtocolAdapterFB a owl:Class ;
+    rdfs:label "ProtocolAdapterFB"@en ;
+    rdfs:subClassOf iec61499:CompositeFB ;
+    rdfs:comment "A composite FB that converts one IEC 61499 adapter protocol into another (e.g. Magazine→Magasine, SwivelArm→Transfer)."@en .
+
+ex:PermitAdapterFB a owl:Class ;
+    rdfs:label "PermitAdapterFB"@en ;
+    rdfs:subClassOf iec61499:CompositeFB ;
+    rdfs:comment "A helper FB realising the Permit handshake (REQ/CNF + OK/LET) used to sequence neighbouring skills; True_Adp variants always grant permission."@en .
+
+#################################################################
+# LOCAL PROPERTY EXTENSIONS
+#################################################################
+
+ex:feeds a owl:ObjectProperty ;
+    rdfs:label "feeds"@en ;
+    rdfs:subPropertyOf core:connectedTo ;
+    rdfs:domain core:Resource ;
+    rdfs:range  core:Resource ;
+    rdfs:comment "Material-flow link: the source resource delivers workpieces to the target resource."@en .
+
+ex:drivenBy a owl:ObjectProperty ;
+    rdfs:label "drivenBy"@en ;
+    rdfs:subPropertyOf core:dependsOn ;
+    rdfs:domain core:Resource ;
+    rdfs:range  res:Actuator ;
+    rdfs:comment "A passive mechanical element (e.g. the feeder pusher, the transfer arm) is moved by an Actuator."@en .
+
+ex:createsSignal a owl:ObjectProperty ;
+    rdfs:label "createsSignal"@en ;
+    rdfs:domain core:Resource ;
+    rdfs:range  ex:IOSignal ;
+    rdfs:comment "A sensor produces this I/O datapoint."@en .
+
+ex:commandsActuator a owl:ObjectProperty ;
+    rdfs:label "commandsActuator"@en ;
+    rdfs:domain ex:IOSignal ;
+    rdfs:range  res:Actuator ;
+    rdfs:comment "An output I/O datapoint that, when set, drives the referenced actuator."@en .
+
+ex:receivesIO a owl:ObjectProperty ;
+    rdfs:label "receivesIO"@en ;
+    rdfs:subPropertyOf skill:hasPrecondition ;
+    rdfs:domain core:Skill ;
+    rdfs:range  ex:IOSignal ;
+    rdfs:comment "Skill reads / depends on this I/O datapoint."@en .
+
+ex:controlsIO a owl:ObjectProperty ;
+    rdfs:label "controlsIO"@en ;
+    rdfs:subPropertyOf skill:hasPostcondition ;
+    rdfs:domain core:Skill ;
+    rdfs:range  ex:IOSignal ;
+    rdfs:comment "Skill manages / drives this I/O datapoint."@en .
+
+ex:hasSubSkill a owl:ObjectProperty ;
+    rdfs:label "hasSubSkill"@en ;
+    rdfs:subPropertyOf skill:composedOfSkill ;
+    rdfs:domain core:Skill ;
+    rdfs:range  core:Skill ;
+    rdfs:comment "A composite skill TYPE (or registered instance) references its sub-skill."@en .
+
+ex:ofType a owl:ObjectProperty ;
+    rdfs:label "ofType"@en ;
+    rdfs:domain core:Skill ;
+    rdfs:range  core:Skill ;
+    rdfs:comment "A registered application skill instance (ABox) is an instance of a reusable skill TYPE."@en .
+
+ex:instanceOfFBT a owl:ObjectProperty ;
+    rdfs:label "instanceOfFBT"@en ;
+    rdfs:domain iec61499:FunctionBlock ;
+    rdfs:range  iec61499:FunctionBlock ;
+    rdfs:comment "An FB instance running in an application is an instance of an FB type (FBT)."@en .
+
+ex:hostedOn a owl:ObjectProperty ;
+    rdfs:label "hostedOn"@en ;
+    rdfs:subPropertyOf core:dependsOn ;
+    rdfs:comment "An Application (or FB instance) is hosted on an IEC 61499 runtime resource / device."@en .
+
+ex:permits a owl:ObjectProperty ;
+    rdfs:label "permits"@en ;
+    rdfs:subPropertyOf core:connectedTo ;
+    rdfs:domain iec61499:FunctionBlock ;
+    rdfs:range  iec61499:FunctionBlock ;
+    rdfs:comment "Permit handshake link (Perm_R → Perm_L): the source FB grants execution permission to the target FB, enforcing sequential ordering."@en .
+
+ex:bridges a owl:ObjectProperty ;
+    rdfs:label "bridges"@en ;
+    rdfs:subPropertyOf core:connectedTo ;
+    rdfs:domain iec61499:FunctionBlock ;
+    rdfs:range  iec61499:FunctionBlock ;
+    rdfs:comment "A protocol-adapter FB bridges the output adapter of one FB to the input adapter of another."@en .
+
+ex:ioDirection a owl:DatatypeProperty ;
+    rdfs:label "ioDirection"@en ;
+    rdfs:domain ex:IOSignal ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "IEC 61499 FB pin direction of the signal: 'input' (read by the FB) or 'output' (written by the FB)."@en .
+
+ex:orderNumber a owl:DatatypeProperty ;
+    rdfs:label "orderNumber"@en ;
+    rdfs:domain core:Resource ;
+    rdfs:range  xsd:string ;
+    rdfs:comment "Festo order/part number of the physical component (from manual 648811)."@en .
+
+ex:hasDuration a owl:ObjectProperty ;
+    rdfs:label "hasDuration"@en ;
+    rdfs:domain motion:Motion ;
+    rdfs:range  unit:Quantity .
+
+ex:hasStrokeMeters a owl:DatatypeProperty ;
+    rdfs:label "hasStrokeMeters"@en ;
+    rdfs:domain motion:LinearMotion ;
+    rdfs:range  xsd:float ;
+    rdfs:comment "Linear stroke length of a LinearMotion, in metres."@en .
+
+#################################################################
+# PLANT
+#################################################################
+
+ex:DistributingStation1 a core:Plant ;
+    rdfs:label "Festo Distributing Station #1" ;
+    core:identifier "plant-distributing-station-ns4-001" ;
+    core:hasPart ex:FeederUnit1 , ex:TransferUnit1 , ex:ControlConsole1 .
+
+#################################################################
+# FEEDER UNIT
+#################################################################
+
+ex:FeederUnit1 a ex:FeederUnit ;
+    rdfs:label "Feeder unit" ;
+    core:identifier "resource-feeder-unit-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "MPS-Distributing-Feeder" ;
+    core:hasPart  ex:Magazine1 , ex:FeederPusher1 , ex:FeederCylinder1 ,
+                  ex:PusherFrontSensor1 , ex:PusherRearSensor1 , ex:EmptySensor1 ;
+    ex:feeds      ex:TransferUnit1 ;
+    core:provides ex:Type_skMagazineEject .
+
+ex:Magazine1 a ex:Magazine ;
+    rdfs:label "Magazine (vertical FIFO, 8 workpieces)" ;
+    core:identifier "resource-magazine-001" ;
+    res:manufacturer "Festo" ;
+    core:hasPart ex:EmptySensor1 .
+
+ex:FeederPusher1 a ex:Pusher ;
+    rdfs:label "Feeder pusher" ;
+    core:identifier "resource-feeder-pusher-001" ;
+    ex:drivenBy ex:FeederCylinder1 .
+
+ex:FeederCylinder1 a ex:PneumaticCylinder ;
+    rdfs:label "Feeder cylinder DSNU-8-80 (double-acting)" ;
+    core:identifier "resource-feeder-cylinder-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "DSNU-8-80" ;
+    ex:orderNumber   "019181" .
+
+#################################################################
+# TRANSFER UNIT
+#################################################################
+
+ex:TransferUnit1 a ex:TransferUnit ;
+    rdfs:label "Transfer unit (swivel arm + vacuum)" ;
+    core:identifier "resource-transfer-unit-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "MPS-Distributing-Transfer" ;
+    core:hasPart  ex:TransferMotor1 , ex:TransferArm1 , ex:VacuumUnit1 ,
+                  ex:TransferArm_LeftSensor1 , ex:TransferArm_RightSensor1 ;
+    core:provides ex:Type_skMoveToMagazine , ex:Type_skMoveToDownstream ,
+                  ex:Type_skGripWorkpiece , ex:Type_skReleaseWorkpiece ,
+                  ex:Type_skSwivelArmTransfer .
+
+ex:TransferMotor1 a ex:RotaryDrive ;
+    rdfs:label "Transfer motor — semi-rotary swivel drive DSR-16-180 (0–180°)" ;
+    core:identifier "resource-transfer-motor-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "DSR-16-180" ;
+    ex:orderNumber   "011910" .
+
+ex:TransferArm1 a res:TransferArm ;
+    rdfs:label "Transfer arm (rotary, vacuum-equipped)" ;
+    core:identifier "resource-transfer-arm-001" ;
+    res:manufacturer "Festo" ;
+    ex:drivenBy ex:TransferMotor1 ;
+    res:payload [
+        a unit:Quantity ;
+        unit:numericValue 0.1 ;
+        unit:hasUnit unit:Kilogram
+    ] ;
+    core:hasPart ex:VacuumUnit1 .
+
+ex:VacuumUnit1 a res:VacuumUnit ;
+    rdfs:label "Vacuum unit (end-effector)" ;
+    core:identifier "resource-vacuum-unit-001" ;
+    core:hasPart ex:VacuumValve1 , ex:VacuumGenerator1 , ex:VacuumFilter1 ,
+                 ex:SuctionCup1 , ex:VacuumSensor1 ;
+    core:provides ex:Type_skGripWorkpiece , ex:Type_skReleaseWorkpiece .
+
+ex:VacuumValve1 a ex:VacuumValve ;
+    rdfs:label "Vacuum 3/2-way solenoid valve (normally open)" ;
+    core:identifier "resource-vacuum-valve-001" ;
+    res:manufacturer "Festo" ;
+    ex:orderNumber   "161417" .
+
+ex:VacuumGenerator1 a ex:VacuumGenerator ;
+    rdfs:label "Vacuum generator (~50 l/min @ 6 bar)" ;
+    core:identifier "resource-vacuum-generator-001" ;
+    res:manufacturer "Festo" ;
+    ex:orderNumber   "185865" .
+
+ex:VacuumFilter1 a ex:VacuumFilter ;
+    rdfs:label "Vacuum filter VAF-8" ;
+    core:identifier "resource-vacuum-filter-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "VAF-8" ;
+    ex:orderNumber   "015889" .
+
+ex:SuctionCup1 a ex:SuctionCup ;
+    rdfs:label "Suction cup VAS-8" ;
+    core:identifier "resource-suction-cup-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "VAS-8" ;
+    ex:orderNumber   "036135" .
+
+#################################################################
+# CONTROL CONSOLE  (Bedienpult / HMI — retained; not in the figure)
+#################################################################
+
+ex:ControlConsole1 a ex:ControlConsole ;
+    rdfs:label "Control console (operator HMI)" ;
+    core:identifier "resource-control-console-001" ;
+    res:manufacturer "Festo" ;
+    core:provides ex:Type_skButtonsLights .
+
+#################################################################
+# SENSORS  (each "creates" an I/O datapoint)
+#################################################################
+
+ex:PusherFrontSensor1 a ex:MagneticProximitySensor ;
+    rdfs:label "Pusher front (extended) sensor (SME-8)" ;
+    core:identifier "sensor-pusher-front-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "SME-8" ;
+    ex:orderNumber   "150857" ;
+    sosa:observes ex:PusherPosition ;
+    ex:createsSignal ex:IO_pos_e .
+
+ex:PusherRearSensor1 a ex:MagneticProximitySensor ;
+    rdfs:label "Pusher rear (retracted) sensor (SME-8)" ;
+    core:identifier "sensor-pusher-rear-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "SME-8" ;
+    ex:orderNumber   "150857" ;
+    sosa:observes ex:PusherPosition ;
+    ex:createsSignal ex:IO_pos_r .
+
+ex:EmptySensor1 a ex:ThroughBeamSensor ;
+    rdfs:label "Magazine empty / fill-level through-beam sensor (SOEG-L / SOEZ-SE)" ;
+    core:identifier "sensor-magazine-empty-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "SOEG-L + SOEZ-SE" ;
+    ex:orderNumber   "165327" ;
+    sosa:observes ex:MagazineLoad ;
+    ex:createsSignal ex:IO_empty .
+
+ex:TransferArm_LeftSensor1 a ex:LimitSwitch ;
+    rdfs:label "Transfer-arm left (at-magazine) micro switch (S-3-E)" ;
+    core:identifier "sensor-arm-left-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "S-3-E" ;
+    ex:orderNumber   "007347" ;
+    sosa:observes ex:ArmPosition ;
+    ex:createsSignal ex:IO_at_mgz .
+
+ex:TransferArm_RightSensor1 a ex:LimitSwitch ;
+    rdfs:label "Transfer-arm right (at-downstream) micro switch (S-3-E)" ;
+    core:identifier "sensor-arm-right-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "S-3-E" ;
+    ex:orderNumber   "007347" ;
+    sosa:observes ex:ArmPosition ;
+    ex:createsSignal ex:IO_at_next .
+
+ex:VacuumSensor1 a ex:VacuumSwitch ;
+    rdfs:label "Vacuum pressure switch (VPEV)" ;
+    core:identifier "sensor-vacuum-001" ;
+    res:manufacturer "Festo" ;
+    res:model        "VPEV" ;
+    ex:orderNumber   "152629" ;
+    sosa:observes ex:VacuumPressure ;
+    ex:createsSignal ex:IO_vmon .
+
+# Observable properties (SOSA-aligned)
+ex:MagazineLoad   a sensor:ObservableProperty ; rdfs:label "Magazine load (empty/filled)"@en .
+ex:PusherPosition a sensor:ObservableProperty ; rdfs:label "Feeder-pusher position"@en .
+ex:ArmPosition    a sensor:ObservableProperty ; rdfs:label "Transfer-arm angular position"@en .
+ex:VacuumPressure a sensor:ObservableProperty ; rdfs:label "Vacuum-line pressure"@en .
+
+#################################################################
+# I/O DATAPOINTS  (the figure's signal set)
+#################################################################
+
+# --- Feeder inputs (read by the FB) ---
+ex:IO_pos_e a ex:IOSignal ; rdfs:label "pos_e"@en ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the feeder pusher is fully extended (PusherFrontSensor, SME-8)."@en .
+
+ex:IO_pos_r a ex:IOSignal ; rdfs:label "pos_r"@en ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the feeder pusher is fully retracted (PusherRearSensor, SME-8)."@en .
+
+ex:IO_empty a ex:IOSignal ; rdfs:label "empty"@en ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the magazine is empty (EmptySensor, through-beam SOEG-L)."@en .
+
+# --- Transfer inputs (read by the FB) ---
+ex:IO_at_mgz a ex:IOSignal ; rdfs:label "at_mgz"@en ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the transfer arm is at the magazine position (TransferArm_LeftSensor, S-3-E)."@en .
+
+ex:IO_at_next a ex:IOSignal ; rdfs:label "at_next"@en ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the transfer arm is at the downstream-station position (TransferArm_RightSensor, S-3-E)."@en .
+
+ex:IO_vmon a ex:IOSignal ; rdfs:label "vmon"@en ;
+    ex:ioDirection "input" ;
+    rdfs:comment "TRUE when the vacuum switch confirms a workpiece is held (VacuumSensor, VPEV)."@en .
+
+# --- Feeder output (written by the FB) ---
+ex:IO_push a ex:IOSignal ; rdfs:label "push"@en ;
+    ex:ioDirection "output" ;
+    ex:commandsActuator ex:FeederCylinder1 ;
+    rdfs:comment "Command: drive the feeder cylinder to push / eject a workpiece from the magazine."@en .
+
+# --- Transfer outputs (written by the FB) ---
+ex:IO_to_mgz a ex:IOSignal ; rdfs:label "to_mgz"@en ;
+    ex:ioDirection "output" ;
+    ex:commandsActuator ex:TransferMotor1 ;
+    rdfs:comment "Command: rotate the transfer arm toward the magazine."@en .
+
+ex:IO_to_next a ex:IOSignal ; rdfs:label "to_next"@en ;
+    ex:ioDirection "output" ;
+    ex:commandsActuator ex:TransferMotor1 ;
+    rdfs:comment "Command: rotate the transfer arm toward the downstream station."@en .
+
+ex:IO_vcm_on a ex:IOSignal ; rdfs:label "vcm_on"@en ;
+    ex:ioDirection "output" ;
+    ex:commandsActuator ex:VacuumValve1 ;
+    rdfs:comment "Command: open the vacuum valve (suction ON)."@en .
+
+ex:IO_vcm_off a ex:IOSignal ; rdfs:label "vcm_off"@en ;
+    ex:ioDirection "output" ;
+    ex:commandsActuator ex:VacuumValve1 ;
+    rdfs:comment "Command: close the vacuum valve / blow-off pulse (suction OFF)."@en .
+
+#################################################################
+# MOTION SPECIFICATION
+#
+# Controller timeouts are PT = 4000 ms per phase
+# (SkillMagazineController_b_a, SkillSwivelArm_*Controller_*).
+#################################################################
+
+ex:CylinderLinearMotion a motion:LinearMotion ;
+    rdfs:label "Feeder-cylinder linear motion (80 mm stroke)"@en ;
+    motion:hasVelocity "0.05"^^xsd:float ;          # m·s⁻¹
+    ex:hasStrokeMeters "0.08"^^xsd:float ;           # DSNU-8-80 → 80 mm
+    ex:hasDuration [
+        a unit:Quantity ;
+        unit:numericValue 4.0 ;
+        unit:hasUnit unit:Second
+    ] ;
+    rdfs:comment "Linear push/eject of the DSNU-8-80 feeder cylinder separating a workpiece from the magazine (PT=4000 ms timeout budget)."@en .
+
+ex:ArmRotationalMotion a motion:RotationalMotion ;
+    rdfs:label "Transfer-arm rotational motion (180°)"@en ;
+    motion:hasVelocity "0.7854"^^xsd:float ;         # ≈ π/4 rad·s⁻¹ (180° in ~4 s)
+    ex:hasDuration [
+        a unit:Quantity ;
+        unit:numericValue 4.0 ;
+        unit:hasUnit unit:Second
+    ] ;
+    rdfs:comment "Semi-rotary 0–180° motion of the DSR-16-180 transfer motor swinging the arm between magazine and downstream positions (PT=4000 ms timeout budget)."@en .
+
+#################################################################
+# SKILL TYPES  (TBox — reusable specifications, paired 1:1 with FBTs)
+#################################################################
+
+# --- Feeder handling skill ---
+ex:Type_skMagazineEject a skill:HandlingSkill ;
+    rdfs:label "skMagazineEject"@en ;
+    skill:requiresMotion ex:CylinderLinearMotion ;
+    skill:expectedDurationSeconds 4.0 ;
+    ex:controlsIO ex:IO_push ;
+    ex:receivesIO ex:IO_pos_e , ex:IO_pos_r , ex:IO_empty ;
+    rdfs:comment "Separate and eject the bottom workpiece from the magazine. FBT: skMagazine_mo (logic SkillMagazineController_b_a)."@en .
+
+# --- Transfer-arm elementary motion skills ---
+ex:Type_skMoveToMagazine a skill:MotionSkill ;
+    rdfs:label "skMoveToMagazine"@en ;
+    skill:requiresMotion ex:ArmRotationalMotion ;
+    skill:expectedDurationSeconds 4.0 ;
+    ex:controlsIO ex:IO_to_mgz ;
+    ex:receivesIO ex:IO_at_mgz ;
+    rdfs:comment "Rotate the transfer arm to the magazine position. FBT: skSwivelArm_eo_Move_to_magazine."@en .
+
+ex:Type_skMoveToDownstream a skill:MotionSkill ;
+    rdfs:label "skMoveToDownstream"@en ;
+    skill:requiresMotion ex:ArmRotationalMotion ;
+    skill:expectedDurationSeconds 4.0 ;
+    ex:controlsIO ex:IO_to_next ;
+    ex:receivesIO ex:IO_at_next , ex:IO_at_mgz ;
+    rdfs:comment "Rotate the transfer arm to the downstream-station position. FBT: skSwivelArm_eo_Move_to_downstream."@en .
+
+# --- Transfer-arm elementary manipulation skills ---
+ex:Type_skGripWorkpiece a skill:ManipulationSkill ;
+    rdfs:label "skGripWorkpiece"@en ;
+    ex:controlsIO ex:IO_vcm_on , ex:IO_vcm_off ;
+    ex:receivesIO ex:IO_vmon ;
+    rdfs:comment "Activate vacuum and grip the workpiece. FBT: skSwivelArm_eo_Grip_workpiece."@en .
+
+ex:Type_skReleaseWorkpiece a skill:ManipulationSkill ;
+    rdfs:label "skReleaseWorkpiece"@en ;
+    ex:controlsIO ex:IO_vcm_on , ex:IO_vcm_off ;
+    ex:receivesIO ex:IO_vmon ;
+    rdfs:comment "Release the workpiece (vacuum off + blow-off pulse). FBT: skSwivelArm_eo_Release_workpiece."@en .
+
+# --- Transfer-arm composite transfer skill ---
+ex:Type_skSwivelArmTransfer a skill:TransferSkill ;
+    rdfs:label "skSwivelArmTransfer"@en ;
+    ex:hasSubSkill ex:Type_skMoveToMagazine ,
+                   ex:Type_skGripWorkpiece ,
+                   ex:Type_skMoveToDownstream ,
+                   ex:Type_skReleaseWorkpiece ;
+    ex:controlsIO ex:IO_to_mgz , ex:IO_to_next , ex:IO_vcm_on , ex:IO_vcm_off ;
+    ex:receivesIO ex:IO_at_mgz , ex:IO_at_next , ex:IO_vmon ;
+    rdfs:comment "Composite transfer: move to magazine, grip, rotate to downstream, release. Sequenced by SkillSwivelArm1_Controller_Orchestrator. FBT: skSwivelArm_mo_cmp1."@en .
+
+# --- HMI skill (atomic) ---
+ex:Type_skButtonsLights a skill:AtomicSkill ;
+    rdfs:label "skButtonsLights"@en ;
+    rdfs:comment "Operator HMI skill: reads START/STOP/RESET/AUTO-MAN buttons and drives the indicator lamps. Modelled as an atomic primitive (no MAESTRO sub-skills). FBT: skButtonsLights."@en .
+
+#################################################################
+# CAPABILITY BRIDGE
+#
+# Link the standard MAESTRO capabilities to this station's local
+# skill TYPES so the capability-inference rule can derive
+# core:canPerform (and in turn core:canManufacture). Mirrors the
+# library bridge cap:PickPlaceCapability cap:realizedBySkill skill-lib:Transfer.
+#################################################################
+
+cap:HandlingCapability   cap:realizedBySkill ex:Type_skMagazineEject .
+cap:PickPlaceCapability  cap:realizedBySkill ex:Type_skSwivelArmTransfer .
+cap:TransportCapability  cap:realizedBySkill ex:Type_skMoveToMagazine ,
+                                             ex:Type_skMoveToDownstream .
+
+#################################################################
+# IEC 61499 LAYER — Function Block Types implementing each skill
+#################################################################
+
+ex:FBT_skMagazine_mo a iec61499:CompositeFB ;
+    rdfs:label "skMagazine_mo.fbt" ;
+    core:identifier "fbt-skMagazine_mo" ;
+    iec61499:implementsSkill ex:Type_skMagazineEject ;
+    iec61499:controlsResource ex:FeederUnit1 ;
+    rdfs:comment "Magazine skill composite. Adapters: Magazine (plug), Perm_L/Perm_R (permit sockets). Internal logic FB: SkillMagazineController_b_a."@en .
+
+ex:FBT_SkillMagazineController_b_a a iec61499:BasicFB ;
+    rdfs:label "SkillMagazineController_b_a.fbt" ;
+    core:identifier "fbt-SkillMagazineController_b_a" ;
+    iec61499:controlsResource ex:FeederUnit1 ;
+    rdfs:comment "ECC logic for the magazine. States: INIT, WAIT, stEJECT, stRETRACT, SUCCESS, ERROR, SUSPEND, STOP, TIMEOUT_EJECT, TIMEOUT_RETRACT. PT=4000 ms. Eject precondition: OK_L ∧ OK_R ∧ ¬empty ∧ pos_e."@en .
+
+ex:FBT_skSwivelArm_mo_cmp1 a iec61499:CompositeFB ;
+    rdfs:label "skSwivelArm_mo_cmp1.fbt" ;
+    core:identifier "fbt-skSwivelArm_mo_cmp1" ;
+    iec61499:implementsSkill ex:Type_skSwivelArmTransfer ;
+    iec61499:controlsResource ex:TransferUnit1 ;
+    rdfs:comment "Transfer-arm skill composite. Contains the 4 elementary-operation FBs, the orchestrator, the bus, and RegisterSkill2. Adapters: Perm_L/Perm_R (permits), Trans (plug → SwivelArm output)."@en .
+
+ex:FBT_skSwivelArm_eo_Move_to_magazine a iec61499:CompositeFB ;
+    rdfs:label "skSwivelArm_eo_Move_to_magazine.fbt" ;
+    core:identifier "fbt-skSwivelArm_eo_Move_to_magazine" ;
+    iec61499:implementsSkill ex:Type_skMoveToMagazine ;
+    iec61499:controlsResource ex:TransferMotor1 ;
+    rdfs:comment "Elementary operation. Logic: SkillSwivelArm_Move_to_magazineController_b. Blocks if a workpiece is still held."@en .
+
+ex:FBT_skSwivelArm_eo_Move_to_downstream a iec61499:CompositeFB ;
+    rdfs:label "skSwivelArm_eo_Move_to_downstream.fbt" ;
+    core:identifier "fbt-skSwivelArm_eo_Move_to_downstream" ;
+    iec61499:implementsSkill ex:Type_skMoveToDownstream ;
+    iec61499:controlsResource ex:TransferMotor1 ;
+    rdfs:comment "Elementary operation. Logic: SkillSwivelArm_Move_to_downstreamController_a."@en .
+
+ex:FBT_skSwivelArm_eo_Grip_workpiece a iec61499:CompositeFB ;
+    rdfs:label "skSwivelArm_eo_Grip_workpiece.fbt" ;
+    core:identifier "fbt-skSwivelArm_eo_Grip_workpiece" ;
+    iec61499:implementsSkill ex:Type_skGripWorkpiece ;
+    iec61499:controlsResource ex:VacuumUnit1 ;
+    rdfs:comment "Elementary operation. Logic: SkillSwivelArm_Grip_workpieceController. Sets vcm_on, waits for vmon."@en .
+
+ex:FBT_skSwivelArm_eo_Release_workpiece a iec61499:CompositeFB ;
+    rdfs:label "skSwivelArm_eo_Release_workpiece.fbt" ;
+    core:identifier "fbt-skSwivelArm_eo_Release_workpiece" ;
+    iec61499:implementsSkill ex:Type_skReleaseWorkpiece ;
+    iec61499:controlsResource ex:VacuumUnit1 ;
+    rdfs:comment "Elementary operation. Logic: SkillSwivelArm_Release_workpieceController. Sets vcm_off / blow-off, waits for ¬vmon."@en .
+
+ex:FBT_SkillSwivelArm1_Controller_Orchestrator a iec61499:BasicFB ;
+    rdfs:label "SkillSwivelArm1_Controller_Orchestrator.fbt" ;
+    core:identifier "fbt-SkillSwivelArm1_Controller_Orchestrator" ;
+    iec61499:controlsResource ex:TransferUnit1 ;
+    ex:permits ex:FBT_skSwivelArm_eo_Move_to_downstream ,
+               ex:FBT_skSwivelArm_eo_Move_to_magazine ,
+               ex:FBT_skSwivelArm_eo_Grip_workpiece ,
+               ex:FBT_skSwivelArm_eo_Release_workpiece ;
+    rdfs:comment "Sequences the 4 elementary operations (STEP1..STEP5) using STATE feedback (=5 means DONE) and LET_L/LET_R permits."@en .
+
+# --- Protocol adapters & permit utilities ---
+ex:FBT_Magazine2Magasine a ex:ProtocolAdapterFB ;
+    rdfs:label "Magazine2Magasine.fbt" ;
+    core:identifier "fbt-Magazine2Magasine" ;
+    rdfs:comment "Bridges the internal Magazine adapter to the Magasine protocol: push↔retract, empty, pos_r, pos_e, workpiece-type."@en .
+
+ex:FBT_SwivelArm2Transfer a ex:ProtocolAdapterFB ;
+    rdfs:label "SwivelArm2Transfer.fbt" ;
+    core:identifier "fbt-SwivelArm2Transfer" ;
+    rdfs:comment "Bridges the internal SwivelArm adapter to the downstream Transfer protocol: at_mgz, at_next, vmon, to_mgz, to_next, vcm_on, vcm_off."@en .
+
+ex:FBT_True_Adp a ex:PermitAdapterFB ;
+    rdfs:label "True_Adp.fbt" ;
+    core:identifier "fbt-True_Adp" ;
+    rdfs:comment "Always-permit adapter: after E_RESTART + E_DELAY(200 ms) it outputs CNF with OK=TRUE, granting the first skill in the chain permanent permission."@en .
+
+ex:FBT_True_Adp_rev a ex:PermitAdapterFB ;
+    rdfs:label "True_Adp_rev.fbt" ;
+    core:identifier "fbt-True_Adp_rev" ;
+    rdfs:comment "Reversed always-permit adapter terminating the right end of the permit chain (toward the downstream station)."@en .
+
+ex:FBT_SwivelArmBus_4_1 a iec61499:CompositeFB ;
+    rdfs:label "SwivelArmBus_4_1.fbt" ;
+    core:identifier "fbt-SwivelArmBus_4_1" ;
+    rdfs:comment "Multiplexes the 4 elementary-operation SwivelArm outputs into one, merging to_mgz/to_next/vcm_on/vcm_off via 4× B_MERGE4."@en .
+
+ex:FBT_B_MERGE4 a iec61499:BasicFB ;
+    rdfs:label "B_MERGE4.fbt" ;
+    core:identifier "fbt-B_MERGE4" ;
+    rdfs:comment "4-input boolean OR merge utility."@en .
+
+ex:FBT_skButtonsLights a iec61499:CompositeFB ;
+    rdfs:label "skButtonsLights.fbt" ;
+    core:identifier "fbt-skButtonsLights" ;
+    iec61499:implementsSkill ex:Type_skButtonsLights ;
+    iec61499:controlsResource ex:ControlConsole1 ;
+    rdfs:comment "HMI skill. Adapters: ButtonsLights (plug), Perm_L/Perm_R (permits)."@en .
+
+#################################################################
+# IEC 61499 SYSTEM — Device / Runtime / Application
+#
+# From System/System.sys + bin/Deploy:
+#   Device  Soft_dPAC  "EcoRT_0"
+#   Runtime RES0 (EMB_RES_ECO)
+#   App     APP1
+#################################################################
+
+ex:Device_EcoRT_0 a res:PLC ;
+    rdfs:label "EcoRT_0 (Soft_dPAC runtime controller)" ;
+    core:identifier "device-ecort-0" ;
+    res:manufacturer "Schneider Electric" ;
+    res:model        "Soft_dPAC" ;
+    iec61499:hostsRuntimeResource ex:Runtime_RES0 .
+
+ex:Runtime_RES0 a iec61499:RuntimeResource ;
+    rdfs:label "RES0 (EMB_RES_ECO)" ;
+    core:identifier "runtime-res0" .
+
+ex:App_APP1 a iec61499:Application ;
+    rdfs:label "APP1" ;
+    core:identifier "iec61499-app-app1" ;
+    ex:hostedOn ex:Runtime_RES0 ;
+    rdfs:comment "Distributing-station application: initialises Magazine then SwivelArm, sequenced by Permit handshaking, with protocol adapters feeding the Model logger."@en .
+
+# --- FB instances running in APP1 (instanceOfFBT → FBT) ---
+ex:Inst_Magazine a iec61499:CompositeFB ;
+    rdfs:label "Magazine (instance)" ;
+    core:identifier "inst-magazine" ;
+    ex:instanceOfFBT ex:FBT_skMagazine_mo ;
+    ex:hostedOn ex:Runtime_RES0 ;
+    ex:permits ex:Inst_SwivelArm_Cmp1 ;
+    ex:bridges ex:Inst_Conv1 .
+
+ex:Inst_SwivelArm_Cmp1 a iec61499:CompositeFB ;
+    rdfs:label "SvivelArm_Cmp1 (instance)" ;
+    core:identifier "inst-swivelarm-cmp1" ;
+    ex:instanceOfFBT ex:FBT_skSwivelArm_mo_cmp1 ;
+    ex:hostedOn ex:Runtime_RES0 ;
+    ex:permits ex:Inst_FB2 ;
+    ex:bridges ex:Inst_Conv2 .
+
+ex:Inst_Conv1 a ex:ProtocolAdapterFB ;
+    rdfs:label "Conv1 (instance)" ;
+    core:identifier "inst-conv1" ;
+    ex:instanceOfFBT ex:FBT_Magazine2Magasine ;
+    ex:hostedOn ex:Runtime_RES0 .
+
+ex:Inst_Conv2 a ex:ProtocolAdapterFB ;
+    rdfs:label "Conv2 (instance)" ;
+    core:identifier "inst-conv2" ;
+    ex:instanceOfFBT ex:FBT_SwivelArm2Transfer ;
+    ex:hostedOn ex:Runtime_RES0 .
+
+ex:Inst_FB5 a iec61499:CompositeFB ;
+    rdfs:label "FB5 — SwivelArm bus (instance)" ;
+    core:identifier "inst-fb5-bus" ;
+    ex:instanceOfFBT ex:FBT_SwivelArmBus_4_1 ;
+    ex:hostedOn ex:Runtime_RES0 .
+
+ex:Inst_FB1 a ex:PermitAdapterFB ;
+    rdfs:label "FB1 — left true-permit (instance)" ;
+    core:identifier "inst-fb1-true-permit" ;
+    ex:instanceOfFBT ex:FBT_True_Adp ;
+    ex:hostedOn ex:Runtime_RES0 ;
+    ex:permits ex:Inst_Magazine .
+
+ex:Inst_FB2 a ex:PermitAdapterFB ;
+    rdfs:label "FB2 — right true-permit (instance)" ;
+    core:identifier "inst-fb2-true-permit" ;
+    ex:instanceOfFBT ex:FBT_True_Adp_rev ;
+    ex:hostedOn ex:Runtime_RES0 .
+
+ex:Inst_Model a iec61499:CompositeFB ;
+    rdfs:label "Model (data-collection instance)" ;
+    core:identifier "inst-model" ;
+    ex:hostedOn ex:Runtime_RES0 ;
+    rdfs:comment "Collects bridged Magazine and Transfer data for monitoring/logging."@en .
+
+#################################################################
+# REGISTERED SKILL INSTANCES (ABox)
+#
+# Registered to the GraphDB skill registry by the RegisterSkill2 FBs
+# inside the skill composites (SkillName / Endpoint / Description pins).
+#################################################################
+
+ex:Reg_Magazine a core:Skill ;
+    rdfs:label "skMagazine_mo" ;
+    core:description "Separates and ejects the bottom workpiece from the stack magazine" ;
+    core:partOf ex:App_APP1 ;
+    ex:ofType   ex:Type_skMagazineEject .
+
+ex:Reg_SwivelArm a core:Skill ;
+    rdfs:label "skSwivelArm_mo_cmp1" ;
+    core:description "Picks the workpiece at the magazine, rotates 180°, and releases it at the downstream station" ;
+    core:partOf ex:App_APP1 ;
+    ex:ofType   ex:Type_skSwivelArmTransfer ;
+    ex:hasSubSkill ex:Reg_SwivelArm_MoveToMag , ex:Reg_SwivelArm_Grip ,
+                   ex:Reg_SwivelArm_MoveToDown , ex:Reg_SwivelArm_Release .
+
+ex:Reg_SwivelArm_MoveToMag  a core:Skill ; rdfs:label "Move_to_magazine" ;
+    core:partOf ex:App_APP1 ; ex:ofType ex:Type_skMoveToMagazine .
+ex:Reg_SwivelArm_Grip       a core:Skill ; rdfs:label "Grip_workpiece" ;
+    core:partOf ex:App_APP1 ; ex:ofType ex:Type_skGripWorkpiece .
+ex:Reg_SwivelArm_MoveToDown a core:Skill ; rdfs:label "Move_to_downstream" ;
+    core:partOf ex:App_APP1 ; ex:ofType ex:Type_skMoveToDownstream .
+ex:Reg_SwivelArm_Release    a core:Skill ; rdfs:label "Release_workpiece" ;
+    core:partOf ex:App_APP1 ; ex:ofType ex:Type_skReleaseWorkpiece .
+
+ex:Reg_ButtonsLights a core:Skill ;
+    rdfs:label "skButtonsLights" ;
+    core:description "Operator HMI: buttons and indicator lamps" ;
+    core:partOf ex:App_APP1 ;
+    ex:ofType   ex:Type_skButtonsLights .
+
+#################################################################
+# OPC UA SKILL INTERFACE  (network-visible — from System.EcoRT_0.opcua.xml)
+#################################################################
+
+ex:OpcUaDistributionInterface a opcua:OpcUaSkillInterface ;
+    rdfs:label "OPC UA SkillInterface for the Distributing Station (newsystem4)" ;
+    core:identifier "interface-opcua-distribution-ns4-001" ;
+    opcua:nodeId    "ns=2;s=Skill.SwivelArm" ;
+    opcua:browseName "DistributingStationSkill" ;
+    opcua:exposes   ex:Reg_Magazine , ex:Reg_SwivelArm , ex:Reg_ButtonsLights .
