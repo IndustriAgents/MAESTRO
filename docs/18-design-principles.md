@@ -41,3 +41,50 @@ contact with a real plant.
 6. **Mix execution and capability.** Even if a single team owns both,
    keep them in separate modules so future teams can replace one without
    touching the other.
+
+## Stability contract — frozen core vs. extension
+
+MAESTRO is layered so that exactly one tier is invariant and everything that
+*does* change is isolated from it. Three tiers, from most to least stable:
+
+1. **Frozen core — `core:` (`ontologies/core/manufacturing-core.ttl`).**
+   The `core:Entity` taxonomy (`PhysicalEntity`/`LogicalEntity` →
+   `Resource`, `Plant`, `Skill`, `Capability`, `Process`, `Product`, `State`,
+   `Event`, `Constraint`, `ControlComponent`) and the universal spine
+   properties (`hasPart`/`partOf`, `provides`, `implements`, `controls`,
+   `realizedBySkill`, `requiresCapability`, `composedOfSkill`, `hasState`,
+   `constrains`, `canPerform`, `canManufacture`, …). The core **imports
+   nothing** and is the one thing every other file depends on, so it is treated
+   as **frozen**: it changes only at a major version, never within a release
+   line. Downstream data, rules and queries can rely on it permanently.
+
+2. **MAESTRO modules — `prod:` `res:` `skill:` `cap:` `proc:` `recipe:`
+   `policy:` `com:` `runtime:` `safety:` `motion:` `sensor:` …** Each is a
+   *stable but versioned extension* that couples to the core **only** through
+   `owl:imports` + `rdfs:subClassOf` / `rdfs:subPropertyOf core:*`
+   (DO-rule 1). New classes, properties and whole modules are added here as the
+   domain grows; one concern can be revised or replaced without touching the
+   core or the other modules. These **will keep extending** — that is their job.
+
+3. **External standards — the `«EXT»` extension points.** OPC UA, AAS, DTDL,
+   ECLASS/DPP, ISA-88/95, CAEX/AutomationML, QUDT, SOSA/SSN, PROV-O,
+   SAREF4INMA, ODRL, … are **always an extension**: they are bridged from an
+   *adapter* module via `rdfs:subClassOf` / `skos:exactMatch` and are **never
+   absorbed** into the core or a module's own TBox (DO-NOT-rule 1 — a skill must
+   never `rdfs:subClassOf` something in `ros:`/`iec61499:`). A new protocol or
+   passport scheme is added by writing a new adapter, leaving everything above
+   it untouched.
+
+**The contract in one line:** the `core:` spine is permanent; modules extend it;
+external standards clip on at the edge. Change always flows *outward* — never
+into the core.
+
+The schema figures make this visible: in
+[`figures/png/14-maestro-core-schema.png`](../figures/png/14-maestro-core-schema.png)
+the frozen `core:` classes are drawn with a **gold double border**, MAESTRO
+module classes use the normal cluster fill, and the `«EXT»` note shapes are the
+external extension points — with a matching "Stability contract" legend. The
+distribution-station example
+([`figures/png/15-distribution-newsystem4-schema.png`](../figures/png/15-distribution-newsystem4-schema.png))
+uses the same encoding at the instance level (individuals typed by a frozen
+`core:` class carry the gold border).

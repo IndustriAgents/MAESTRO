@@ -56,6 +56,19 @@ plantuml -tsvg figures/src/*.puml -o ../svg        # SVG
 > overwrite the other. The matplotlib renderer is the authoritative source
 > for the README's embedded figures.
 
+## Rendering (alternative — Graphviz)
+
+Figures **14** (`14-maestro-core-schema`, the HHM-Core schema) and **15**
+(`15-distribution-newsystem4-schema`, the distribution-station example instance
+graph) are Graphviz `.gv` class-schema diagrams (clustered, in the HHM-Core
+reference style). Render them with the `dot` CLI from
+[Graphviz](https://graphviz.org/):
+
+```bash
+dot -Tpng figures/src/14-maestro-core-schema.gv          -o figures/png/14-maestro-core-schema.png
+dot -Tpng figures/src/15-distribution-newsystem4-schema.gv -o figures/png/15-distribution-newsystem4-schema.png
+```
+
 ## Editable draw.io versions
 
 Every figure in `png/` also has an editable **draw.io** (`.drawio`) twin under
@@ -100,6 +113,9 @@ drawio --export --format png --scale 1.5 \
 | **09** | `png/09-standards-honeycomb.png` | — *(matplotlib only)* | §4 | Standards alignment honeycomb (CaSkMan style) |
 | **10** | `png/10-class-alignment.png` | — *(matplotlib only)* | §5 / §19 | Class alignment diagram, two-colour core/adapter view (CaSkMan style) |
 | **11** | `png/11-hhm-core-bridge.png` | — *(matplotlib only)* | docs/19 | HHM-Core priority map: P1–P6 → modules → bridged standard (new in 0.4.0) |
+| **14** | `png/14-maestro-core-schema.png` | [`src/14-maestro-core-schema.gv`](src/14-maestro-core-schema.gv) *(Graphviz)* | docs/19 | HHM-Core class-relationship schema: 7 concern clusters, MAESTRO classes + properties, extension-point notes |
+| **15** | `png/15-distribution-newsystem4-schema.png` | [`src/15-distribution-newsystem4-schema.gv`](src/15-distribution-newsystem4-schema.gv) *(Graphviz)* | examples/distribution-station-newsystem4 | Instance graph of the newsystem4 distributing-station example (all `ex:` individuals + triples, clustered by layer) |
+| **16** | `png/16-core-to-festo-bridge.png` | [`src/16-core-to-festo-bridge.gv`](src/16-core-to-festo-bridge.gv) *(Graphviz)* | examples/distribution-station-newsystem4 | Core ↔ testbed alignment: every Festo individual specialises a frozen `core:` class (rdf:type / rdfs:subClassOf) |
 
 Figures **08–10** are inspired by the three diagrams in the
 [CaSkade-Automation/CaSkMan](https://github.com/CaSkade-Automation/CaSkMan)

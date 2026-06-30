@@ -1,0 +1,289 @@
+// MAESTRO HHM-Core schema — class-relationship overview, modelled on the
+// HHM-Core (v1) Graphviz reference but using MAESTRO's ACTUAL class and
+// property names (manufacturing-core + the 0.4.0 HHM-Core bridge modules).
+//
+// Boxes  = MAESTRO classes (label carries the owning module prefix).
+// Notes  = external standards MAESTRO bridges (rdfs:subClassOf / skos:exactMatch),
+//          not loaded into the core stack — see docs/19-hhm-core-bridge.md.
+//
+// Render:  dot -Tpng figures/src/14-maestro-core-schema.gv -o figures/png/14-maestro-core-schema.png
+digraph MAESTRO_Core_Schema {
+  rankdir=LR;
+  labelloc="t";
+  fontname="Helvetica";
+  label="MAESTRO HHM-Core Schema  ·  Product • Resources • Skills (Atomic+Composite + orchestration) • Recipe/Planning • Safety/Policy • Invocation • Execution\nBoxes = MAESTRO classes (module-prefixed) · Notes = bridged external standards (extension points)";
+
+  node [shape=box, style="rounded,filled", fillcolor="#f9f9fb", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  // =========================
+  // PRODUCT  (logical/product.ttl, cross-cutting/dpp.ttl)
+  // =========================
+  subgraph cluster_product {
+    label="Product  (prod:)";
+    color="#6E56CF"; style="rounded"; fontname="Helvetica";
+
+    p_Type     [label="prod:ProductType"];
+    p_Instance [label="prod:ProductInstance"];
+    p_Variant  [label="prod:Variant"];
+    p_Feature  [label="prod:Feature"];
+    p_Req      [label="prod:Requirement"];
+    p_Id       [label="prod:Identifier\n(GTIN / UUID / IRDI / IRI)"];
+    p_Assembly [label="prod:Assembly"];
+    p_BOM      [label="prod:BOMNode"];
+    p_Material [label="prod:Material"];
+
+    ep_dpp    [label="«EXT» dpp:  →  DPP / ECLASS\n(digital product passport)", shape=note, fillcolor="#fff7ed"];
+    ep_eclass [label="«EXT» ECLASS / eClassOWL\n(dictionary / semanticId)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================
+  // RESOURCES / MECHANICAL  (physical/resource.ttl, logical/capability.ttl)
+  // =========================
+  subgraph cluster_mech {
+    label="Resources / Mechanical  (res:, cap:)";
+    color="#12A594"; style="rounded"; fontname="Helvetica";
+
+    m_Station [label="res:AssemblyStation"];
+    m_Module  [label="res:Module"];
+    m_Machine [label="res:Machine"];
+    m_Cap     [label="core:Capability\n(cap: individuals: HandlingCapability,\nPickPlaceCapability, TransportCapability …)", fillcolor="#FCEFC7", peripheries=2, penwidth=1.6];
+
+    ep_aml   [label="«EXT» automationml: → CAEX / IEC 62714\n(ports, connections, geometry)", shape=note, fillcolor="#fff7ed"];
+    ep_isa88e[label="«EXT» ISA-88 equipment model\n(ProcessCell / Unit / EquipmentModule)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================
+  // SKILLS  (core:Skill + logical/skill.ttl orchestration)
+  // =========================
+  subgraph cluster_skills {
+    label="Skills  (core:Skill, skill:)";
+    color="#E54D2E"; style="rounded"; fontname="Helvetica";
+
+    s_Skill     [label="core:Skill", fillcolor="#FCEFC7", peripheries=2, penwidth=1.6];
+    s_Atomic    [label="skill:AtomicSkill"];
+    s_Composite [label="skill:CompositeSkill"];
+
+    s_SubLink   [label="skill:SubSkillLink\n(reified composition)"];
+    s_CtrlFlow  [label="skill:ControlFlow\n(Sequence / Parallel / Alternative / Loop / Optional)"];
+    s_DataBind  [label="skill:DataBinding\n(output → input)"];
+
+    s_ParamDef  [label="skill:ParameterDef\n(type · unitRef · range)"];
+    s_ParamVal  [label="skill:ParameterValue"];
+    s_Pre       [label="skill:Precondition"];
+    s_Eff       [label="skill:Effect\n(≡ Postcondition)"];
+
+    s_Iface     [label="skill:SkillInterface\n(neutral contract)"];
+    s_Service   [label="skill:SkillService"];
+
+    ep_css  [label="«EXT» CSS / CaSkMan\n(capability–skill patterns)", shape=note, fillcolor="#fff7ed"];
+    ep_sosa [label="«EXT» SOSA / SSN\n(observations as evidence)", shape=note, fillcolor="#fff7ed"];
+    ep_qudt [label="«EXT» QUDT / OM\n(units & quantities)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================
+  // RECIPE / PLANNING  (logical/recipe.ttl)
+  // =========================
+  subgraph cluster_recipe {
+    label="Recipe / Planning  (recipe:)";
+    color="#3B82F6"; style="rounded"; fontname="Helvetica";
+
+    r_Recipe [label="recipe:Recipe / ProcessPlan"];
+    r_Step   [label="recipe:PlanStep"];
+
+    ep_isa88p [label="«EXT» ISA-88 / IEC 61512\n(Procedure / Operation / Phase + states)", shape=note, fillcolor="#fff7ed"];
+    ep_isa95  [label="«EXT» ISA-95 / IEC 62264\n(WorkOrder / Schedule / MaterialLot)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================
+  // SAFETY / SECURITY / POLICY  (cross-cutting/policy.ttl, safety.ttl, core:Constraint)
+  // =========================
+  subgraph cluster_safety {
+    label="Safety / Security / Policy  (policy:, safety:, core:)";
+    color="#111827"; style="rounded"; fontname="Helvetica";
+
+    sp_Policy     [label="policy:Policy"];
+    sp_Constraint [label="core:Constraint", fillcolor="#FCEFC7", peripheries=2, penwidth=1.6];
+    sp_Perm       [label="policy:Permission"];
+    sp_Prohib     [label="policy:Prohibition"];
+    sp_Role       [label="policy:Role"];
+    sp_Mode       [label="policy:Mode"];
+    sp_Evidence   [label="policy:Evidence"];
+    sp_Hazard     [label="safety:Hazard"];
+    sp_Risk       [label="safety:Risk"];
+    sp_Mitig      [label="safety:Mitigation"];
+
+    ep_shacl [label="«EXT» SHACL / ODRL 2.2\n(rules, validation, usage policy)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================
+  // INVOCATION HOOKS  (cross-cutting/communication.ttl)
+  // =========================
+  subgraph cluster_invocation {
+    label="Invocation Hooks  (com:) — protocol-agnostic";
+    color="#F59E0B"; style="rounded"; fontname="Helvetica";
+
+    c_Endpoint  [label="com:Endpoint"];
+    c_Protocol  [label="com:Protocol\n(OPC UA / REST / … vocab)"];
+    c_Binding   [label="com:Binding\n(protocol-specific mapping)"];
+    c_Sig       [label="com:OperationSignature\n(params / returns)"];
+    c_Event     [label="com:EventStream\n(Started / Progress / Done / Fault)"];
+    c_Channel   [label="com:Channel"];
+
+    ep_opcua [label="«EXT» OPC UA / VDMA\n(NodeId / Method / EventTypes)", shape=note, fillcolor="#fff7ed"];
+    ep_rest  [label="«EXT» REST / OpenAPI\n(URL / verb / JSON schema)", shape=note, fillcolor="#fff7ed"];
+    ep_dtdl  [label="«EXT» dtdl: → DTDL\n(Command / Telemetry / Property)", shape=note, fillcolor="#fff7ed"];
+    ep_aas   [label="«EXT» aas: → AAS\n(Submodel templates / semanticId)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================
+  // EXECUTION  (runtime/runtime.ttl + execution/prov.ttl, trace.ttl)
+  // =========================
+  subgraph cluster_exec {
+    label="Execution / Provenance  (runtime:)";
+    color="#8B5CF6"; style="rounded"; fontname="Helvetica";
+
+    x_Exec   [label="runtime:SkillExecution"];
+    x_Status [label="core:State\n(status: Available / Busy / Fault …)", fillcolor="#FCEFC7", peripheries=2, penwidth=1.6];
+    x_Fault  [label="runtime:Fault"];
+    x_Time   [label="runtime:TimeInterval"];
+
+    ep_saref [label="«EXT» trace: → SAREF4INMA\n(batch / item / equipment events)", shape=note, fillcolor="#fff7ed"];
+    ep_prov  [label="«EXT» prov: → PROV-O\n(Activity / Entity / Agent)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================================================
+  // LEGEND — stability contract: what is frozen vs. what extends
+  // =========================================================
+  subgraph cluster_legend {
+    label="Stability contract — frozen core vs. extension";
+    color="#555555"; style="rounded"; fontname="Helvetica";
+
+    lg_core [label="core:  (manufacturing-core.ttl)\nFROZEN CORE — the invariant spine.\nImports nothing; the core:Entity hierarchy and the\nspine properties (hasPart, provides, implements, controls,\nrealizedBySkill, constrains, canPerform …) change\nonly at a major version.",
+             fillcolor="#FCEFC7", peripheries=2, penwidth=1.6];
+    lg_mod  [label="module:  prod: · res: · skill: · cap: · proc: ·\nrecipe: · policy: · com: · runtime: · safety: …\nMAESTRO MODULES — couple to core ONLY via owl:imports\n+ rdfs:subClassOf / rdfs:subPropertyOf core:*.\nStable, versioned EXTENSIONS; replaceable per concern."];
+    lg_ext  [label="«EXT»  OPC UA · AAS · DTDL · ECLASS · ISA-88/95 ·\nCAEX · QUDT · SOSA · PROV-O · SAREF4INMA · ODRL …\nEXTERNAL extension points — bridged via rdfs:subClassOf /\nskos:exactMatch in adapter modules. ALWAYS an extension;\nnever absorbed into core or a module TBox.",
+             shape=note, fillcolor="#fff7ed"];
+
+    lg_core -> lg_mod [style=invis];
+    lg_mod  -> lg_ext [style=invis];
+  }
+
+  // ------------------------------------------------------------
+  // Product relations
+  // ------------------------------------------------------------
+  p_Instance -> p_Type    [label="instanceOfType", color="#6E56CF"];
+  p_Variant  -> p_Type    [label="variantOf", color="#6E56CF"];
+  p_Type     -> p_Feature [label="hasFeature", color="#6E56CF"];
+  p_Type     -> p_Material[label="madeOf", color="#6E56CF", style="dashed"];
+  p_Assembly -> p_BOM     [label="hasBOMNode", color="#6E56CF"];
+  p_BOM      -> p_Type    [label="nodeFor", color="#6E56CF", style="dashed"];
+  p_BOM      -> p_BOM     [label="hasPart (core:)", color="#6E56CF", style="dashed"];
+  p_Req      -> p_Feature [label="appliesTo", color="#6E56CF", style="dashed"];
+  p_Type     -> p_Id      [label="hasIdentifier", color="#6E56CF", style="dashed"];
+  p_Instance -> p_Id      [label="hasIdentifier", color="#6E56CF", style="dashed"];
+
+  p_Type    -> ep_dpp    [label="export / view", color="#6E56CF", style="dotted"];
+  p_Feature -> ep_eclass [label="semanticId", color="#6E56CF", style="dotted"];
+  s_ParamDef-> ep_eclass [label="semanticId", color="#6E56CF", style="dotted"];
+
+  // ------------------------------------------------------------
+  // Resource / mechanical relations
+  // ------------------------------------------------------------
+  m_Station -> m_Module  [label="hasPart (core:)", color="#12A594"];
+  m_Station -> m_Machine [label="hasPart (core:)", color="#12A594", style="dashed"];
+  m_Module  -> s_Skill   [label="provides (core:)", color="#12A594"];
+  m_Cap     -> s_Skill   [label="realizedBySkill (cap:)", color="#12A594"];
+  m_Module  -> m_Cap     [label="canPerform (core:, inferred)", color="#B23A48", style="dashed"];
+
+  m_Module  -> ep_aml    [label="enrich topology", color="#12A594", style="dotted"];
+  m_Station -> ep_isa88e [label="map equipment", color="#12A594", style="dotted"];
+
+  // ------------------------------------------------------------
+  // Skill relations (taxonomy + reified orchestration)
+  // ------------------------------------------------------------
+  s_Atomic    -> s_Skill [label="subClassOf", color="#E54D2E", style="dotted"];
+  s_Composite -> s_Skill [label="subClassOf", color="#E54D2E", style="dotted"];
+
+  s_Skill -> s_ParamDef [label="hasParameterDef", color="#E54D2E"];
+  s_Skill -> s_Pre      [label="hasPrecondition", color="#E54D2E"];
+  s_Skill -> s_Eff      [label="hasPostcondition", color="#E54D2E"];
+  s_Skill -> m_Cap      [label="requiresCapability", color="#E54D2E", style="dashed"];
+  s_Skill -> s_Iface    [label="hasInterfaceContract", color="#E54D2E", style="dashed"];
+
+  s_Composite -> s_SubLink [label="hasSubSkillLink", color="#E54D2E"];
+  s_SubLink  -> s_Skill    [label="linksTo", color="#E54D2E"];
+  s_SubLink  -> s_CtrlFlow [label="hasControlFlow", color="#E54D2E", style="dashed"];
+  s_SubLink  -> s_DataBind [label="hasDataBinding", color="#E54D2E", style="dashed"];
+  s_DataBind -> s_ParamVal [label="bindsFrom / bindsTo", color="#E54D2E", style="dashed"];
+  s_ParamVal -> s_ParamDef [label="instanceOf", color="#E54D2E", style="dashed"];
+
+  s_Skill   -> ep_css  [label="pattern", color="#E54D2E", style="dotted"];
+  s_ParamDef-> ep_qudt [label="unitRef", color="#E54D2E", style="dotted"];
+  s_Pre     -> ep_sosa [label="obs evidence", color="#E54D2E", style="dotted"];
+
+  // ------------------------------------------------------------
+  // Recipe / planning relations
+  // ------------------------------------------------------------
+  r_Recipe -> r_Step     [label="hasStep", color="#3B82F6"];
+  r_Step   -> r_Step     [label="nextStep", color="#3B82F6", style="dashed"];
+  r_Step   -> s_Skill    [label="realizedBy", color="#3B82F6"];
+  r_Step   -> s_CtrlFlow [label="hasControlFlow", color="#3B82F6", style="dashed"];
+  r_Step   -> s_DataBind [label="hasDataBinding", color="#3B82F6", style="dashed"];
+  r_Step   -> p_Feature  [label="forFeature", color="#3B82F6", style="dashed"];
+
+  r_Recipe -> ep_isa88p  [label="refine", color="#3B82F6", style="dotted"];
+  r_Recipe -> ep_isa95   [label="MOM context", color="#3B82F6", style="dotted"];
+
+  // ------------------------------------------------------------
+  // Safety / policy relations
+  // ------------------------------------------------------------
+  sp_Policy -> sp_Constraint [label="contains", color="#111827"];
+  sp_Policy -> sp_Perm       [label="hasPermission / requiresPermission", color="#111827", style="dashed"];
+  sp_Policy -> sp_Prohib     [label="hasProhibition", color="#111827", style="dashed"];
+  sp_Perm   -> sp_Role       [label="grantedTo", color="#111827", style="dashed"];
+  sp_Policy -> sp_Mode       [label="requiresMode", color="#111827", style="dashed"];
+  sp_Policy -> sp_Evidence   [label="hasEvidence", color="#111827", style="dashed"];
+
+  sp_Hazard -> sp_Risk  [label="increases", color="#111827", style="dashed"];
+  sp_Mitig  -> sp_Risk  [label="reduces", color="#111827", style="dashed"];
+
+  sp_Constraint -> s_Skill    [label="constrains (core:)", color="#111827"];
+  sp_Constraint -> r_Step     [label="constrains", color="#111827", style="dashed"];
+  sp_Constraint -> m_Module   [label="constrains", color="#111827", style="dashed"];
+  sp_Constraint -> c_Endpoint [label="constrains", color="#111827", style="dashed"];
+
+  sp_Policy -> ep_shacl [label="formalize", color="#111827", style="dotted"];
+
+  // ------------------------------------------------------------
+  // Invocation-hook relations
+  // ------------------------------------------------------------
+  s_Service -> s_Iface    [label="exposesInterface", color="#F59E0B"];
+  s_Iface   -> c_Endpoint [label="exposedVia", color="#F59E0B"];
+  c_Channel -> c_Endpoint [label="hasEndpoint", color="#F59E0B", style="dashed"];
+  c_Endpoint-> c_Protocol [label="usesProtocol", color="#F59E0B"];
+  c_Endpoint-> c_Binding  [label="hasBinding", color="#F59E0B", style="dashed"];
+  c_Binding -> c_Sig      [label="hasSignature", color="#F59E0B", style="dashed"];
+  c_Binding -> c_Protocol [label="specializesAs", color="#F59E0B", style="dashed"];
+  c_Sig     -> s_ParamDef [label="hasParameterDef / returns", color="#F59E0B", style="dashed"];
+
+  c_Binding -> ep_opcua [label="bridges", color="#F59E0B", style="dotted"];
+  c_Binding -> ep_rest  [label="bridges", color="#F59E0B", style="dotted"];
+  c_Binding -> ep_dtdl  [label="bridges", color="#F59E0B", style="dotted"];
+  c_Event   -> ep_dtdl  [label="telemetry (bridge)", color="#F59E0B", style="dotted"];
+  s_Service -> ep_aas   [label="publish (submodel)", color="#F59E0B", style="dotted"];
+
+  // ------------------------------------------------------------
+  // Execution / provenance relations
+  // ------------------------------------------------------------
+  x_Exec -> s_Skill    [label="executes", color="#8B5CF6"];
+  x_Exec -> m_Module   [label="executedOn", color="#8B5CF6", style="dashed"];
+  x_Exec -> c_Endpoint [label="invokedVia", color="#8B5CF6", style="dashed"];
+  x_Exec -> s_ParamVal [label="hasInput", color="#8B5CF6", style="dashed"];
+  x_Exec -> x_Status   [label="hasStatus", color="#8B5CF6", style="dashed"];
+  x_Exec -> x_Fault    [label="mayRaise", color="#8B5CF6", style="dashed"];
+  x_Exec -> x_Time     [label="hasTime", color="#8B5CF6", style="dashed"];
+
+  x_Exec -> ep_saref [label="traceability", color="#8B5CF6", style="dotted"];
+  x_Exec -> ep_prov  [label="provenance", color="#8B5CF6", style="dotted"];
+}

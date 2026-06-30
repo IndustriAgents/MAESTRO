@@ -18,6 +18,24 @@ upstream vocabulary — no heavy upstream imports in the loaded stack (see
 | **P5 Execution provenance** | SkillExecution record, time interval, traceability | `runtime/runtime.ttl`, `execution/prov.ttl`, `execution/trace.ttl` | PROV-O, SAREF4INMA |
 | **P6 Invocation completeness** | neutral Binding/Signature/EventStream, Module, topology, DTDL | `cross-cutting/communication.ttl`, `physical/resource.ttl` (`Module`), `physical/automationml.ttl`, `execution/dtdl.ttl` | CAEX / IEC 62714, DTDL |
 
+## Schema overview
+
+The figure below is a Graphviz class-relationship map of the HHM-Core surface —
+the seven concern clusters (Product, Resources, Skills + orchestration,
+Recipe/Planning, Safety/Policy, Invocation, Execution) with their MAESTRO classes
+and the object properties between them. Boxes are MAESTRO classes (labelled with
+the owning module prefix); the orange note shapes are the external standards each
+cluster bridges via `rdfs:subClassOf` / `skos:exactMatch` (the extension points).
+The **frozen `core:` classes** (the invariant spine) are drawn with a **gold
+double border**; module classes use the normal fill and the `«EXT»` notes are
+the always-external extension points — see the "Stability contract" legend on
+the figure and [18-design-principles.md](18-design-principles.md#stability-contract--frozen-core-vs-extension).
+
+![MAESTRO HHM-Core schema — clustered class-relationship overview with extension points](../figures/png/14-maestro-core-schema.png)
+
+Source: [`figures/src/14-maestro-core-schema.gv`](../figures/src/14-maestro-core-schema.gv)
+— render with `dot -Tpng figures/src/14-maestro-core-schema.gv -o figures/png/14-maestro-core-schema.png`.
+
 ## Worked example
 
 `examples/hhm-bridge/` instantiates every new module:

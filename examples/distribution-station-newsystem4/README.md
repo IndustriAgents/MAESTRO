@@ -3,7 +3,7 @@
 A MAESTRO knowledge box for the Festo MPS **Distributing Station**, grounded in
 two real artifacts:
 
-- **Control layer** — the IEC 61499 / 4diac project at
+- **Control layer** — the IEC 61499 / Schneider Electric project at
   `~/Documents/newsystem4/IEC61499` (device `Soft_dPAC` "EcoRT_0" / runtime `RES0`
   / application `APP1`).
 - **Physical layer** — the Festo Didactic design documents
@@ -23,6 +23,44 @@ the downstream station.
 | `plant.ttl` | Design-time: physical topology (real Festo parts) + sensors/IO + motion + skill TYPES + IEC 61499 FB layer + device/application/registered skills + OPC UA |
 | `product.ttl` | Workpiece + the 5-step distribute process |
 | `runtime.ttl` | Availability state snapshot (separate named graph) |
+
+## Knowledge-graph overview
+
+A clustered class-relationship map of the whole example (in the HHM-Core schema
+style): every box is a real `ex:` individual and every edge a real triple from
+`plant.ttl` / `product.ttl` / `runtime.ttl`, grouped by layer — Plant &
+Resources, Sensors & I/O Datapoints, Skill TYPES, Capability/Process/Product,
+IEC 61499 Control, and the OPC UA interface. Red dashed edges are inferred
+(`canPerform` / `canManufacture`); the orange notes are bridged artefacts.
+Individuals typed by a **frozen `core:` class** (`core:Plant`, `core:Skill`)
+carry a **gold double border** — see the "Stability contract" legend and
+[docs/18-design-principles.md](../../docs/18-design-principles.md#stability-contract--frozen-core-vs-extension)
+for what never changes vs. what is always an extension.
+
+![Festo Distributing Station (newsystem4) knowledge-graph schema](../../figures/png/15-distribution-newsystem4-schema.png)
+
+Source: [`figures/src/15-distribution-newsystem4-schema.gv`](../../figures/src/15-distribution-newsystem4-schema.gv)
+— render with `dot -Tpng figures/src/15-distribution-newsystem4-schema.gv -o figures/png/15-distribution-newsystem4-schema.png`.
+
+## How this example relates to the MAESTRO core
+
+MAESTRO is a *universal* ontology; this example is that universal core **applied
+to the Festo testbed**. Every testbed individual is — through `rdf:type` +
+`rdfs:subClassOf` — an instance of a frozen `core:` class. Nothing here invents a
+new top-level concept; it only *specialises* the core:
+
+![MAESTRO core to Festo testbed alignment](../../figures/png/16-core-to-festo-bridge.png)
+
+For example `FeederUnit1 → ex:FeederUnit ⊑ res:Machine ⊑ core:Resource`, and the
+Schneider Electric block `FBT_skMagazine_mo → iec61499:CompositeFB ⊑ core:ControlComponent`.
+The same domain-agnostic rules in `rules/` then infer, over this testbed data,
+that `DistributingStation1 core:canManufacture WorkpieceWP` — which is exactly
+how MAESTRO is "used with" the testbed.
+
+Source: [`figures/src/16-core-to-festo-bridge.gv`](../../figures/src/16-core-to-festo-bridge.gv).
+The full class/property alignment, the reasoning demonstration and the
+reproducibility scripts are written up in
+[`CORE-ALIGNMENT.md`](CORE-ALIGNMENT.md).
 
 ## Plant topology (matches the figure)
 

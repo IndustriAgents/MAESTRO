@@ -20,7 +20,7 @@
 # EXAMPLE — FESTO DISTRIBUTING STATION (DESIGN-TIME)
 #
 # Grounded in two real artifacts:
-#   - CONTROL  : the IEC 61499 / 4diac project at
+#   - CONTROL  : the IEC 61499 / Schneider Electric project at
 #                ~/Documents/newsystem4/IEC61499
 #                (device Soft_dPAC "EcoRT_0" / RES0 / application APP1)
 #   - PHYSICAL : the Festo Didactic design documents +

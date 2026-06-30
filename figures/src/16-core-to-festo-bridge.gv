@@ -1,0 +1,82 @@
+// MAESTRO core  ↔  Festo Distributing Station (newsystem4).
+// Shows that every Festo testbed individual specialises a FROZEN MAESTRO core
+// class via rdf:type + rdfs:subClassOf. Built from the real example + ontology.
+//
+// Render: dot -Tpng figures/src/16-core-to-festo-bridge.gv -o figures/png/16-core-to-festo-bridge.png
+digraph core_to_festo {
+  rankdir=LR;
+  labelloc="t";
+  fontname="Helvetica";
+  label="MAESTRO universal core  ↔  Festo Distributing Station (newsystem4)\nEvery testbed individual (left) is — through rdf:type / rdfs:subClassOf — an instance of a FROZEN core class (right)";
+
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, color="#1F2A36", penwidth=1.0];
+  edge [fontname="Helvetica", fontsize=9, color="#5C6B7A"];
+
+  // ---- FROZEN CORE (gold, double border) ----
+  node [fillcolor="#FCEFC7", peripheries=2, penwidth=1.6, color="#B8860B"];
+  c_res   [label="core:Resource"];
+  c_plant [label="core:Plant"];
+  c_skill [label="core:Skill"];
+  c_cap   [label="core:Capability"];
+  c_proc  [label="core:Process"];
+  c_prod  [label="core:Product"];
+  c_cc    [label="core:ControlComponent"];
+  c_state [label="core:State"];
+
+  // ---- MAESTRO / example specialisation classes (neutral) ----
+  node [fillcolor="#EDF1F6", peripheries=1, penwidth=1.0, color="#1F2A36"];
+  x_feeder [label="ex:FeederUnit"];
+  m_machine[label="res:Machine"];
+  x_rotary [label="ex:RotaryDrive"];
+  m_act    [label="res:Actuator"];
+  s_hand   [label="skill:HandlingSkill"];
+  s_atomic [label="skill:AtomicSkill"];
+  s_trans  [label="skill:TransferSkill"];
+  s_comp   [label="skill:CompositeSkill"];
+  p_transp [label="proc:TransportProcess"];
+  pr_part  [label="prod:Part"];
+  fb_comp  [label="iec61499:CompositeFB"];
+  fb_fb    [label="iec61499:FunctionBlock"];
+  x_io     [label="ex:IOSignal"];
+
+  // ---- FESTO TESTBED individuals (green) ----
+  node [fillcolor="#E6F2DC", peripheries=1, penwidth=1.0, color="#1F2A36"];
+  i_fu    [label="FeederUnit1"];
+  i_tm    [label="TransferMotor1\n(DSR-16-180)"];
+  i_ds    [label="DistributingStation1"];
+  i_eject [label="Type_skMagazineEject"];
+  i_trans [label="Type_skSwivelArmTransfer"];
+  i_cap   [label="cap:HandlingCapability"];
+  i_proc  [label="DistributeWorkpieceProcess"];
+  i_wp    [label="WorkpieceWP"];
+  i_fbt   [label="FBT_skMagazine_mo\n(Schneider Electric)"];
+  i_io    [label="IO_push"];
+
+  // ---- type + subClassOf chains (testbed → core) ----
+  i_fu    -> x_feeder [label="rdf:type"];  x_feeder -> m_machine [label="subClassOf"]; m_machine -> c_res [label="subClassOf"];
+  i_tm    -> x_rotary [label="rdf:type"];  x_rotary -> m_act    [label="subClassOf"]; m_act    -> c_res [label="subClassOf"];
+  i_ds    -> c_plant  [label="rdf:type"];
+  i_eject -> s_hand   [label="rdf:type"];  s_hand  -> s_atomic  [label="subClassOf"]; s_atomic -> c_skill[label="subClassOf"];
+  i_trans -> s_trans  [label="rdf:type"];  s_trans -> s_comp    [label="subClassOf"]; s_comp   -> c_skill[label="subClassOf"];
+  i_cap   -> c_cap    [label="rdf:type"];
+  i_proc  -> p_transp [label="rdf:type"];  p_transp-> c_proc    [label="subClassOf*"];
+  i_wp    -> pr_part  [label="rdf:type"];  pr_part -> c_prod    [label="subClassOf"];
+  i_fbt   -> fb_comp  [label="rdf:type"];  fb_comp -> fb_fb     [label="subClassOf"]; fb_fb -> c_cc [label="subClassOf"];
+  i_io    -> x_io     [label="rdf:type"];  x_io    -> c_state   [label="subClassOf"];
+
+  // keep the testbed individuals and the core classes each in one clean column
+  { rank=same; i_fu i_tm i_ds i_eject i_trans i_cap i_proc i_wp i_fbt i_io }
+  { rank=same; c_res c_plant c_skill c_cap c_proc c_prod c_cc c_state }
+
+  // ---- legend ----
+  subgraph cluster_legend {
+    label="";
+    color="#BBBBBB"; style="rounded";
+    lg [shape=plaintext, fillcolor="#FFFFFF",
+        label=<<table border="0" cellborder="0" cellspacing="2">
+          <tr><td bgcolor="#FCEFC7" width="22"></td><td align="left">FROZEN core — the universal MAESTRO spine (never changes)</td></tr>
+          <tr><td bgcolor="#EDF1F6" width="22"></td><td align="left">MAESTRO / example class — specialises core (rdfs:subClassOf)</td></tr>
+          <tr><td bgcolor="#E6F2DC" width="22"></td><td align="left">Festo testbed individual (our distribution station)</td></tr>
+        </table>>];
+  }
+}
