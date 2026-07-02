@@ -21,6 +21,18 @@ Prefer:
 | `planning.ttl` | ISA-95 | Local planning classes; formal mappings still needed |
 | `aas.ttl` | AAS | Lightweight AAS bridge; full AAS 3.0 Reference/Key model still needed |
 | `opcua.ttl` | OPC UA | SkillInterface pattern; companion-spec mappings still needed |
+| `recipe.ttl` | ISA-88 (IEC 61512) | `recipe:Recipe rdfs:subClassOf isa88:Procedure`; `recipe:PlanStep rdfs:subClassOf isa88:Phase`. ISA-88 has no single free OWL — `isa88:` is an illustrative placeholder; point a deployment profile at a chosen S88 vocab. |
+| `policy.ttl` | ODRL 2.2 | `policy:Policy/Permission/Prohibition rdfs:subClassOf odrl:Policy/Permission/Prohibition`. Full ODRL bundled in `references/odrl22.ttl` (not imported). Role/Mode/Evidence are MAESTRO-local. |
+| `prov.ttl` | W3C PROV-O | `runtime:SkillExecution rdfs:subClassOf prov:Activity`; `runtime:executes/hasInput rdfs:subPropertyOf prov:used`; `executedOn → prov:wasAssociatedWith`; `hasTime → prov:atTime`. Full PROV-O in `references/prov-o.ttl` (not imported). |
+| `trace.ttl` | ETSI SAREF4INMA | `trace:Item rdfs:subClassOf s4inma:Item`; `trace:Batch rdfs:subClassOf s4inma:Batch`; `trace:producedItem rdfs:subPropertyOf prov:generated`. Full ontology in `references/saref4inma.ttl` (not imported). |
+| `dpp.ttl` | DPP (ESPR) / ECLASS | `prod:Feature skos:exactMatch eclass:<IRDI>` (illustrative); `dpp:ProductPassport` is MAESTRO-local. ECLASS dictionary is registration-gated; point a profile at eClassOWL / IEC CDD. |
+| `automationml.ttl` | AutomationML / CAEX (IEC 62714) | CAEX is an XSD, not OWL — `aml:InternalElement/ExternalInterface/InternalLink` are MAESTRO-local mirrors; `res:Module rdfs:subClassOf aml:InternalElement`. |
+| `dtdl.ttl` | DTDL (Azure Digital Twins) | DTDL is JSON-LD (`dtmi:`), not OWL — `dtdl:Interface rdfs:subClassOf skill:SkillInterface`; `dtdl:Command rdfs:subClassOf com:OperationSignature`; `dtdl:Telemetry rdfs:subClassOf com:EventStream`. |
+
+> Reference copies of the freely-available upstream ontologies (PROV-O, ODRL 2.2,
+> SAREF4INMA) are stored under [`references/`](../references/) and are **not** loaded
+> into the validated stack — they document the exact upstream IRIs the bridge axioms
+> point at, per the import policy below.
 
 ## Import Policy
 

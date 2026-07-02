@@ -4,6 +4,7 @@
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
 @prefix core:  <https://w3id.org/maestro/core#> .
 @prefix unit:  <https://w3id.org/maestro/unit#> .
+@prefix aml:   <https://w3id.org/maestro/automationml#> .
 @prefix res:   <https://w3id.org/maestro/resource#> .
 
 #################################################################
@@ -11,12 +12,13 @@
 #################################################################
 
 <https://w3id.org/maestro/resource> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/resource/0.3.0> ;
+    owl:versionIRI <https://w3id.org/maestro/resource/0.4.0> ;
     rdfs:label "MAESTRO Resource Ontology"@en ;
     owl:imports <https://w3id.org/maestro/core> ,
-                <https://w3id.org/maestro/unit> ;
-    owl:versionInfo "0.3.0" ;
-    rdfs:comment "Physical manufacturing assets. Resources DO NOT contain manufacturing semantics — they only provide skills, support motion, and expose interfaces."@en .
+                <https://w3id.org/maestro/unit> ,
+                <https://w3id.org/maestro/automationml> ;
+    owl:versionInfo "0.4.0" ;
+    rdfs:comment "Physical manufacturing assets. Resources DO NOT contain manufacturing semantics — they only provide skills, support motion, and expose interfaces. 0.4.0 adds res:Module, the reconfigurable plug-and-produce module that anchors AutomationML topology (HHM-Core Priority 6)."@en .
 
 #################################################################
 # MACHINE HIERARCHY
@@ -123,6 +125,16 @@ res:IndustrialPC a owl:Class ;
     rdfs:label "IndustrialPC"@en ;
     rdfs:subClassOf res:ControllerDevice ;
     rdfs:comment "Industrial compute hardware that hosts logical ControlComponents."@en .
+
+#################################################################
+# RECONFIGURABLE MODULE (new 0.4.0, HHM-Core P6)
+#################################################################
+
+res:Module a owl:Class ;
+    rdfs:label "Module"@en ;
+    rdfs:subClassOf core:Resource ,
+                    aml:InternalElement ;
+    rdfs:comment "A reconfigurable, plug-and-produce production module (MTP-style). As an AutomationML InternalElement it anchors imported plant topology, ports and connections."@en .
 
 #################################################################
 # PROPERTIES

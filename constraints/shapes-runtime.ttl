@@ -3,6 +3,7 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix core:    <https://w3id.org/maestro/core#> .
+@prefix skill:   <https://w3id.org/maestro/skill#> .
 @prefix runtime: <https://w3id.org/maestro/runtime#> .
 @prefix shape:   <https://w3id.org/maestro/shapes#> .
 
@@ -52,4 +53,24 @@ shape:SnapshotShape a sh:NodeShape ;
         sh:datatype xsd:dateTime ;
         sh:minCount 1 ;
         sh:message "runtime:Snapshot must declare runtime:snapshotTaken." ;
+    ] .
+
+#################################################################
+# SKILL EXECUTION RECORD (new 0.4.0)
+#################################################################
+
+shape:SkillExecutionShape a sh:NodeShape ;
+    sh:targetClass runtime:SkillExecution ;
+    rdfs:label "Every SkillExecution must record the Skill it ran and its time."@en ;
+    sh:property [
+        sh:path runtime:executes ;
+        sh:minCount 1 ;
+        sh:class core:Skill ;
+        sh:message "A runtime:SkillExecution must declare runtime:executes (the Skill that ran)." ;
+    ] ;
+    sh:property [
+        sh:path runtime:hasTime ;
+        sh:minCount 1 ;
+        sh:class runtime:TimeInterval ;
+        sh:message "A runtime:SkillExecution must declare runtime:hasTime (a runtime:TimeInterval)." ;
     ] .

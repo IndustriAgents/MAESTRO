@@ -249,11 +249,15 @@ Each sub-process declares which capability it requires (`cap:HandlingCapability`
 
 ```turtle
 ex:WorkpieceWP3 a prod:Part ;
-    prod:massKg 0.030 ;
+    prod:mass ex:WP3Mass ;          # unit-bearing quantity (was prod:massKg before 0.3.0)
     prod:requiresProcess ex:DistributeWorkpieceProcess .
+
+ex:WP3Mass a unit:Quantity ;
+    unit:value 0.030 ;
+    unit:hasUnit unit:Kilogram .
 ```
 
-`WP3` is the Festo cylindrical blank. The only thing the model needs to know about it for reasoning is `prod:requiresProcess`. Mass is included for future weight-aware planning.
+`WP3` is the Festo cylindrical blank. The only thing the model needs to know about it for reasoning is `prod:requiresProcess`. Mass is included for future weight-aware planning — and since 0.3.0 it is a unit-bearing `prod:mass` (`unit:Quantity`) rather than the removed `prod:massKg` datatype property.
 
 ---
 
@@ -513,7 +517,29 @@ The fact that none of the SPARQL above declares anything about which layer produ
 
 ---
 
-## 10. Reproducing the session
+## 10. What MAESTRO 0.4.0 adds to this station
+
+This walk-through was written against the 0.2/0.3 stack. MAESTRO **0.4.0** (the
+*HHM-Core bridge* release — see [`docs/19-hhm-core-bridge.md`](../../docs/19-hhm-core-bridge.md))
+does not restructure the Distributing Station model; the reasoning chain above is
+unchanged. But the same plant can now express several concerns it previously could
+not, all additively:
+
+| 0.4.0 capability | How it applies to the DS | Module |
+|---|---|---|
+| **Recipe / plan steps** | The five-step transport (`Load → Push → Pick → Rotate → Place`) can be modelled as a `recipe:Recipe` whose ordered `recipe:PlanStep`s are each `recipe:realizedBy` one of the station's skills — a typed alternative to the bare `ex:hasSubProcess` / `proc:precedes` chain. | [`recipe.ttl`](../../ontologies/logical/recipe.ttl) |
+| **Skill orchestration** | `ex:Type_skTransfer_adp`'s sub-skills can become reified `skill:SubSkillLink`s carrying `skill:hasControlFlow` (`Sequence`) and typed `skill:ParameterDef`s, instead of the local `ex:hasSubSkill` shortcut. | [`skill.ttl`](../../ontologies/logical/skill.ttl) |
+| **Policy / mode** | An `policy:Policy` can gate the OPC UA interface on `policy:AutoMode` and grant a `policy:Permission` to an operator `policy:Role` — formalising the "only fire when in automatic" rule. | [`policy.ttl`](../../ontologies/cross-cutting/policy.ttl) |
+| **Execution provenance** | Each fired registered skill (`ex:cmpTrans`, `ex:LoadWP`, …) can be recorded as a `runtime:SkillExecution` (a `prov:Activity`) over a `runtime:TimeInterval`, giving full lineage. | [`prov.ttl`](../../ontologies/execution/prov.ttl) |
+| **Traceability** | A finished `WP3` becomes a `trace:Item` (`trace:partOfBatch`), `trace:producedItem` of the execution — SAREF4INMA genealogy. | [`trace.ttl`](../../ontologies/execution/trace.ttl) |
+| **Identity / DPP** | `ex:WorkpieceWP3` can carry a `prod:Identifier` and a `dpp:ProductPassport` for the Digital Product Passport. | [`product.ttl`](../../ontologies/logical/product.ttl), [`dpp.ttl`](../../ontologies/cross-cutting/dpp.ttl) |
+
+For a single worked example that exercises all of the above end-to-end, see
+[`examples/hhm-bridge/`](../hhm-bridge/) (`plant.ttl` + `runtime.ttl`).
+
+---
+
+## 11. Reproducing the session
 
 Everything in this document is reproducible from the repository:
 
@@ -544,7 +570,7 @@ The custom bridge rule and the repo-config TTL are committed alongside this docu
 
 ---
 
-## 11. References
+## 12. References
 
 - README §18 — Reasoning architecture
 - README §19 — Core reasoning model

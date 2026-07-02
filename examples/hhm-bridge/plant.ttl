@@ -1,0 +1,229 @@
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:       <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+@prefix core:      <https://w3id.org/maestro/core#> .
+@prefix res:       <https://w3id.org/maestro/resource#> .
+@prefix aml:       <https://w3id.org/maestro/automationml#> .
+@prefix skill:     <https://w3id.org/maestro/skill#> .
+@prefix skill-lib: <https://w3id.org/maestro/skill-lib#> .
+@prefix cap:       <https://w3id.org/maestro/capability#> .
+@prefix unit:      <https://w3id.org/maestro/unit#> .
+@prefix prod:      <https://w3id.org/maestro/product#> .
+@prefix recipe:    <https://w3id.org/maestro/recipe#> .
+@prefix policy:    <https://w3id.org/maestro/policy#> .
+@prefix safety:    <https://w3id.org/maestro/safety#> .
+@prefix com:       <https://w3id.org/maestro/communication#> .
+@prefix dtdl:      <https://w3id.org/maestro/dtdl#> .
+@prefix dpp:       <https://w3id.org/maestro/dpp#> .
+@prefix ex:        <https://w3id.org/maestro/examples/hhm-bridge#> .
+
+#################################################################
+# EXAMPLE — HHM-CORE BRIDGE (DESIGN-TIME)
+#
+# Exercises every module added in 0.4.0 to close the HHM-Core gap:
+#  P1 skill orchestration  · P2 recipe/plan · P3 policy/safety
+#  P4 product identity/DPP · P6 module/AutomationML/binding/DTDL.
+# The runtime SkillExecution (P5) lives in the sibling runtime.ttl.
+#################################################################
+
+<https://w3id.org/maestro/examples/hhm-bridge> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/hhm-bridge/0.4.0> ;
+    rdfs:label "MAESTRO Example: HHM-Core Bridge Plant"@en ;
+    owl:imports <https://w3id.org/maestro> ;
+    owl:versionInfo "0.4.0" .
+
+#################################################################
+# P6 — RECONFIGURABLE MODULE + AutomationML topology
+#################################################################
+
+ex:Station1 a res:Module ;
+    rdfs:label "Reconfigurable Station 1" ;
+    core:identifier "resource-module-001" ;
+    core:provides skill-lib:Transfer ;
+    aml:hasInterface ex:Port1 .
+
+ex:Port1 a aml:ExternalInterface ;
+    rdfs:label "Station 1 material port" .
+
+#################################################################
+# P1 — TYPED PARAMETERS, DATA BINDING, CONTROL FLOW, INTERFACE
+#################################################################
+
+ex:Param1 a skill:ParameterDef ;
+    rdfs:label "target position" ;
+    skill:paramType "http://www.w3.org/2001/XMLSchema#double"^^xsd:anyURI ;
+    skill:unitRef unit:Millimetre ;
+    skill:minValue 0.0 ;
+    skill:maxValue 100.0 .
+
+ex:Param2 a skill:ParameterDef ;
+    rdfs:label "achieved position" ;
+    skill:paramType "http://www.w3.org/2001/XMLSchema#double"^^xsd:anyURI ;
+    skill:unitRef unit:Millimetre .
+
+ex:Seq1 a skill:Sequence ;
+    rdfs:label "sequential flow" .
+
+ex:DB1 a skill:DataBinding ;
+    rdfs:label "MoveLinear.out -> Transfer.in" ;
+    skill:bindsFrom ex:Param1 ;
+    skill:bindsTo   ex:Param2 .
+
+ex:Link1 a skill:SubSkillLink ;
+    rdfs:label "Transfer -> MoveLinear" ;
+    skill:linksTo skill-lib:MoveLinear ;
+    skill:hasControlFlow ex:Seq1 .
+
+ex:TransferIface a skill:SkillInterface ;
+    rdfs:label "neutral Transfer interface" .
+
+ex:TransferService a skill:SkillService ;
+    rdfs:label "Transfer service" ;
+    skill:exposesInterface ex:TransferIface .
+
+skill-lib:Transfer skill:hasParameterDef ex:Param1 ;
+    skill:hasInterfaceContract ex:TransferIface ;
+    skill:hasSubSkillLink ex:Link1 ;
+    skill:requiresCapability cap:TransportCapability .
+
+# SkillInterface exposed via the communication endpoint (P6).
+ex:TransferIface com:exposedVia ex:Endpoint1 .
+
+#################################################################
+# P2 — RECIPE / PLAN STEPS (ISA-88 procedural)
+#################################################################
+
+ex:WidgetRecipe a recipe:Recipe ;
+    rdfs:label "Widget assembly recipe" ;
+    core:identifier "recipe-widget-001" ;
+    recipe:hasStep ex:Step1 , ex:Step2 .
+
+ex:Step1 a recipe:PlanStep ;
+    rdfs:label "Step 1 — position" ;
+    recipe:realizedBy skill-lib:MoveLinear ;
+    recipe:hasControlFlow ex:Seq1 ;
+    recipe:forFeature ex:Hole1 ;
+    recipe:nextStep ex:Step2 .
+
+ex:Step2 a recipe:PlanStep ;
+    rdfs:label "Step 2 — transfer" ;
+    recipe:realizedBy skill-lib:Transfer ;
+    recipe:hasDataBinding ex:DB1 .
+
+#################################################################
+# P4 — PRODUCT IDENTITY, VARIANT, REQUIREMENT, BOM, DPP
+#################################################################
+
+ex:WidgetType a prod:ProductType , prod:Assembly ;
+    rdfs:label "Widget (type)" ;
+    core:identifier "product-widget-type-001" ;
+    prod:hasIdentifier ex:WidgetGTIN ;
+    prod:hasBOMNode ex:Bom1 ;
+    prod:hasFeature ex:Hole1 .
+
+ex:WidgetGTIN a prod:GTIN ;
+    prod:scheme "GTIN" ;
+    prod:value  "01234567890128" .
+
+ex:Hole1 a prod:Feature ;
+    rdfs:label "mounting hole" .
+
+ex:Req1 a prod:Requirement ;
+    rdfs:label "hole diameter requirement" ;
+    prod:appliesTo ex:Hole1 .
+
+# Feature requires the operation/plan-step that produces it (P2 edge).
+ex:Hole1 recipe:requiresOperation ex:Step1 .
+
+ex:Bom1 a prod:BOMNode ;
+    prod:nodeFor ex:BoltType ;
+    prod:quantity 4.0 ;
+    prod:position "top-plate" ;
+    prod:refDesignator "B1" .
+
+ex:BoltType a prod:ProductType , prod:Part ;
+    rdfs:label "M4 bolt (type)" ;
+    core:identifier "product-bolt-type-001" .
+
+ex:Widget1 a prod:ProductInstance ;
+    rdfs:label "Widget serial #1" ;
+    core:identifier "product-widget-instance-001" ;
+    prod:instanceOfType ex:WidgetType .
+
+ex:WidgetDeluxe a prod:Variant ;
+    rdfs:label "Widget Deluxe variant" ;
+    core:identifier "product-widget-variant-deluxe" ;
+    prod:variantOf ex:WidgetType .
+
+ex:WidgetPassport a dpp:ProductPassport ;
+    rdfs:label "Widget digital product passport" ;
+    dpp:describes ex:WidgetType ;
+    dpp:hasIdentifier ex:WidgetGTIN .
+
+#################################################################
+# P3 — POLICY / ACCESS CONTROL / MODE / SAFETY
+#################################################################
+
+ex:OpPolicy a policy:Policy ;
+    rdfs:label "Transfer operating policy" ;
+    policy:contains ex:Constraint1 ;
+    policy:hasPermission ex:Perm1 ;
+    policy:requiresMode policy:AutoMode ;
+    policy:hasEvidence ex:Ev1 .
+
+ex:Constraint1 a core:Constraint ;
+    rdfs:label "auto-mode-only constraint" ;
+    core:constrains skill-lib:Transfer .
+
+ex:Perm1 a policy:Permission ;
+    rdfs:label "may run Transfer" ;
+    policy:grantedTo ex:OperatorRole .
+
+ex:OperatorRole a policy:Role ;
+    rdfs:label "Operator" .
+
+ex:Ev1 a policy:Evidence ;
+    rdfs:label "training record #42" .
+
+ex:Hazard1 a safety:Hazard ;
+    rdfs:label "pinch point" ;
+    safety:increases ex:Risk1 .
+
+ex:Risk1 a safety:Risk ;
+    rdfs:label "operator hand injury" .
+
+ex:Mitigation1 a safety:Mitigation ;
+    rdfs:label "light curtain" ;
+    safety:reduces ex:Risk1 .
+
+#################################################################
+# P6 — NEUTRAL BINDING / SIGNATURE + DTDL
+#################################################################
+
+ex:Endpoint1 a com:Endpoint ;
+    rdfs:label "Station 1 OPC UA endpoint" ;
+    core:identifier "endpoint-station1-opcua" ;
+    com:address "opc.tcp://station1:4840" ;
+    com:usesProtocol com:OpcUaProtocol ;
+    com:hasBinding ex:Binding1 .
+
+ex:Binding1 a com:Binding ;
+    com:bindsEndpoint ex:Endpoint1 ;
+    com:specializesAs com:OpcUaProtocol ;
+    com:hasSignature ex:Sig1 .
+
+ex:Sig1 a com:OperationSignature ;
+    com:hasParameterDef ex:Param1 ;
+    com:returns ex:Param2 .
+
+ex:TransferTwin a dtdl:Interface ;
+    rdfs:label "Transfer DTDL interface" ;
+    dtdl:hasCommand ex:StartCmd ;
+    dtdl:hasTelemetry ex:PosTelemetry .
+
+ex:StartCmd a dtdl:Command ;
+    rdfs:label "Start" .
+
+ex:PosTelemetry a dtdl:Telemetry ;
+    rdfs:label "position telemetry" .

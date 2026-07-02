@@ -11,12 +11,12 @@
 #################################################################
 
 <https://w3id.org/maestro/opcua> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/opcua/0.3.0> ;
+    owl:versionIRI <https://w3id.org/maestro/opcua/0.4.0> ;
     rdfs:label "MAESTRO OPC UA Ontology"@en ;
     owl:imports <https://w3id.org/maestro/core> ,
                 <https://w3id.org/maestro/skill> ;
-    owl:versionInfo "0.3.0" ;
-    rdfs:comment "OPC UA semantic interoperability layer. Skills are exposed to clients through OPC UA SkillInterfaces (inspired by CaSkMan)."@en .
+    owl:versionInfo "0.4.0" ;
+    rdfs:comment "OPC UA semantic interoperability layer. Skills are exposed to clients through OPC UA SkillInterfaces (inspired by CaSkMan). 0.4.0 declares opcua:OpcUaSkillInterface a subclass of the protocol-neutral skill:SkillInterface."@en .
 
 #################################################################
 # CLASSES
@@ -44,8 +44,9 @@ opcua:OpcUaMethod a owl:Class ;
 
 opcua:OpcUaSkillInterface a owl:Class ;
     rdfs:label "OpcUaSkillInterface"@en ;
-    rdfs:subClassOf opcua:OpcUaObject ;
-    rdfs:comment "An OPC UA object that exposes a MAESTRO Skill to network clients. Mirrors the CaSkMan SkillInterface pattern."@en .
+    rdfs:subClassOf opcua:OpcUaObject ,
+                    skill:SkillInterface ;
+    rdfs:comment "An OPC UA object that exposes a MAESTRO Skill to network clients. Mirrors the CaSkMan SkillInterface pattern; the OPC UA realisation of the protocol-neutral skill:SkillInterface."@en .
 
 #################################################################
 # PROPERTIES

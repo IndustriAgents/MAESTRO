@@ -11,8 +11,8 @@ authors:
   - family-names: "Xavier"
     given-names: "Melwin"
     email: "midhunxavier1993@gmail.com"
-version: "0.3.0"
-date-released: "2026-05-23"
+version: "0.4.0"
+date-released: "2026-06-24"
 license: MIT
 keywords:
   - manufacturing

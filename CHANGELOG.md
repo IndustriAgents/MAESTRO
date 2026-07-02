@@ -5,6 +5,64 @@ All notable changes to MAESTRO will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-24
+
+Closes the gaps identified in the MAESTRO vs. HHM-Core ontology comparison.
+Absorbs the missing HHM-Core classes/edges and aligns to the named standards
+using MAESTRO's bridge-axiom convention (small `rdfs:subClassOf` / `skos:exactMatch`
+to upstream IRIs; no heavy upstream imports in the loaded stack). All additions
+are backward-compatible — no terms were removed or renamed.
+
+### Added
+
+- **Skill orchestration (HHM-Core P1)** in `logical/skill.ttl`: reified
+  `skill:SubSkillLink`, `skill:ControlFlow` (Sequence/Parallel/Alternative/Loop/Optional),
+  `skill:DataBinding`, typed `skill:ParameterDef` + `skill:ParameterValue`,
+  `skill:Precondition`/`skill:Effect` classes, and a protocol-neutral
+  `skill:SkillInterface` + `skill:SkillService`.
+- **Recipe / plan layer (P2)** — new `logical/recipe.ttl` (`recipe:`): `recipe:Recipe`,
+  `recipe:ProcessPlan`, `recipe:UnitProcedure`, `recipe:Operation`, `recipe:PlanStep`,
+  with `hasStep` / `realizedBy` / `hasControlFlow` / `hasDataBinding` / `nextStep` /
+  `forFeature`. Bridged to **ISA-88 (IEC 61512)**.
+- **Policy / access control / modes (P3)** — new `cross-cutting/policy.ttl` (`policy:`):
+  `Policy`, `Permission`, `Prohibition`, `Role`, `Mode` (auto/manual/maintenance),
+  `Evidence`. Bridged to **ODRL 2.2**. Plus `safety:Mitigation` (+ `increases`/`reduces`)
+  and the additive `core:constrains` property.
+- **Product identity & traceability (P4)** in `logical/product.ttl`:
+  `prod:ProductType`/`ProductInstance`, `prod:Variant`, `prod:Requirement`,
+  multi-scheme `prod:Identifier` (GTIN/UUID/IRDI/IRI) and structured `prod:BOMNode`.
+  New `cross-cutting/dpp.ttl` (`dpp:`) adds a Digital Product Passport view and an
+  **ECLASS** dictionary alignment for `aas:semanticId`.
+- **Execution provenance (P5)** in `runtime/runtime.ttl`: `runtime:SkillExecution`
+  and `runtime:TimeInterval`. New `execution/prov.ttl` aligns SkillExecution to
+  **W3C PROV-O** (`prov:Activity`); new `execution/trace.ttl` adds **SAREF4INMA**
+  batch/item traceability.
+- **Invocation completeness (P6)**: `com:Binding`, `com:OperationSignature`,
+  `com:EventStream` in `cross-cutting/communication.ttl`; `res:Module` in
+  `physical/resource.ttl`; new `physical/automationml.ttl` (CAEX / IEC 62714) and
+  `execution/dtdl.ttl` (Azure Digital Twins DTDL). `opcua:OpcUaSkillInterface` is now
+  a subclass of `skill:SkillInterface`.
+- New SHACL shapes `constraints/shapes-recipe.ttl`, `shapes-policy.ttl`,
+  `shapes-product.ttl`, and extensions to `shapes-skill.ttl` / `shapes-runtime.ttl`,
+  all wired into `tests/validate_repo.py`.
+- New worked example `examples/hhm-bridge/` (design-time `plant.ttl` + runtime
+  `runtime.ttl`) exercising every new module.
+- Reference copies of the freely-available upstream ontologies under `references/`:
+  `prov-o.ttl`, `odrl22.ttl`, `saref4inma.ttl` (reference only — not imported).
+- Full HHM-Core edge coverage: `skill:requiresCapability` (skill-level), the
+  `skill:Postcondition` alias of `skill:Effect`, `sensor:hasObservationEvidence`
+  (Skill→SOSA Observation), `recipe:requiresOperation` (Feature→PlanStep) and
+  `recipe:hasContext` (Recipe→ISA-95), `com:exposedVia` (SkillInterface→Endpoint)
+  and `com:DtdlProtocol`, and `aas:publishesInterface` (Submodel→SkillInterface).
+  `com:usesProtocol` and `skill:hasPrecondition`/`hasPostcondition` ranges were
+  widened so endpoints and reified conditions are valid targets.
+
+### Changed
+
+- Version bumped to `0.4.0` across the umbrella and every edited/new module.
+- `examples/distribution-station/plant.ttl`: added `res:payload` to `TransferArm1`
+  (fixes a pre-existing SHACL violation so the full suite validates).
+
 ## [0.3.0] - 2026-05-23
 
 ### BREAKING

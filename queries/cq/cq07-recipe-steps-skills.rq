@@ -1,0 +1,13 @@
+PREFIX core:   <https://w3id.org/maestro/core#>
+PREFIX recipe: <https://w3id.org/maestro/recipe#>
+PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+
+# CQ07 — Which plan steps realise a recipe, and which skill realises each step?
+SELECT ?recipe ?step ?stepLabel ?skill
+WHERE {
+    ?recipe a/rdfs:subClassOf* recipe:Recipe ;
+            recipe:hasStep ?step .
+    ?step   recipe:realizedBy ?skill .
+    OPTIONAL { ?step rdfs:label ?stepLabel }
+}
+ORDER BY ?recipe ?step

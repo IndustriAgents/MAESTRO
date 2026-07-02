@@ -1,0 +1,320 @@
+// MAESTRO example — Festo Distributing Station (newsystem4) knowledge graph.
+// Instance-level (A-Box) view in the HHM-Core schema style: every BOX is a real
+// individual and every EDGE a real triple from
+//   examples/distribution-station-newsystem4/{plant,product,runtime}.ttl
+// «EXT» notes = external standards / artefacts the example imports or bridges.
+//
+// Render: dot -Tpng figures/src/15-distribution-newsystem4-schema.gv -o figures/png/15-distribution-newsystem4-schema.png
+digraph Distribution_NewSystem4 {
+  rankdir=LR;
+  labelloc="t";
+  fontname="Helvetica";
+  label="Festo Distributing Station (newsystem4) — MAESTRO Knowledge Graph\nBoxes = ex: individuals (type in italics) · solid = asserted triple · red dashed = inferred (rules/) · «EXT» notes = bridged artefacts";
+
+  node [shape=box, style="rounded,filled", fillcolor="#f9f9fb", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  INF [style=invis];  // anchor (unused)
+
+  // =========================================================
+  // PLANT & RESOURCES   (core:Plant / res: / ex: mechatronics)
+  // =========================================================
+  subgraph cluster_plant {
+    label="Plant & Resources";
+    color="#12A594"; style="rounded"; fontname="Helvetica";
+
+    ds  [label="DistributingStation1\n(core:Plant)", fillcolor="#d7efe9", peripheries=2, penwidth=1.6, color="#B8860B"];
+    fu  [label="FeederUnit1\n(ex:FeederUnit)"];
+    tu  [label="TransferUnit1\n(ex:TransferUnit)"];
+    cc  [label="ControlConsole1\n(ex:ControlConsole)"];
+
+    mag [label="Magazine1\n(ex:Magazine)"];
+    fp  [label="FeederPusher1\n(ex:Pusher)"];
+    fc  [label="FeederCylinder1\n(ex:PneumaticCylinder · DSNU-8-80)"];
+
+    tm  [label="TransferMotor1\n(ex:RotaryDrive · DSR-16-180)"];
+    ta  [label="TransferArm1\n(res:TransferArm)"];
+    vu  [label="VacuumUnit1\n(res:VacuumUnit)"];
+    vv  [label="VacuumValve1\n(ex:VacuumValve)"];
+    vg  [label="VacuumGenerator1\n(ex:VacuumGenerator)"];
+    vf  [label="VacuumFilter1\n(ex:VacuumFilter · VAF-8)"];
+    scp [label="SuctionCup1\n(ex:SuctionCup · VAS-8)"];
+  }
+
+  // =========================================================
+  // SENSORS & I/O DATAPOINTS   (sensor: / ex:IOSignal)
+  // =========================================================
+  subgraph cluster_io {
+    label="Sensors & I/O Datapoints";
+    color="#F59E0B"; style="rounded"; fontname="Helvetica";
+
+    pfs  [label="PusherFrontSensor1\n(SME-8)"];
+    prs  [label="PusherRearSensor1\n(SME-8)"];
+    es   [label="EmptySensor1\n(SOEG-L)"];
+    tals [label="TransferArm_LeftSensor1\n(S-3-E)"];
+    tars [label="TransferArm_RightSensor1\n(S-3-E)"];
+    vsen [label="VacuumSensor1\n(VPEV)"];
+
+    io_pos_e [label="IO_pos_e\n(input)", shape=oval, fillcolor="#fdebd0"];
+    io_pos_r [label="IO_pos_r\n(input)", shape=oval, fillcolor="#fdebd0"];
+    io_empty [label="IO_empty\n(input)", shape=oval, fillcolor="#fdebd0"];
+    io_atm   [label="IO_at_mgz\n(input)", shape=oval, fillcolor="#fdebd0"];
+    io_atn   [label="IO_at_next\n(input)", shape=oval, fillcolor="#fdebd0"];
+    io_vmon  [label="IO_vmon\n(input)", shape=oval, fillcolor="#fdebd0"];
+
+    io_push  [label="IO_push\n(output)", shape=oval, fillcolor="#fce3c0"];
+    io_tom   [label="IO_to_mgz\n(output)", shape=oval, fillcolor="#fce3c0"];
+    io_ton   [label="IO_to_next\n(output)", shape=oval, fillcolor="#fce3c0"];
+    io_vcmon [label="IO_vcm_on\n(output)", shape=oval, fillcolor="#fce3c0"];
+    io_vcmof [label="IO_vcm_off\n(output)", shape=oval, fillcolor="#fce3c0"];
+
+    ep_sosa [label="«EXT» SOSA / SSN\n(sosa:observes)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================================================
+  // SKILLS   (skill: types + motion specs)
+  // =========================================================
+  subgraph cluster_skills {
+    label="Skill TYPES (skill:)";
+    color="#E54D2E"; style="rounded"; fontname="Helvetica";
+
+    t_eject [label="Type_skMagazineEject\n(skill:HandlingSkill)"];
+    t_mtm   [label="Type_skMoveToMagazine\n(skill:MotionSkill)"];
+    t_mtd   [label="Type_skMoveToDownstream\n(skill:MotionSkill)"];
+    t_grip  [label="Type_skGripWorkpiece\n(skill:ManipulationSkill)"];
+    t_rel   [label="Type_skReleaseWorkpiece\n(skill:ManipulationSkill)"];
+    t_trans [label="Type_skSwivelArmTransfer\n(skill:TransferSkill)", fillcolor="#fde0d8"];
+    t_btn   [label="Type_skButtonsLights\n(skill:AtomicSkill)"];
+
+    m_cyl [label="CylinderLinearMotion\n(motion:LinearMotion)", fillcolor="#dbeefb"];
+    m_arm [label="ArmRotationalMotion\n(motion:RotationalMotion)", fillcolor="#dbeefb"];
+
+    ep_qudt [label="«EXT» QUDT / units\n(unit:Quantity)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================================================
+  // CAPABILITY / PROCESS / PRODUCT
+  // =========================================================
+  subgraph cluster_cap {
+    label="Capability / Process / Product";
+    color="#6E56CF"; style="rounded"; fontname="Helvetica";
+
+    c_hand  [label="cap:HandlingCapability", peripheries=2, penwidth=1.4, color="#B8860B"];
+    c_pp    [label="cap:PickPlaceCapability", peripheries=2, penwidth=1.4, color="#B8860B"];
+    c_tran  [label="cap:TransportCapability", peripheries=2, penwidth=1.4, color="#B8860B"];
+
+    pr_dist [label="DistributeWorkpieceProcess\n(proc:TransportProcess)"];
+    pr_push [label="PushProcess"];
+    pr_mtm  [label="MoveToMagazineProcess"];
+    pr_grip [label="GripProcess"];
+    pr_mtd  [label="MoveToDownstreamProcess"];
+    pr_rel  [label="ReleaseProcess"];
+
+    wp [label="WorkpieceWP\n(prod:Part)", fillcolor="#e3dcf5"];
+  }
+
+  // =========================================================
+  // IEC 61499 CONTROL   (iec61499: FBTs + device/app + instances)
+  // =========================================================
+  subgraph cluster_iec {
+    label="IEC 61499 Control (iec61499:)";
+    color="#8B5CF6"; style="rounded"; fontname="Helvetica";
+
+    fbt_mag   [label="FBT_skMagazine_mo\n(CompositeFB)"];
+    fbt_sw    [label="FBT_skSwivelArm_mo_cmp1\n(CompositeFB)"];
+    fbt_mtm   [label="FBT_..eo_Move_to_magazine"];
+    fbt_mtd   [label="FBT_..eo_Move_to_downstream"];
+    fbt_grip  [label="FBT_..eo_Grip_workpiece"];
+    fbt_rel   [label="FBT_..eo_Release_workpiece"];
+    fbt_orch  [label="FBT_..Orchestrator\n(BasicFB)"];
+    fbt_btn   [label="FBT_skButtonsLights"];
+
+    dev [label="Device_EcoRT_0\n(res:PLC · Soft_dPAC)", fillcolor="#e7e0f7"];
+    rt  [label="Runtime_RES0\n(iec61499:RuntimeResource)", fillcolor="#e7e0f7"];
+    app [label="App_APP1\n(iec61499:Application)", fillcolor="#e7e0f7"];
+
+    inst_mag [label="Inst_Magazine\n(FB instance)"];
+    inst_sw  [label="Inst_SwivelArm_Cmp1\n(FB instance)"];
+    inst_c1  [label="Inst_Conv1\n(Magazine2Magasine)"];
+    inst_c2  [label="Inst_Conv2\n(SwivelArm2Transfer)"];
+    inst_f1  [label="Inst_FB1\n(True_Adp)"];
+    inst_f2  [label="Inst_FB2\n(True_Adp_rev)"];
+
+    ep_se [label="«EXT» IEC 61499 / Schneider Electric\n(newsystem4 project, Soft_dPAC)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================================================
+  // OPC UA INTERFACE   (opcua: + registered skills)
+  // =========================================================
+  subgraph cluster_opc {
+    label="OPC UA Skill Interface (opcua:)";
+    color="#0EA5E9"; style="rounded"; fontname="Helvetica";
+
+    opc [label="OpcUaDistributionInterface\n(opcua:OpcUaSkillInterface)"];
+    reg_mag [label="Reg_Magazine\n(core:Skill)", peripheries=2, penwidth=1.4, color="#B8860B"];
+    reg_sw  [label="Reg_SwivelArm\n(core:Skill)", peripheries=2, penwidth=1.4, color="#B8860B"];
+    reg_btn [label="Reg_ButtonsLights\n(core:Skill)", peripheries=2, penwidth=1.4, color="#B8860B"];
+
+    ep_opcsrv [label="«EXT» OPC UA server\n(System.EcoRT_0.opcua.xml)", shape=note, fillcolor="#fff7ed"];
+    ep_festo  [label="«EXT» Festo MPS hardware\n(DSNU-8-80 · DSR-16-180 · VAS-8 ·\nVPEV · SME-8 · S-3-E · SOEG-L)", shape=note, fillcolor="#fff7ed"];
+  }
+
+  // =========================================================
+  // LEGEND — stability contract: frozen core vs. extension
+  // =========================================================
+  subgraph cluster_legend {
+    label="Stability contract — frozen core vs. extension";
+    color="#555555"; style="rounded"; fontname="Helvetica";
+
+    lg_core [label="Typed by a FROZEN CORE class\n(here: core:Plant · core:Skill · core:Capability)\nmanufacturing-core.ttl — the invariant spine,\nnever changes except at a major version",
+             peripheries=2, penwidth=1.6, color="#B8860B", fillcolor="#FCEFC7"];
+    lg_mod  [label="Typed by a MAESTRO / example EXTENSION class\n(ex:FeederUnit · res: · prod: · skill: · recipe: · com: · runtime: …)\nspecialise core via rdfs:subClassOf / subPropertyOf — versioned, replaceable"];
+    lg_ext  [label="«EXT» EXTERNAL artefact / standard\n(IEC 61499 / Schneider Electric · OPC UA · AAS · DTDL · Festo MPS hardware · SOSA · QUDT)\nbridged, never absorbed — ALWAYS an extension",
+             shape=note, fillcolor="#fff7ed"];
+
+    lg_core -> lg_mod [style=invis];
+    lg_mod  -> lg_ext [style=invis];
+  }
+
+  // ----------------------------------------------------------------
+  // Plant topology  (core:hasPart / ex:feeds / ex:drivenBy)
+  // ----------------------------------------------------------------
+  ds -> fu [label="hasPart", color="#12A594"];
+  ds -> tu [label="hasPart", color="#12A594"];
+  ds -> cc [label="hasPart", color="#12A594"];
+  fu -> mag [label="hasPart", color="#12A594"];
+  fu -> fp  [label="hasPart", color="#12A594"];
+  fu -> fc  [label="hasPart", color="#12A594"];
+  fu -> tu  [label="feeds", color="#12A594", style="bold"];
+  mag -> es [label="hasPart", color="#12A594", style="dashed"];
+  fp -> fc  [label="drivenBy", color="#12A594", style="dashed"];
+  tu -> tm  [label="hasPart", color="#12A594"];
+  tu -> ta  [label="hasPart", color="#12A594"];
+  tu -> vu  [label="hasPart", color="#12A594"];
+  ta -> tm  [label="drivenBy", color="#12A594", style="dashed"];
+  ta -> vu  [label="hasPart", color="#12A594", style="dashed"];
+  vu -> vv  [label="hasPart", color="#12A594"];
+  vu -> vg  [label="hasPart", color="#12A594"];
+  vu -> vf  [label="hasPart", color="#12A594"];
+  vu -> scp [label="hasPart", color="#12A594"];
+
+  // sensor membership (core:hasPart)
+  fu -> pfs  [label="hasPart", color="#12A594", style="dotted"];
+  fu -> prs  [label="hasPart", color="#12A594", style="dotted"];
+  tu -> tals [label="hasPart", color="#12A594", style="dotted"];
+  tu -> tars [label="hasPart", color="#12A594", style="dotted"];
+  vu -> vsen [label="hasPart", color="#12A594", style="dotted"];
+
+  // ----------------------------------------------------------------
+  // Sensors create input signals; outputs command actuators
+  // ----------------------------------------------------------------
+  pfs  -> io_pos_e [label="createsSignal", color="#F59E0B"];
+  prs  -> io_pos_r [label="createsSignal", color="#F59E0B"];
+  es   -> io_empty [label="createsSignal", color="#F59E0B"];
+  tals -> io_atm   [label="createsSignal", color="#F59E0B"];
+  tars -> io_atn   [label="createsSignal", color="#F59E0B"];
+  vsen -> io_vmon  [label="createsSignal", color="#F59E0B"];
+
+  io_push  -> fc [label="commandsActuator", color="#F59E0B"];
+  io_tom   -> tm [label="commandsActuator", color="#F59E0B"];
+  io_ton   -> tm [label="commandsActuator", color="#F59E0B"];
+  io_vcmon -> vv [label="commandsActuator", color="#F59E0B"];
+  io_vcmof -> vv [label="commandsActuator", color="#F59E0B"];
+
+  pfs -> ep_sosa [label="observes", color="#F59E0B", style="dotted"];
+
+  // ----------------------------------------------------------------
+  // Resources provide skills (core:provides)
+  // ----------------------------------------------------------------
+  fu -> t_eject [label="provides", color="#E54D2E"];
+  tu -> t_trans [label="provides", color="#E54D2E"];
+  tu -> t_mtm   [label="provides", color="#E54D2E", style="dashed"];
+  tu -> t_mtd   [label="provides", color="#E54D2E", style="dashed"];
+  vu -> t_grip  [label="provides", color="#E54D2E", style="dashed"];
+  vu -> t_rel   [label="provides", color="#E54D2E", style="dashed"];
+  cc -> t_btn   [label="provides", color="#E54D2E"];
+
+  // composite + motion
+  t_trans -> t_mtm  [label="hasSubSkill", color="#E54D2E"];
+  t_trans -> t_grip [label="hasSubSkill", color="#E54D2E"];
+  t_trans -> t_mtd  [label="hasSubSkill", color="#E54D2E"];
+  t_trans -> t_rel  [label="hasSubSkill", color="#E54D2E"];
+  t_eject -> m_cyl  [label="requiresMotion", color="#E54D2E", style="dashed"];
+  t_mtm   -> m_arm  [label="requiresMotion", color="#E54D2E", style="dashed"];
+  t_mtd   -> m_arm  [label="requiresMotion", color="#E54D2E", style="dashed"];
+  m_arm   -> ep_qudt [label="hasUnit", color="#E54D2E", style="dotted"];
+
+  // ----------------------------------------------------------------
+  // Capability bridge + process/product + inferred
+  // ----------------------------------------------------------------
+  c_hand -> t_eject [label="realizedBySkill", color="#6E56CF"];
+  c_pp   -> t_trans [label="realizedBySkill", color="#6E56CF"];
+  c_tran -> t_mtm   [label="realizedBySkill", color="#6E56CF"];
+  c_tran -> t_mtd   [label="realizedBySkill", color="#6E56CF"];
+
+  pr_dist -> pr_push [label="hasSubProcess", color="#6E56CF", style="dashed"];
+  pr_dist -> pr_mtm  [label="hasSubProcess", color="#6E56CF", style="dashed"];
+  pr_dist -> pr_grip [label="hasSubProcess", color="#6E56CF", style="dashed"];
+  pr_dist -> pr_mtd  [label="hasSubProcess", color="#6E56CF", style="dashed"];
+  pr_dist -> pr_rel  [label="hasSubProcess", color="#6E56CF", style="dashed"];
+  pr_push -> pr_mtm  [label="precedes", color="#6E56CF"];
+  pr_mtm  -> pr_grip [label="precedes", color="#6E56CF"];
+  pr_grip -> pr_mtd  [label="precedes", color="#6E56CF"];
+  pr_mtd  -> pr_rel  [label="precedes", color="#6E56CF"];
+  pr_dist -> c_hand  [label="requiresCapability", color="#6E56CF", style="dotted"];
+  pr_dist -> c_pp    [label="requiresCapability", color="#6E56CF", style="dotted"];
+  pr_dist -> c_tran  [label="requiresCapability", color="#6E56CF", style="dotted"];
+  wp -> pr_dist      [label="requiresProcess", color="#6E56CF"];
+
+  // inferred (rules/capability-inference + manufacturing-ability)
+  fu -> c_hand [label="canPerform (inferred)", color="#B23A48", style="dashed"];
+  tu -> c_pp   [label="canPerform (inferred)", color="#B23A48", style="dashed"];
+  tm -> c_tran [label="canPerform (inferred)", color="#B23A48", style="dashed"];
+  ds -> wp     [label="canManufacture (inferred)", color="#B23A48", style="dashed"];
+
+  // ----------------------------------------------------------------
+  // IEC 61499 layer: FBT implements skill + controls resource
+  // ----------------------------------------------------------------
+  fbt_mag  -> t_eject [label="implementsSkill", color="#8B5CF6", style="dashed"];
+  fbt_mag  -> fu      [label="controlsResource", color="#8B5CF6"];
+  fbt_sw   -> t_trans [label="implementsSkill", color="#8B5CF6", style="dashed"];
+  fbt_sw   -> tu      [label="controlsResource", color="#8B5CF6"];
+  fbt_mtm  -> t_mtm   [label="implementsSkill", color="#8B5CF6", style="dashed"];
+  fbt_mtm  -> tm      [label="controlsResource", color="#8B5CF6", style="dotted"];
+  fbt_mtd  -> t_mtd   [label="implementsSkill", color="#8B5CF6", style="dashed"];
+  fbt_grip -> t_grip  [label="implementsSkill", color="#8B5CF6", style="dashed"];
+  fbt_grip -> vu      [label="controlsResource", color="#8B5CF6", style="dotted"];
+  fbt_rel  -> t_rel   [label="implementsSkill", color="#8B5CF6", style="dashed"];
+  fbt_btn  -> t_btn   [label="implementsSkill", color="#8B5CF6", style="dashed"];
+  fbt_btn  -> cc      [label="controlsResource", color="#8B5CF6", style="dotted"];
+  fbt_orch -> fbt_mtm [label="permits", color="#8B5CF6", style="dotted"];
+  fbt_orch -> fbt_grip[label="permits", color="#8B5CF6", style="dotted"];
+
+  // device / runtime / application + FB instances
+  dev -> rt  [label="hostsRuntimeResource", color="#8B5CF6"];
+  app -> rt  [label="hostedOn", color="#8B5CF6", style="dashed"];
+  inst_mag -> fbt_mag [label="instanceOfFBT", color="#8B5CF6", style="dotted"];
+  inst_sw  -> fbt_sw  [label="instanceOfFBT", color="#8B5CF6", style="dotted"];
+  inst_f1  -> inst_mag [label="permits", color="#8B5CF6"];
+  inst_mag -> inst_sw  [label="permits", color="#8B5CF6"];
+  inst_sw  -> inst_f2  [label="permits", color="#8B5CF6"];
+  inst_mag -> inst_c1  [label="bridges", color="#8B5CF6", style="dashed"];
+  inst_sw  -> inst_c2  [label="bridges", color="#8B5CF6", style="dashed"];
+
+  fbt_mag -> ep_se [label="from project", color="#8B5CF6", style="dotted"];
+
+  // ----------------------------------------------------------------
+  // OPC UA: registered skills (ofType type, partOf app), exposed
+  // ----------------------------------------------------------------
+  opc -> reg_mag [label="exposes", color="#0EA5E9"];
+  opc -> reg_sw  [label="exposes", color="#0EA5E9"];
+  opc -> reg_btn [label="exposes", color="#0EA5E9"];
+  reg_mag -> t_eject [label="ofType", color="#0EA5E9", style="dashed"];
+  reg_sw  -> t_trans [label="ofType", color="#0EA5E9", style="dashed"];
+  reg_btn -> t_btn   [label="ofType", color="#0EA5E9", style="dashed"];
+  reg_mag -> app [label="partOf", color="#0EA5E9", style="dotted"];
+  reg_sw  -> app [label="partOf", color="#0EA5E9", style="dotted"];
+  reg_btn -> app [label="partOf", color="#0EA5E9", style="dotted"];
+  opc -> ep_opcsrv [label="deployed", color="#0EA5E9", style="dotted"];
+  fc  -> ep_festo  [label="datasheet", color="#0EA5E9", style="dotted"];
+}

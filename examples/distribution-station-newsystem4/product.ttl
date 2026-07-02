@@ -1,0 +1,83 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix core: <https://w3id.org/maestro/core#> .
+@prefix cap:  <https://w3id.org/maestro/capability#> .
+@prefix proc: <https://w3id.org/maestro/process#> .
+@prefix prod: <https://w3id.org/maestro/product#> .
+@prefix ex:   <https://w3id.org/maestro/examples/distribution-station-newsystem4#> .
+
+#################################################################
+# EXAMPLE — DISTRIBUTING STATION (newsystem4): PRODUCT & PROCESS
+#################################################################
+
+<https://w3id.org/maestro/examples/distribution-station-newsystem4/product> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/maestro/examples/distribution-station-newsystem4/product/0.1.0> ;
+    rdfs:label "MAESTRO Example: Festo Distributing Station (newsystem4) — Product"@en ;
+    owl:imports <https://w3id.org/maestro/examples/distribution-station-newsystem4> ;
+    owl:versionInfo "0.1.0" .
+
+#################################################################
+# LOCAL PROPERTY EXTENSIONS
+#################################################################
+
+ex:hasSubProcess a owl:ObjectProperty ;
+    rdfs:label "hasSubProcess"@en ;
+    rdfs:subPropertyOf core:hasPart ;
+    rdfs:domain proc:ManufacturingProcess ;
+    rdfs:range  proc:ManufacturingProcess ;
+    rdfs:comment "A composite process decomposes into ordered sub-processes."@en .
+
+#################################################################
+# PROCESSES  (DIN 8580 — Handling / Transport)
+#
+# Distribute cycle decomposes into five ordered sub-processes,
+# matching the SkillSwivelArm1_Controller_Orchestrator sequence:
+#   Eject → MoveToMagazine → Grip → MoveToDownstream → Release
+#################################################################
+
+ex:DistributeWorkpieceProcess a proc:TransportProcess ;
+    rdfs:label "Distribute workpiece (magazine → downstream station)" ;
+    proc:requiresCapability cap:HandlingCapability ,
+                            cap:PickPlaceCapability ,
+                            cap:TransportCapability ;
+    ex:hasSubProcess ex:PushProcess , ex:MoveToMagazineProcess ,
+                     ex:GripProcess , ex:MoveToDownstreamProcess , ex:ReleaseProcess .
+
+ex:PushProcess a proc:HandlingProcess ;
+    rdfs:label "Push / eject the bottom workpiece from the magazine" ;
+    proc:requiresCapability cap:HandlingCapability ;
+    proc:precedes ex:MoveToMagazineProcess .
+
+ex:MoveToMagazineProcess a proc:TransportProcess ;
+    rdfs:label "Rotate the swivel arm to the magazine pickup position" ;
+    proc:requiresCapability cap:TransportCapability ;
+    proc:precedes ex:GripProcess .
+
+ex:GripProcess a proc:HandlingProcess ;
+    rdfs:label "Grip the workpiece with the vacuum suction cup" ;
+    proc:requiresCapability cap:PickPlaceCapability ;
+    proc:precedes ex:MoveToDownstreamProcess .
+
+ex:MoveToDownstreamProcess a proc:TransportProcess ;
+    rdfs:label "Rotate the swivel arm to the downstream station" ;
+    proc:requiresCapability cap:TransportCapability ;
+    proc:precedes ex:ReleaseProcess .
+
+ex:ReleaseProcess a proc:HandlingProcess ;
+    rdfs:label "Release the workpiece at the downstream station" ;
+    proc:requiresCapability cap:PickPlaceCapability .
+
+#################################################################
+# PRODUCT
+#
+# Festo MPS cylindrical workpiece. The magazine sensor classifies it
+# into one of three types (wp_type code 1/2/3 — e.g. black/red/silver).
+#################################################################
+
+ex:WorkpieceWP a prod:Part ;
+    rdfs:label "Workpiece (Festo cylindrical blank)" ;
+    prod:massKg 0.030 ;
+    prod:requiresProcess ex:DistributeWorkpieceProcess ;
+    rdfs:comment "Cylindrical MPS workpiece; the through-beam / type sensor reports wp_type ∈ {1,2,3}."@en .

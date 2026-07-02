@@ -210,6 +210,11 @@ ex:TransferArm1 a res:TransferArm ;
     core:identifier "resource-transfer-arm-001" ;
     res:manufacturer "Festo" ;
     res:model        "MPS-Rotary-Arm" ;
+    res:payload [
+        a unit:Quantity ;
+        unit:numericValue 0.5 ;
+        unit:hasUnit unit:Kilogram
+    ] ;
     core:hasPart ex:VacuumUnit1 ;
     core:provides ex:Type_skGoToLeft , ex:Type_skGoToRight , ex:Type_skGoToRight2x .
 

@@ -16,11 +16,11 @@ SPARQL and rule engines.
 cap:PickPlaceCapability
     a core:Capability, skos:Concept ;
     skos:broader cap:HandlingCapability ;
-    cap:realizedBySkill skill:Transfer .
+    cap:realizedBySkill skill-lib:Transfer .
 
 cap:TransportCapability
     a core:Capability, skos:Concept ;
-    cap:realizedBySkill skill:MoveLinear, skill:MoveJoint .
+    cap:realizedBySkill skill-lib:MoveLinear, skill-lib:MoveJoint .
 ```
 
 ## Granularity Rule

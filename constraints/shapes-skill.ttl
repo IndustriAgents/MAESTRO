@@ -27,3 +27,26 @@ shape:SkillImplementationShape a sh:NodeShape ;
         sh:message "Skill has no implementing ControlComponent — it cannot be executed." ;
         sh:severity sh:Warning ;
     ] .
+
+#################################################################
+# SKILL ORCHESTRATION (new 0.4.0)
+#################################################################
+
+shape:ParameterDefShape a sh:NodeShape ;
+    sh:targetClass skill:ParameterDef ;
+    rdfs:label "Every ParameterDef must declare a data type."@en ;
+    sh:property [
+        sh:path skill:paramType ;
+        sh:minCount 1 ;
+        sh:message "A skill:ParameterDef must declare skill:paramType (an XSD datatype IRI)." ;
+    ] .
+
+shape:SubSkillLinkShape a sh:NodeShape ;
+    sh:targetClass skill:SubSkillLink ;
+    rdfs:label "Every SubSkillLink must reference a constituent Skill."@en ;
+    sh:property [
+        sh:path skill:linksTo ;
+        sh:minCount 1 ;
+        sh:class core:Skill ;
+        sh:message "A skill:SubSkillLink must reference a core:Skill via skill:linksTo." ;
+    ] .

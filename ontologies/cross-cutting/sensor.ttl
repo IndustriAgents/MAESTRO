@@ -12,10 +12,10 @@
 #################################################################
 
 <https://w3id.org/maestro/sensor> a owl:Ontology ;
-    owl:versionIRI <https://w3id.org/maestro/sensor/0.3.0> ;
+    owl:versionIRI <https://w3id.org/maestro/sensor/0.4.0> ;
     rdfs:label "MAESTRO Sensor Ontology"@en ;
     owl:imports <https://w3id.org/maestro/core> ;
-    owl:versionInfo "0.3.0" ;
+    owl:versionInfo "0.4.0" ;
     rdfs:comment "Sensor classes aligned with W3C SSN/SOSA. In 0.3.0 the shadow properties sensor:observes / sensor:hasObservation / sensor:resultValue / sensor:resultTime were removed; use sosa:observes / sosa:madeObservation / sosa:hasSimpleResult / sosa:resultTime directly."@en .
 
 #################################################################
@@ -61,3 +61,18 @@ sensor:VisionSensor        rdfs:subClassOf sensor:Sensor ; rdfs:label "VisionSen
 #   - Use sosa:hasFeatureOfInterest (Observation -> FeatureOfInterest).
 # These come transitively via the SOSA/SSN imports and do not need MAESTRO
 # shadow duplicates.
+
+#################################################################
+# SKILL <-> OBSERVATION EVIDENCE (new 0.4.0, HHM-Core "obs evidence")
+#
+# Links a Skill to the SOSA Observation(s) that provide evidence for it
+# (e.g. that a precondition held or a postcondition was met). Declared
+# here, in the SOSA bridge module, so skill.ttl need not depend on
+# sensor.ttl.
+#################################################################
+
+sensor:hasObservationEvidence a owl:ObjectProperty ;
+    rdfs:label "hasObservationEvidence"@en ;
+    rdfs:domain core:Skill ;
+    rdfs:range  sosa:Observation ;
+    rdfs:comment "A Skill is supported by a SOSA Observation as evidence (HHM-Core Skill->Observation obs-evidence edge)."@en .
